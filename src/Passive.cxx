@@ -94,7 +94,10 @@ void Inductor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Mat
   double charge = ic;
 
   if (!VarInT0MinusDT) {
-    if (t > 0) charge += (VarInT0(ni1, 0) - VarInT0(ni2, 0))/(value/deltaT);
+    double dV = 0;
+    if (n1 != 0) dV +=  VarInT0(ni1, 0);
+    if (n2 != 0) dV += -VarInT0(ni2, 0);
+    if (t > 0) charge += dV/(value/deltaT);
     ICt = charge;
 
     if (n1 != 0)
@@ -111,7 +114,13 @@ void Inductor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Mat
     if (n2 != 0)
       Gm(ni2, ni2)  +=  deltaT/value;
   } else {
-    if (t > 0) charge = (4.0/3.0)*(ic + ( (VarInT0(ni1, 0) - VarInT0(ni2, 0))/((3.0/2.0)*value/deltaT))) - (1.0/3.0)*((ICT0MinusDeltaT) + ( ((*VarInT0MinusDT)(ni1, 0) - (*VarInT0MinusDT)(ni2, 0))/((3.0/2.0)*value/deltaT)));
+    double dV = 0;
+    if (n1 != 0) dV +=  VarInT0(ni1, 0);
+    if (n2 != 0) dV += -VarInT0(ni2, 0);
+    double dVo = 0;
+    if (n1 != 0) dVo +=  (*VarInT0MinusDT)(ni1, 0);
+    if (n2 != 0) dVo += -(*VarInT0MinusDT)(ni2, 0);
+    if (t > 0) charge = (4.0/3.0)*(ic + (dV/((3.0/2.0)*value/deltaT))) - (1.0/3.0)*((ICT0MinusDeltaT) + ( dVo/((3.0/2.0)*value/deltaT)));
     ICt = charge;
 
     if (n1 != 0)
