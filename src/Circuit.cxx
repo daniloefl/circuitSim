@@ -31,18 +31,24 @@ void Resistor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Mat
   unsigned int ni1 = n1-1;
   unsigned int ni2 = n2-1;
   
-  Gm(ni1, ni1) +=  1.0/R;
-  Gm(ni1, ni2) += -1.0/R;
-  Gm(ni2, ni1) += -1.0/R;
-  Gm(ni2, ni2) +=  1.0/R;
+  if (n1 != 0)
+    Gm(ni1, ni1) +=  1.0/R;
+  if (n1 != 0 && n2 != 0)
+    Gm(ni1, ni2) += -1.0/R;
+  if (n1 != 0 && n2 != 0)
+    Gm(ni2, ni1) += -1.0/R;
+  if (n2 != 0)
+    Gm(ni2, ni2) +=  1.0/R;
 }
 
 void DCCurrentSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
   unsigned int ni1 = n1-1;
   unsigned int ni2 = n2-1;
   
-  Is(ni1,   0) += -I;
-  Is(ni2,   0) +=  I;
+  if (n1 != 0)
+    Is(ni1,   0) += -I;
+  if (n2 != 0)
+    Is(ni2,   0) +=  I;
 }
 
 void SinCurrentSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -57,8 +63,10 @@ void SinCurrentSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, doubl
     I = dc + amplitude*std::exp(-(t-delay)*atenuation)*std::sin(2*M_PI*freq*(t-delay) + (M_PI*angle/180.0));
   }
   
-  Is(ni1,   0) += -I;
-  Is(ni2,   0) +=  I;
+  if (n1 != 0)
+    Is(ni1,   0) += -I;
+  if (n2 != 0)
+    Is(ni2,   0) +=  I;
 }
 
 void PulseCurrentSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -87,8 +95,10 @@ void PulseCurrentSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, dou
     }
   }
   
-  Is(ni1,   0) += -I;
-  Is(ni2,   0) +=  I;
+  if (n1 != 0)
+    Is(ni1,   0) += -I;
+  if (n2 != 0)
+    Is(ni2,   0) +=  I;
 }
 
 void DCVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -96,11 +106,16 @@ void DCVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double
   unsigned int ni2 = n2-1;
   unsigned int nie = extraNode-1;
   
-  Gm(ni1, nie) +=  1;
-  Gm(ni2, nie) += -1;
-  Gm(nie, ni1) += -1;
-  Gm(nie, ni2) +=  1;
-  Is(nie,   0) += -V;
+  if (n1 != 0 && extraNode != 0)
+    Gm(ni1, nie) +=  1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(ni2, nie) += -1;
+  if (n1 != 0 && extraNode != 0)
+    Gm(nie, ni1) += -1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(nie, ni2) +=  1;
+  if (extraNode != 0)
+    Is(nie,   0) += -V;
 }
 
 void SinVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -116,11 +131,16 @@ void SinVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, doubl
     V = dc + amplitude*std::exp(-(t-delay)*atenuation)*std::sin(2*M_PI*freq*(t-delay) + (M_PI*angle/180.0));
   }
   
-  Gm(ni1, nie) +=  1;
-  Gm(ni2, nie) += -1;
-  Gm(nie, ni1) += -1;
-  Gm(nie, ni2) +=  1;
-  Is(nie,   0) += -V;
+  if (n1 != 0 && extraNode != 0)
+    Gm(ni1, nie) +=  1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(ni2, nie) += -1;
+  if (n1 != 0 && extraNode != 0)
+    Gm(nie, ni1) += -1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(nie, ni2) +=  1;
+  if (extraNode != 0)
+    Is(nie,   0) += -V;
 }
 
 void PulseVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -150,11 +170,16 @@ void PulseVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, dou
     }
   }
   
-  Gm(ni1, nie) +=  1;
-  Gm(ni2, nie) += -1;
-  Gm(nie, ni1) += -1;
-  Gm(nie, ni2) +=  1;
-  Is(nie,   0) += -V;
+  if (n1 != 0 && extraNode != 0)
+    Gm(ni1, nie) +=  1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(ni2, nie) += -1;
+  if (n1 != 0 && extraNode != 0)
+    Gm(nie, ni1) += -1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(nie, ni2) +=  1;
+  if (extraNode != 0)
+    Is(nie,   0) += -V;
 }
 
 void Transconductor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -163,10 +188,14 @@ void Transconductor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double 
   unsigned int nip = pos-1;
   unsigned int nin = neg-1;
 
-  Gm(ni1, nip) +=  value;
-  Gm(ni1, nin) += -value;
-  Gm(ni2, nip) += -value;
-  Gm(ni2, nin) +=  value;
+  if (n1 != 0 && pos != 0)
+    Gm(ni1, nip) +=  value;
+  if (n1 != 0 && neg != 0)
+    Gm(ni1, nin) += -value;
+  if (n2 != 0 && pos != 0)
+    Gm(ni2, nip) += -value;
+  if (n2 != 0 && neg != 0)
+    Gm(ni2, nin) +=  value;
 }
 
 void Transresistor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -178,18 +207,27 @@ void Transresistor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t
   unsigned int nie1 = extraNode_external;
   unsigned int nie2 = extraNode_source;
 
-  Gm(ni1, nie2)  +=  1;
-  Gm(ni2, nie2)  += -1;
+  if (n1 != 0 && extraNode_source != 0)
+    Gm(ni1, nie2)  +=  1;
+  if (n2 != 0 && extraNode_source != 0)
+    Gm(ni2, nie2)  += -1;
 
-  Gm(nip, nie1)  +=  1;
-  Gm(nin, nie1)  += -1;
+  if (pos != 0 && extraNode_external != 0)
+    Gm(nip, nie1)  +=  1;
+  if (neg != 0 && extraNode_external != 0)
+    Gm(nin, nie1)  += -1;
 
-  Gm(nie1, nip)  += -1;
-  Gm(nie1, nin)  +=  1;
+  if (pos != 0 && extraNode_external != 0)
+    Gm(nie1, nip)  += -1;
+  if (neg != 0 && extraNode_external != 0)
+    Gm(nie1, nin)  +=  1;
 
-  Gm(nie2, ni1)  += -1;
-  Gm(nie2, ni2)  +=  1;
-  Gm(nie2, nie1) += value;
+  if (n1 != 0 && extraNode_source != 0)
+    Gm(nie2, ni1)  += -1;
+  if (n2 != 0 && extraNode_source != 0)
+    Gm(nie2, ni2)  +=  1;
+  if (extraNode_external != 0 && extraNode_source != 0)
+    Gm(nie2, nie1) += value;
 }
 
 void CurrentControlledCurrentSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -200,14 +238,20 @@ void CurrentControlledCurrentSource::makeElements(Matrix &Gm, Matrix &Is, double
 
   unsigned int nie = extraNode-1;
 
-  Gm(ni1, nie)  +=  value;
-  Gm(ni2, nie)  += -value;
+  if (n1 != 0 && extraNode != 0)
+    Gm(ni1, nie)  +=  value;
+  if (n2 != 0 && extraNode != 0)
+    Gm(ni2, nie)  += -value;
 
-  Gm(nip, nie)  +=  1;
-  Gm(nin, nie)  += -1;
+  if (pos != 0 && extraNode != 0)
+    Gm(nip, nie)  +=  1;
+  if (neg != 0 && extraNode != 0)
+    Gm(nin, nie)  += -1;
 
-  Gm(nie, nip)  += -1;
-  Gm(nie, nin)  +=  1;
+  if (pos != 0 && extraNode != 0)
+    Gm(nie, nip)  += -1;
+  if (neg != 0 && extraNode != 0)
+    Gm(nie, nin)  +=  1;
 }
 
 void VoltageControlledVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -218,40 +262,66 @@ void VoltageControlledVoltageSource::makeElements(Matrix &Gm, Matrix &Is, double
 
   unsigned int nie = extraNode-1;
 
-  Gm(ni1, nie)  +=  1;
-  Gm(ni2, nie)  += -1;
+  if (n1 != 0 && extraNode != 0)
+    Gm(ni1, nie)  +=  1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(ni2, nie)  += -1;
 
-  Gm(nie, ni1)  += -1;
-  Gm(nie, ni2)  +=  1;
+  if (n1 != 0 && extraNode != 0)
+    Gm(nie, ni1)  += -1;
+  if (n2 != 0 && extraNode != 0)
+    Gm(nie, ni2)  +=  1;
 
-  Gm(nie, nip)  +=  value;
-  Gm(nie, nin)  += -value;
+  if (pos != 0 && extraNode != 0)
+    Gm(nie, nip)  +=  value;
+  if (neg != 0 && extraNode != 0)
+    Gm(nie, nin)  += -value;
 }
 
 void Capacitor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
   unsigned int ni1 = n1-1;
   unsigned int ni2 = n2-1;
   double charge = ic;
+  double dV = 0;
+  if (n1 != 0) dV +=  VarInT0(ni1, 0);
+  if (n2 != 0) dV += -VarInT0(ni2, 0);
+
   if (!VarInT0MinusDT) {
-    if (t > 0) charge = VarInT0(ni1, 0) - VarInT0(ni2, 0);
+    if (t > 0) charge = dV;
 
-    Is(ni1, 0)  +=  value*charge/deltaT;
-    Is(ni2, 0)  += -value*charge/deltaT;
+    if (n1 != 0)
+      Is(ni1, 0)  +=  value*charge/deltaT;
+    if (n2 != 0)
+      Is(ni2, 0)  += -value*charge/deltaT;
 
-    Gm(ni1, ni1)  +=  value/deltaT;
-    Gm(ni1, ni2)  += -value/deltaT;
-    Gm(ni2, ni1)  += -value/deltaT;
-    Gm(ni2, ni2)  +=  value/deltaT;
+    if (n1 != 0)
+      Gm(ni1, ni1)  +=  value/deltaT;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni1, ni2)  += -value/deltaT;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni2, ni1)  += -value/deltaT;
+    if (n2 != 0)
+      Gm(ni2, ni2)  +=  value/deltaT;
   } else {
-    if (t > 0) charge = ((2.0*value)*(VarInT0(ni1, 0) - VarInT0(ni2, 0))/deltaT) - (((value/2.0)*((*VarInT0MinusDT)(ni1, 0) - (*VarInT0MinusDT)(ni2, 0)))/deltaT);
+    double dVo = 0;
+    if (n1 != 0) dVo +=  (*VarInT0MinusDT)(ni1, 0);
+    if (n2 != 0) dVo += -(*VarInT0MinusDT)(ni2, 0);
 
-    Is(ni1, 0)  +=  charge;
-    Is(ni2, 0)  += -charge;
+    if (t > 0) charge = (2.0*value)*(dV/deltaT) - ((value/2.0)*dVo)/deltaT;
 
-    Gm(ni1, ni1)  +=  1.5*value/deltaT;
-    Gm(ni1, ni2)  += -1.5*value/deltaT;
-    Gm(ni2, ni1)  += -1.5*value/deltaT;
-    Gm(ni2, ni2)  +=  1.5*value/deltaT;
+    if (n1 != 0)
+      Is(ni1, 0)  +=  charge;
+    if (n2 != 0)
+      Is(ni2, 0)  += -charge;
+
+    if (n1 != 0)
+      Gm(ni1, ni1)  +=  1.5*value/deltaT;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni1, ni2)  += -1.5*value/deltaT;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni2, ni1)  += -1.5*value/deltaT;
+    if (n2 != 0)
+      Gm(ni2, ni2)  +=  1.5*value/deltaT;
   }
 
 }
@@ -265,24 +335,36 @@ void Inductor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Mat
     if (t > 0) charge += (VarInT0(ni1, 0) - VarInT0(ni2, 0))/(value/deltaT);
     ICt = charge;
 
-    Is(ni1, 0)  += -charge;
-    Is(ni2, 0)  +=  charge;
+    if (n1 != 0)
+      Is(ni1, 0)  += -charge;
+    if (n2 != 0)
+      Is(ni2, 0)  +=  charge;
 
-    Gm(ni1, ni1)  +=  deltaT/value;
-    Gm(ni1, ni2)  += -deltaT/value;
-    Gm(ni2, ni1)  += -deltaT/value;
-    Gm(ni2, ni2)  +=  deltaT/value;
+    if (n1 != 0)
+      Gm(ni1, ni1)  +=  deltaT/value;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni1, ni2)  += -deltaT/value;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni2, ni1)  += -deltaT/value;
+    if (n2 != 0)
+      Gm(ni2, ni2)  +=  deltaT/value;
   } else {
     if (t > 0) charge = (4.0/3.0)*(ic + ( (VarInT0(ni1, 0) - VarInT0(ni2, 0))/((3.0/2.0)*value/deltaT))) - (1.0/3.0)*((ICT0MinusDeltaT) + ( ((*VarInT0MinusDT)(ni1, 0) - (*VarInT0MinusDT)(ni2, 0))/((3.0/2.0)*value/deltaT)));
     ICt = charge;
 
-    Is(ni1, 0)  += -charge;
-    Is(ni2, 0)  +=  charge;
+    if (n1 != 0)
+      Is(ni1, 0)  += -charge;
+    if (n2 != 0)
+      Is(ni2, 0)  +=  charge;
 
-    Gm(ni1, ni1)  +=  (2.0/3.0)*deltaT/value;
-    Gm(ni1, ni2)  += -(2.0/3.0)*deltaT/value;
-    Gm(ni2, ni1)  += -(2.0/3.0)*deltaT/value;
-    Gm(ni2, ni2)  +=  (2.0/3.0)*deltaT/value;
+    if (n1 != 0)
+      Gm(ni1, ni1)  +=  (2.0/3.0)*deltaT/value;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni1, ni2)  += -(2.0/3.0)*deltaT/value;
+    if (n1 != 0 && n2 != 0)
+      Gm(ni2, ni1)  += -(2.0/3.0)*deltaT/value;
+    if (n2 != 0)
+      Gm(ni2, ni2)  +=  (2.0/3.0)*deltaT/value;
   }
 
 }
@@ -294,21 +376,30 @@ void Diode::makeElements(Matrix &Gm, Matrix &IsM, double deltaT, double t, Matri
   double Vtaux = Vt;
   double G0,I0;
 
-  if ( ((VarIterN(ni1, 0) - VarIterN(ni2, 0))/Vtaux) > THRESHOLD_V_VT ) {
+  double dV = 0;
+  if (n1 != 0) dV +=   VarIterN(ni1, 0);
+  if (n2 != 0) dV += - VarIterN(ni2, 0);
+  if ( ((dV)/Vtaux) > THRESHOLD_V_VT ) {
     G0 = (Isaux/Vtaux)*std::exp(THRESHOLD_V_VT);
     I0 = Isaux*(std::exp(THRESHOLD_V_VT)-1.0) - G0*THRESHOLD_V_VT*Vtaux;
   } else {
-    G0 = (Isaux/Vtaux)*std::exp((VarIterN(ni1, 0) - VarIterN(ni2, 0))/Vtaux);
-    I0 = Isaux*(std::exp((VarIterN(ni1, 0) - VarIterN(ni2, 0))/Vtaux) - 1.0) - G0*(VarIterN(ni1, 0) - VarIterN(ni2, 0));
+    G0 = (Isaux/Vtaux)*std::exp(dV/Vtaux);
+    I0 = Isaux*(std::exp(dV/Vtaux) - 1.0) - G0*dV;
   }
 
-  IsM(ni1, 0)  += -I0;
-  IsM(ni2, 0)  +=  I0;
+  if (n1 != 0)
+    IsM(ni1, 0)  += -I0;
+  if (n2 != 0)
+    IsM(ni2, 0)  +=  I0;
 
-  Gm(ni1, ni1)  +=  G0;
-  Gm(ni1, ni2)  += -G0;
-  Gm(ni2, ni1)  += -G0;
-  Gm(ni2, ni2)  +=  G0;
+  if (n1 != 0)
+    Gm(ni1, ni1)  +=  G0;
+  if (n1 != 0 && n2 != 0)
+    Gm(ni1, ni2)  += -G0;
+  if (n1 != 0 && n2 != 0)
+    Gm(ni2, ni1)  += -G0;
+  if (n2 != 0)
+    Gm(ni2, ni2)  +=  G0;
 }
 
 void Transistor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -325,51 +416,81 @@ void Transistor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, M
     nVtBC = -VtBC;
   }
 
-  if ( ((VarIterN(nib, 0) - VarIterN(nie, 0))/nVtBE) > THRESHOLD_V_VT ) {
+  double dVbe = 0;
+  if (n2 != 0) dVbe +=   VarIterN(nib, 0);
+  if (emissorNode != 0) dVbe += - VarIterN(nie, 0);
+  if ( (dVbe/nVtBE) > THRESHOLD_V_VT ) {
     GBE = (nIsBE/nVtBE)*std::exp(THRESHOLD_V_VT);
     IBE = (nIsBE*(std::exp(THRESHOLD_V_VT)-1)) - (GBE*THRESHOLD_V_VT*nVtBE);
   } else {
-    GBE = (nIsBE/nVtBE)*exp((VarIterN(nib, 0) - VarIterN(nie, 0))/nVtBE);
-    IBE = (nIsBE*(std::exp((VarIterN(nib, 0) - VarIterN(nie, 0))/nVtBE)-1.0)) - (GBE*(VarIterN(nib, 0) - VarIterN(nie, 0)));
+    GBE = (nIsBE/nVtBE)*exp(dVbe/nVtBE);
+    IBE = (nIsBE*(std::exp(dVbe/nVtBE)-1.0)) - (GBE*dVbe);
   }
   
-  if ( ((VarIterN(nib, 0) - VarIterN(nic, 0))/nVtBC) > THRESHOLD_V_VT ) {
+  double dVbc = 0;
+  if (n2 != 0) dVbc +=   VarIterN(nib, 0);
+  if (n1 != 0) dVbc += - VarIterN(nic, 0);
+  if ( (dVbc/nVtBC) > THRESHOLD_V_VT ) {
     GBC = (nIsBC/nVtBC)*std::exp(THRESHOLD_V_VT);
     IBC = (nIsBC*(std::exp(THRESHOLD_V_VT)-1)) - (GBC*THRESHOLD_V_VT*nVtBC);
   } else {
-    GBC = (nIsBC/nVtBC)*std::exp((VarIterN(nib, 0) - VarIterN(nic, 0))/nVtBC);
-    IBC = (nIsBC*(std::exp((VarIterN(nib, 0) - VarIterN(nic, 0))/nVtBC)-1)) - (GBC*(VarIterN(nib, 0) - VarIterN(nic, 0)));
+    GBC = (nIsBC/nVtBC)*std::exp(dVbc/nVtBC);
+    IBC = (nIsBC*(std::exp(dVbc/nVtBC)-1)) - (GBC*dVbc);
   }
   
-  Is(nib, 0)  += -IBE;
-  Is(nie, 0)  +=  IBE;
-  Is(nib, 0)  += -IBC;
-  Is(nic, 0)  +=  IBC;
+  if (n2 != 0)
+    Is(nib, 0)  += -IBE;
+  if (emissorNode != 0)
+    Is(nie, 0)  +=  IBE;
+  if (n2 != 0)
+    Is(nib, 0)  += -IBC;
+  if (n1 != 0)
+    Is(nic, 0)  +=  IBC;
 
-  Is(nib, 0)  +=  alpha*IBE;
-  Is(nic, 0)  += -alpha*IBE;
-  Is(nib, 0)  +=  alphaRev*IBC;
-  Is(nie, 0)  += -alphaRev*IBC;
+  if (n2 != 0)
+    Is(nib, 0)  +=  alpha*IBE;
+  if (n1 != 0)
+    Is(nic, 0)  += -alpha*IBE;
+  if (n2 != 0)
+    Is(nib, 0)  +=  alphaRev*IBC;
+  if (emissorNode != 0)
+    Is(nie, 0)  += -alphaRev*IBC;
   
-  Gm(nib, nib)  +=  GBE;
-  Gm(nib, nie)  += -GBE;
-  Gm(nie, nib)  += -GBE;
-  Gm(nie, nie)  +=  GBE;
+  if (n2 != 0)
+    Gm(nib, nib)  +=  GBE;
+  if (n2 != 0 && emissorNode != 0)
+    Gm(nib, nie)  += -GBE;
+  if (n2 != 0 && emissorNode != 0)
+    Gm(nie, nib)  += -GBE;
+  if (emissorNode != 0)
+    Gm(nie, nie)  +=  GBE;
 
-  Gm(nib, nib)  +=  GBC;
-  Gm(nib, nic)  += -GBC;
-  Gm(nic, nib)  += -GBC;
-  Gm(nic, nic)  +=  GBC;
+  if (n2 != 0)
+    Gm(nib, nib)  +=  GBC;
+  if (n2 != 0 && n1 != 0)
+    Gm(nib, nic)  += -GBC;
+  if (n2 != 0 && n1 != 0)
+    Gm(nic, nib)  += -GBC;
+  if (n1 != 0)
+    Gm(nic, nic)  +=  GBC;
 
-  Gm(nic, nib)  +=  alpha*GBE;
-  Gm(nic, nie)  += -alpha*GBE;
-  Gm(nib, nib)  += -alpha*GBE;
-  Gm(nib, nie)  +=  alpha*GBE;
+  if (n1 != 0 && n2 != 0)
+    Gm(nic, nib)  +=  alpha*GBE;
+  if (n1 != 0 && emissorNode != 0)
+    Gm(nic, nie)  += -alpha*GBE;
+  if (n2 != 0)
+    Gm(nib, nib)  += -alpha*GBE;
+  if (n2 != 0 && emissorNode != 0)
+    Gm(nib, nie)  +=  alpha*GBE;
 
-  Gm(nie, nib)  +=  alphaRev*GBC;
-  Gm(nie, nic)  += -alphaRev*GBC;
-  Gm(nib, nib)  += -alphaRev*GBC;
-  Gm(nib, nic)  +=  alphaRev*GBC;
+  if (n2 != 0 && emissorNode != 0)
+    Gm(nie, nib)  +=  alphaRev*GBC;
+  if (n1 != 0 && emissorNode != 0)
+    Gm(nie, nic)  += -alphaRev*GBC;
+  if (n2 != 0)
+    Gm(nib, nib)  += -alphaRev*GBC;
+  if (n2 != 0 && n1 != 0)
+    Gm(nib, nic)  +=  alphaRev*GBC;
 
 }
 
@@ -913,9 +1034,13 @@ void Circuit::simulate() {
   Matrix VarInT(node.size()-1, 1);
   // In T0, last iter.
   Matrix VarInT0(node.size()-1, 1);
+  VarInT0.zero();
+  VarInT.zero();
+  VarIterN.zero();
 
   // In T0 - delta T, last iter. (only for GEAR)
   Matrix VarInT0MinusDeltaT(node.size()-1, 1);
+  VarInT0MinusDeltaT.zero();
 
   // Set seed
   std::srand(std::time(NULL));
@@ -997,7 +1122,7 @@ void Circuit::iteration(analysisMethod method, Matrix &VarInT, Matrix &VarInT0, 
 
       ++step; // N = N + 1
       
-    } while (((!(VarInT == VarIterN)) && (step < MAX_ITER)));
+    } while (((!(VarInT.closeTo(VarIterN))) && (step < MAX_ITER)));
 
     if (step < MAX_ITER) // if this ended before the max. number of iterations, there was convergence
       break;

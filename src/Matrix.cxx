@@ -11,8 +11,6 @@
 #include <stdexcept>
 #include <iomanip>
 
-double empty = 0;
-
 Matrix::Matrix(unsigned int rows, unsigned int columns) {
   if (rows == 0 || columns == 0) throw std::runtime_error("Matrix::Matrix: Invalid matrix size.");
   m_e = new double[rows*columns];
@@ -37,7 +35,6 @@ Matrix::Matrix(const Matrix &b) {
 
 
 double &Matrix::operator() (unsigned int row, unsigned int column) {
-  if (row == (unsigned int) -1 || column == (unsigned int) -1) return empty;
   if (row >= m_r || column >= m_c) {
     throw std::runtime_error("Matrix::operator(): out of bounds.");
   }
@@ -66,9 +63,20 @@ bool Matrix::operator ==(const Matrix &b) const {
   return true;
 }
 
+bool Matrix::closeTo(const Matrix &b) const {
+  if (m_r != b.m_r) return false;
+  if (m_c != b.m_c) return false;
+  for (unsigned i = 0; i < m_r*m_c; ++i) {
+    if (std::isnan(m_e[i]) || std::isnan(b.m_e[i])) return false;
+    if (std::fabs(m_e[i] - b.m_e[i]) > MAX_ERROR) return false;
+  }
+  return true;
+}
+
 void Matrix::random() {
-  for (unsigned i = 0; i < m_r*m_c; ++i)
+  for (unsigned i = 0; i < m_r*m_c; ++i) {
     m_e[i] = (((((double) rand())/((double) RAND_MAX))*2) - 1)*100.0;
+  }
 }
 
 void Matrix::multiplyRow(unsigned int row, double value) {

@@ -8,8 +8,6 @@
 
 #include "Constants.h"
 
-extern double empty;
-
 class Matrix {
   public:
     // Matrix contents
@@ -35,6 +33,7 @@ class Matrix {
     // compares this matrix with b and returns true if all elements differ
     // by less than MAX_ERROR
     bool operator ==(const Matrix &b) const;
+    bool closeTo(const Matrix &b) const;
 
     // fill matrix with random elements
     void random();
