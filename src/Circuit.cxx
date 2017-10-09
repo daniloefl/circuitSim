@@ -66,18 +66,118 @@ inline void trim(std::string &s) {
   std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 }
 
+void Circuit::addResistor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double R) {
+  unsigned int node1_itr = findNode(nodeName1);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeName1;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeName2);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeName2;
+    node2_itr = addNode(node2);
+  }
+      
+  std::shared_ptr<Element> e;
+  e.reset(new Resistor(R));
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  addElement(e);
+}
+
+void Circuit::addCapacitor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double C) {
+  unsigned int node1_itr = findNode(nodeName1);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeName1;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeName2);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeName2;
+    node2_itr = addNode(node2);
+  }
+      
+  std::shared_ptr<Element> e;
+  e.reset(new Capacitor(C));
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  addElement(e);
+}
+
+void Circuit::addInductor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double L) {
+  unsigned int node1_itr = findNode(nodeName1);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeName1;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeName2);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeName2;
+    node2_itr = addNode(node2);
+  }
+      
+  std::shared_ptr<Element> e;
+  e.reset(new Inductor(L));
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  addElement(e);
+}
+
+void Circuit::addDCVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double V) {
+  unsigned int node1_itr = findNode(nodeName1);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeName1;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeName2);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeName2;
+    node2_itr = addNode(node2);
+  }
+  unsigned int new_node = addNode(Node(countNodes++, name+"#j"));
+  std::shared_ptr<Element> e;
+  e.reset(new DCVoltageSource(V));
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  dynamic_cast<DCVoltageSource *>(e.get())->extraNode = new_node;
+  addElement(e);
+}
+
+void Circuit::setSimulationParameters(double _tFinal, double _dtSave, const std::string &_method, unsigned int _intStep) {
+  tFinal = _tFinal;
+  dtSave = _dtSave;
+  method = BE;
+  if (_method == "gear") method = GEAR;
+  intStep = _intStep;
+}
+
 // Parse netlist
 void Circuit::readNetlist(const std::string &filename) {
   std::ifstream f(filename.c_str());
 
-  unsigned int countNodes = 0;
-
   readLines = 0;
   tFinal = 1;
   method = BE;
-
-  addNode(Node(0, "0"));
-  ++countNodes;
 
   std::string tmpC;
 
@@ -414,8 +514,14 @@ double readNumber(const std::string &s) {
 }
 
 Circuit::Circuit() {
+  countNodes = 0;
   intStep = 1;
   time = 0;
+  method = BE;
+  tFinal = 1; // 1 second
+  dtSave = 1e-3; // save each 1 ms
+  addNode(Node(0, "0"));
+  ++countNodes;
 }
 
 void Circuit::simulate() {

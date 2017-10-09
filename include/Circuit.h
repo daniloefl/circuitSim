@@ -20,6 +20,8 @@ enum analysisMethod {BE, GEAR};
 
 class Circuit {
   public:
+    unsigned int countNodes;
+
     elementList element;
     nodeList node;
 
@@ -47,6 +49,11 @@ class Circuit {
 
     void writeOut(const std::string &fname);
 
+    void setSimulationParameters(double _tFinal, double _dtSave, const std::string &_method, unsigned int intStep);
+    void addResistor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double R);
+    void addCapacitor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double C);
+    void addInductor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double L);
+    void addDCVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double V);
 };
 
 double readNumber(const std::string &s);

@@ -14,6 +14,12 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
 FIND_PACKAGE(PythonInterp)
 FIND_PACKAGE(PythonLibs)
 
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS python)
+include_directories(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS}) 
+
 include_directories (AFTER include)
 
 subdirs(src)
