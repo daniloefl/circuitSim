@@ -28,7 +28,31 @@ cmake .
 make
 ```
 
-This will generate the executable in `bin/circuitSim`, which can be executed as follows:
+There are two ways of performing the simulation. One can use Python to define the circuit and collect the
+results of the simulation for plotting, ore one can use a standalone executable to read a net list with the circuit definition
+and then get the result as a text file with the voltages in each node at each time point.
+
+# Python interface
+
+The Python interface can be easily accessed if the lib directory is added in the PYTHONPATH.
+One can load the library as follows:
+
+```
+import circuitPy
+```
+
+And one can create an instance of `circuitPy.Circuit`, which can then be used to perform the simulation.
+As an example, try executing the following script in Python:
+
+```
+./examples/testRC.py
+```
+
+It simulates an RC circuit and plots the result using Pyplot.
+
+# Standalone executable
+
+`bin/circuitSim` can be executed as follows:
 
 ```
 bin/circuitSim input.dat output.dat
@@ -75,4 +99,5 @@ One can plot the results by running Gnuplot and typing the following to plot the
 ```
 plot 'out.dat' using 1:2
 ```
+
 
