@@ -48,7 +48,13 @@ As an example, try executing the following script in Python:
 ./examples/testRC.py
 ```
 
-It simulates an RC circuit and plots the result using Pyplot.
+For a more complex example:
+```
+./examples/testRCPulse.py
+```
+
+The same example in testRCPulse.py can be simulated in the standalone tool using the net list in
+examples/rc.net.
 
 # Standalone executable
 
