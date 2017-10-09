@@ -1,19 +1,21 @@
 #include <boost/python.hpp>
 #include <string>
-#include "Circuit.h"
+#include "CircuitPy.h"
 
 using namespace boost::python;
 
 BOOST_PYTHON_MODULE(circuitPy)
 {
-  class_<Circuit>("Circuit", init<>())
+  class_<CircuitPy>("Circuit", init<>())
     .def(init<>())
-    .def("simulate", &Circuit::simulate)
-    .def("setSimulationParametersr", &Circuit::setSimulationParameters)
-    .def("addResistor", &Circuit::addResistor)
-    .def("addCapacitor", &Circuit::addCapacitor)
-    .def("addInductor", &Circuit::addInductor)
-    .def("addDCVoltageSource", &Circuit::addDCVoltageSource)
+    .def("simulate", &CircuitPy::simulate)
+    .def("setSimulationParameters", &CircuitPy::setSimulationParameters)
+    .def("addResistor", &CircuitPy::addResistor)
+    .def("addCapacitor", &CircuitPy::addCapacitor)
+    .def("addInductor", &CircuitPy::addInductor)
+    .def("addDCVoltageSource", &CircuitPy::addDCVoltageSource)
+    .def("getTimeList", &CircuitPy::getTimeList)
+    .def("getNodeVoltages", &CircuitPy::getNodeVoltages)
   ;
 }
 

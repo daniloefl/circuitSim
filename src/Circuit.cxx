@@ -81,7 +81,6 @@ void Circuit::addResistor(const std::string &name, const std::string &nodeName1,
     node2.name = nodeName2;
     node2_itr = addNode(node2);
   }
-      
   std::shared_ptr<Element> e;
   e.reset(new Resistor(R));
   e->n1 = node1_itr;
@@ -701,5 +700,4 @@ void Circuit::writeOut(const std::string &fname) {
   }
   fout.close();
 }
-
 

@@ -54,6 +54,7 @@ class Circuit {
     void addCapacitor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double C);
     void addInductor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double L);
     void addDCVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double V);
+
 };
 
 double readNumber(const std::string &s);
