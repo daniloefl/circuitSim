@@ -65,7 +65,7 @@ None of the specifications here are case sensitive.
 | Capacitor                         | C                            | Cname n1 n2 capacitance [ic=initialVoltage]                                  |
 | Inductor                          | L                            | Lname n1 n2 inductance [ic=initialCurrent]                                   |
 | Diode                             | D                            | Dname n1 n2 [Is Vt]                                                          |
-| Transistor                        | Q                            | Qname nBase nCollector nEmissor [npn|pnp alpha alphaRev IsBE VtBE IsBC VtBC] |
+| Transistor                        | Q                            | Qname nBase nCollector nEmissor [npn\|pnp alpha alphaRev IsBE VtBE IsBC VtBC] |
 
 The output file is suitable to be used in Gnuplot for visualisation.
 Each row indicates a time period. The first column indicates the time (in seconds). Other columns show the value of the voltage in each one of the nodes
