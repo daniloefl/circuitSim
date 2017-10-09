@@ -55,7 +55,7 @@ class Circuit {
     void addInductor(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double L);
 
     void addDCVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double V);
-    void addPulseVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double dc, double amplitude1, double amplitude2, double delay, double tRise, double tFall, double tOn, double period, double nCycles);
+    void addPulseVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double amplitude1, double amplitude2, double delay, double tRise, double tFall, double tOn, double period, double nCycles);
     void addSinVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double dc, double amplitude, double freq, double delay, double atenuation, double angle, double nCycles);
 
     void addDiode(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double Is = -1, double Vt = -1);

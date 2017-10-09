@@ -187,7 +187,7 @@ void Circuit::addSinVoltageSource(const std::string &name, const std::string &no
   addElement(e);
 }
 
-void Circuit::addPulseVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double dc, double amplitude1, double amplitude2, double delay, double tRise, double tFall, double tOn, double period, double nCycles) {
+void Circuit::addPulseVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double amplitude1, double amplitude2, double delay, double tRise, double tFall, double tOn, double period, double nCycles) {
   unsigned int node1_itr = findNode(nodeName1);
   if (node1_itr == node.size()) { // this node does not yet exist: add it
     Node node1;
