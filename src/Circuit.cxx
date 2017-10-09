@@ -24,7 +24,7 @@ Element::~Element() {
 }
 
 void Element::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
-  std::cout << "HI" << std::endl;
+  throw std::runtime_error("Calling base-class Element to fill matrices: it does not represent a real element!");
 }
 
 void Resistor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
@@ -287,7 +287,7 @@ void Inductor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Mat
 
 }
 
-void Diode::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
+void Diode::makeElements(Matrix &Gm, Matrix &IsM, double deltaT, double t, Matrix &VarInT0, Matrix *VarInT0MinusDT, Matrix &VarIterN) {
   unsigned int ni1 = n1-1;
   unsigned int ni2 = n2-1;
   double Isaux = this->Is;
@@ -302,8 +302,8 @@ void Diode::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Matrix
     I0 = Isaux*(std::exp((VarIterN(ni1, 0) - VarIterN(ni2, 0))/Vtaux) - 1.0) - G0*(VarIterN(ni1, 0) - VarIterN(ni2, 0));
   }
 
-  Is(ni1, 0)  += -I0;
-  Is(ni2, 0)  +=  I0;
+  IsM(ni1, 0)  += -I0;
+  IsM(ni2, 0)  +=  I0;
 
   Gm(ni1, ni1)  +=  G0;
   Gm(ni1, ni2)  += -G0;
@@ -540,7 +540,6 @@ void Circuit::readNetlist(const std::string &filename) {
   readLines = 0;
   tFinal = 1;
   method = BE;
-  nSteps = 1000;
 
   addNode(Node(0, "0"));
   ++countNodes;
@@ -568,8 +567,8 @@ void Circuit::readNetlist(const std::string &filename) {
       if (dtSave == 0) throw std::runtime_error("Circuit::readNetlist: delta T is zero!");
       ss >> com;
       if (com == "gear") method = GEAR;
-      ss >> nSteps;
-      if (nSteps == 0) nSteps = 1;
+      ss >> intStep;
+      if (intStep == 0) intStep = 1;
     } else { // assume this is a circuit element
       std::stringstream ss(s);
       std::string name, nodeName1, nodeName2;
@@ -880,7 +879,7 @@ double readNumber(const std::string &s) {
 }
 
 Circuit::Circuit() {
-  intStep = 10;
+  intStep = 1;
   time = 0;
 }
 

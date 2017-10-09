@@ -39,8 +39,6 @@ Matrix::Matrix(const Matrix &b) {
 double &Matrix::operator() (unsigned int row, unsigned int column) {
   if (row == (unsigned int) -1 || column == (unsigned int) -1) return empty;
   if (row >= m_r || column >= m_c) {
-    std::cout << "Row = " << row << ", column = " << column << std::endl;
-    print();
     throw std::runtime_error("Matrix::operator(): out of bounds.");
   }
   return m_e[row*m_c + column];
@@ -100,10 +98,6 @@ void Matrix::copyRow(const Matrix &row, unsigned int i) {
 Matrix Matrix::solve(const Matrix &a, const Matrix &b) {
   if (a.m_r != a.m_c || b.m_c != 1 || b.m_r != a.m_r)
     throw std::runtime_error("Matrix::solve: Invalid matrix sizes.");
-
-  std::cout << "To solve:" << std::endl;
-  a.print();
-  b.print();
 
   Matrix copyCoef(a);
   Matrix result(b);
