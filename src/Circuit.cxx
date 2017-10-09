@@ -307,7 +307,7 @@ void Capacitor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Ma
     if (n1 != 0) dVo +=  (*VarInT0MinusDT)(ni1, 0);
     if (n2 != 0) dVo += -(*VarInT0MinusDT)(ni2, 0);
 
-    if (t > 0) charge = (2.0*value)*(dV/deltaT) - ((value/2.0)*dVo)/deltaT;
+    if (t > 0) charge = value*((4.0/3.0)*dV - (1.0/3.0)*dVo)/(2.0*deltaT/3.0);
 
     if (n1 != 0)
       Is(ni1, 0)  +=  charge;
@@ -315,13 +315,13 @@ void Capacitor::makeElements(Matrix &Gm, Matrix &Is, double deltaT, double t, Ma
       Is(ni2, 0)  += -charge;
 
     if (n1 != 0)
-      Gm(ni1, ni1)  +=  1.5*value/deltaT;
+      Gm(ni1, ni1)  +=  value/(2.0*deltaT/3.0);
     if (n1 != 0 && n2 != 0)
-      Gm(ni1, ni2)  += -1.5*value/deltaT;
+      Gm(ni1, ni2)  += -value/(2.0*deltaT/3.0);
     if (n1 != 0 && n2 != 0)
-      Gm(ni2, ni1)  += -1.5*value/deltaT;
+      Gm(ni2, ni1)  += -value/(2.0*deltaT/3.0);
     if (n2 != 0)
-      Gm(ni2, ni2)  +=  1.5*value/deltaT;
+      Gm(ni2, ni2)  +=  value/(2.0*deltaT/3.0);
   }
 
 }
