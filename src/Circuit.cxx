@@ -162,6 +162,118 @@ void Circuit::addDCVoltageSource(const std::string &name, const std::string &nod
   addElement(e);
 }
 
+void Circuit::addSinVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double dc, double amplitude, double freq, double delay, double atenuation, double angle, double nCycles) {
+  unsigned int node1_itr = findNode(nodeName1);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeName1;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeName2);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeName2;
+    node2_itr = addNode(node2);
+  }
+  unsigned int new_node = addNode(Node(countNodes++, name+"#j"));
+  std::shared_ptr<Element> e;
+  e.reset(new SinVoltageSource(dc, amplitude, freq, delay, atenuation, angle, nCycles));
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  dynamic_cast<SinVoltageSource *>(e.get())->extraNode = new_node;
+  addElement(e);
+}
+
+void Circuit::addPulseVoltageSource(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double dc, double amplitude1, double amplitude2, double delay, double tRise, double tFall, double tOn, double period, double nCycles) {
+  unsigned int node1_itr = findNode(nodeName1);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeName1;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeName2);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeName2;
+    node2_itr = addNode(node2);
+  }
+  unsigned int new_node = addNode(Node(countNodes++, name+"#j"));
+  std::shared_ptr<Element> e;
+  e.reset(new PulseVoltageSource(amplitude1, amplitude2, delay, tRise, tFall, tOn, period, nCycles));
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  dynamic_cast<SinVoltageSource *>(e.get())->extraNode = new_node;
+  addElement(e);
+}
+
+void Circuit::addDiode(const std::string &name, const std::string &nodeName1, const std::string &nodeName2, double Is, double Vt) {
+  unsigned int node1_itr = findNode(nodeName1);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeName1;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeName2);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeName2;
+    node2_itr = addNode(node2);
+  }
+  if (Is < 0) Is = DIODE_STD_IS;
+  if (Vt < 0) Vt = DIODE_STD_VT;
+  std::shared_ptr<Element> e;
+  e.reset(new Diode(Is, Vt));
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  addElement(e);
+}
+
+void Circuit::addTransistor(const std::string &name, const std::string &nodeNameB, const std::string &nodeNameC, const std::string &nodeNameE, const std::string &type, double alpha, double alphaRev, double IsBE, double VtBE, double IsBC, double VtBC) {
+  unsigned int node1_itr = findNode(nodeNameB);
+  if (node1_itr == node.size()) { // this node does not yet exist: add it
+    Node node1;
+    node1.id = countNodes++;
+    node1.name = nodeNameB;
+    node1_itr = addNode(node1);
+  }
+  unsigned int node2_itr = findNode(nodeNameC);
+  if (node2_itr == node.size()) { // this node does not yet exist: add it
+    Node node2;
+    node2.id = countNodes++;
+    node2.name = nodeNameC;
+    node2_itr = addNode(node2);
+  }
+  unsigned int emissor_node = findNode(nodeNameE);
+  if (emissor_node == node.size()) { // add it if it does not exist
+    Node enode(countNodes++, nodeNameE);
+    emissor_node = addNode(enode);
+  }
+  TransistorType t = npn;
+  if (type == "pnp" || type == "PNP") t = pnp;
+  if (alpha < 0) alpha = TRANSISTOR_STD_ALPHA;
+  if (alphaRev < 0) alphaRev = TRANSISTOR_STD_ALPHA_REV;
+  if (IsBE < 0) IsBE = DIODE_STD_IS;
+  if (VtBE < 0) VtBE = DIODE_STD_VT;
+  if (IsBC < 0) IsBC = DIODE_STD_IS;
+  if (VtBC < 0) VtBC = DIODE_STD_VT;
+  std::shared_ptr<Element> e;
+  e.reset(new Transistor(t, alpha, alphaRev, IsBE, VtBE, IsBC, VtBC));
+  dynamic_cast<Transistor *>(e.get())->emissorNode = emissor_node;
+  e->n1 = node1_itr;
+  e->n2 = node2_itr;
+  e->name = name;
+  addElement(e);
+}
+
 void Circuit::setSimulationParameters(double _tFinal, double _dtSave, const std::string &_method, unsigned int _intStep) {
   tFinal = _tFinal;
   dtSave = _dtSave;
