@@ -27,8 +27,8 @@ def main():
   # Define the circuit below
   # node "0" is ground
   # 5 V pulse source
-  #c.addPulseVoltageSource("V1", "2", "0", 0, 5, 1, 0, 0, 1, 2, 4)
-  c.addDCVoltageSource("V1", "2", "0", 5)
+  c.addPulseVoltageSource("V1", "2", "0", 0, 5, 1, 0, 0, 1, 2, 4)
+  #c.addDCVoltageSource("V1", "2", "0", 5)
   # add diode with default Is and Vt
   c.addDiode("D1", "1", "0", -1, -1)
   # 1 Ohm resistor
@@ -58,8 +58,8 @@ def main():
   plt.plot(t, n2, 'g-', linewidth=2, label = "Voltage in node 2")
   plt.xlabel("Time [s]")
   plt.ylabel("Voltage [V]")
-  plt.xlim([0, 10])
-  plt.ylim([0, 6])
+  plt.xlim([0, 20])
+  plt.ylim([-6, 6])
   plt.grid()
   plt.legend(loc = 'best')
   plt.show()

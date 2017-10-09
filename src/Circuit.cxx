@@ -208,7 +208,7 @@ void Circuit::addPulseVoltageSource(const std::string &name, const std::string &
   e->n1 = node1_itr;
   e->n2 = node2_itr;
   e->name = name;
-  dynamic_cast<SinVoltageSource *>(e.get())->extraNode = new_node;
+  dynamic_cast<PulseVoltageSource *>(e.get())->extraNode = new_node;
   addElement(e);
 }
 
