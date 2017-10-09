@@ -1,0 +1,15 @@
+6
+* Da sistema singular no fim do ciclo sem os caps.
+R0102 1 2 10
+C0300 3 0 1E-12
+C0403 4 3 1E-12
+C0504 5 4 1E-12
+C0605 6 5 1E-12
+C0106 1 6 1E-12
+D0300 3 0 
+D0403 4 3 
+D0504 5 4 
+D0605 6 5 
+D0106 1 6 
+V0200 2 0 SIN(0 10 1000 0 0 0 10)
+.TRAN 20E-3 20E-6 BE 1
