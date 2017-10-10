@@ -52,6 +52,18 @@ def main():
   n2 = c.getNodeVoltages("2");
 
   import numpy as np
+
+  Ts = t[1] - t[0]
+  print "Sampling freq.: ", 1/Ts
+  k = np.arange(len(t))
+  freq = k/(len(t)*Ts)
+
+  freq = freq[0:len(freq)/2]
+  fn1 = np.fft.fft(n1)
+  fn1 = fn1[0:len(freq)]
+  fn2 = np.fft.fft(n2)
+  fn2 = fn2[0:len(freq)]
+
   import matplotlib.pyplot as plt
   f = plt.figure()
   plt.plot(t, n1, 'b-', linewidth=2, label = "Voltage in node 1")
@@ -62,6 +74,23 @@ def main():
   plt.ylim([-6, 6])
   plt.grid()
   plt.legend(loc = 'best')
+  plt.show()
+
+  import numpy as np
+  import matplotlib.pyplot as plt
+  f, axarr = plt.subplots(2, sharex=True)
+  axarr[0].plot(freq, np.absolute(fn1), 'b-', linewidth=2, label = "Node 1")
+  axarr[0].plot(freq, np.absolute(fn2), 'g-', linewidth=2, label = "Node 2")
+  axarr[0].set_ylabel("|FFT|")
+  axarr[0].set_xlabel("")
+  axarr[0].grid()
+  axarr[0].legend(loc = 'best')
+  axarr[1].plot(freq, np.angle(fn1), 'b-', linewidth=2, label = "Node 1")
+  axarr[1].plot(freq, np.angle(fn2), 'g-', linewidth=2, label = "Node 2")
+  axarr[1].set_ylabel("Angle(FFT)")
+  axarr[1].set_xlabel("Frequency (Hz)")
+  axarr[1].grid()
+  axarr[1].legend(loc = 'best')
   plt.show()
 
 if __name__ == '__main__':
