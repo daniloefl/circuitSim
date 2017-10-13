@@ -4,6 +4,8 @@ This project simulates an electronic circuit by solving the system's equations.
 It can use the backward Euler or the GEAR 2nd order methods for integration.
 It implements non-linear elements using the Newton-Raphson approximation.
 
+It has a Web interface, which requires Django, a Python interface and a text-mode standalone interface.
+
 The linear elements it implements are:
   * resistor;
   * capacitor;
@@ -32,7 +34,36 @@ There are two ways of performing the simulation. One can use Python to define th
 results of the simulation for plotting, ore one can use a standalone executable to read a net list with the circuit definition
 and then get the result as a text file with the voltages in each node at each time point.
 
+# Web interface
+
+A Web interface is available, on which Django is used on the server-side and JavaScript is used
+on the client. The server-side component communicates with the Python interface to perform the simulation.
+
+To install the Web interface, one must have Python, the Boost Python libraries and Django installed.
+First compile the Python interface. This will also copy the library `circuitPy.so` produced in the lib directory to
+the static area of the web interface (`web/circuitSimSite/circuitSim/static/circuitSim`):
+
+```
+cmake .
+make circuitPy
+```
+
+Then go to the web directory and run the Django test server:
+
+```
+cd web/circuitSimSite
+python manage.py runserver
+```
+
 # Python interface
+
+The Python interface requires Boost with the BoostPython libraries.
+To compile only the Python interface:
+
+```
+cmake .
+make circuitPy
+```
 
 The Python interface can be easily accessed if the lib directory is added in the PYTHONPATH.
 One can load the library as follows:
