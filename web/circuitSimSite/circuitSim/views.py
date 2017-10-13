@@ -3,11 +3,13 @@ from django.http import HttpResponse
 from django.template import loader
 from django.http import JsonResponse
 
+from django.templatetags.static import static
+
 # add the library to the Python PATH
 import sys
 import os
 from django.conf import settings
-sys.path.append(settings.STATIC_URL)
+sys.path.append(static(''))
 
 # Import the library
 import circuitPy
