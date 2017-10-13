@@ -304,7 +304,7 @@
     img.setAttribute("id", "result_img");
     img.setAttribute("src", "");
     c.appendChild(img);
-    // run! (AJAX) TODO
+    // run! (AJAX)
     var csrftoken = getCookie('csrftoken');
     console.log(csrftoken);
     $.ajaxSetup({
@@ -323,7 +323,7 @@
         },
         dataType: 'json',
         success: function (rawImageData) {
-          $("#result_img").attr("src", "data:image/gif;base64," + rawImageData.img);
+          $("#result_img").attr("src", "data:image/png;base64," + rawImageData.img);
         }
       });
     // show results
