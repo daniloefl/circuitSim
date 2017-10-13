@@ -1,6 +1,7 @@
 
   window.Rcount = 0;
   window.Vcount = 0;
+  window.Ccount = 0;
   window.connectionCount = 0;
 
   window.addConnectionMode = false;
@@ -33,6 +34,7 @@
   function csrfSafeMethod(method) {
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
   }
+
 
   function makeResistorGroup (name, left, top, horizontal, scale = 2) {
     if (horizontal) {
@@ -142,6 +144,180 @@
     o = canvas.getActiveObject();
     o.rotate();
     canvas.requestRenderAll();
+  }
+
+  function makeGndGroup (name, left, top, horizontal, scale = 2) {
+    if (horizontal) {
+      var p1 = new fabric.Line([17, 0, 17, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p2 = new fabric.Line([23, 4, 23, 14], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p3 = new fabric.Line([26, 10, 26, 11], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([0, 10, 17, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var n1 = new fabric.Circle({
+                        radius: 2,
+                        fill: '#aaa',
+                        left: 0-2,
+                        top: 10-2
+                         });
+      n1.name = name+"#N1";
+      var gnd = new fabric.Group([p1, p2, p3, l1, n1,], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    } else {
+      var p1 = new fabric.Line([10, 17, 30, 17], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p2 = new fabric.Line([16, 10, 24, 10], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p3 = new fabric.Line([19, 10, 20, 10], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([20, 17, 20, 30],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var n1 = new fabric.Circle({
+                        radius: 2,
+                        fill: '#aaa',
+                        left: 20-2,
+                        top: 30-2
+                         });
+      n1.name = name+"#N1";
+      var gnd = new fabric.Group([p1, p2, p3, l1, n1], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    }
+    gnd.name = name;
+    gnd.lockRotation = true;
+    gnd.lockScalingX = true;
+    gnd.lockScalingY = true;
+    gnd.rotated = false;
+    return gnd;
+  }
+
+  function makeCapacitorGroup (name, left, top, horizontal, scale = 2) {
+    if (horizontal) {
+      var p1 = new fabric.Line([17, 0, 17, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p2 = new fabric.Line([23, 0, 23, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([0, 10, 17, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([23, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 10,
+                        top: 20
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 2,
+                        fill: '#aaa',
+                        left: 0-2,
+                        top: 10-2
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 2,
+                        fill: '#aaa',
+                        left: 40-2,
+                        top: 10-2
+                        });
+      n2.name = name+"#N2";
+      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    } else {
+      var p1 = new fabric.Line([10, 17, 30, 17], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p2 = new fabric.Line([10, 10, 30, 10], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([20, 17, 20, 30],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([20, -3, 20, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 35,
+                        top: 10
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 2,
+                        fill: '#aaa',
+                        left: 20-2,
+                        top: 30-2
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 2,
+                        fill: '#aaa',
+                        left: 20-2,
+                        top: -3-2
+                        });
+      n2.name = name+"#N2";
+      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    }
+    source.name = name;
+    source.lockRotation = true;
+    source.lockScalingX = true;
+    source.lockScalingY = true;
+    source.rotated = false;
+    return source;
   }
 
   function makeDCVGroup (name, left, top, horizontal, scale = 2) {
@@ -256,6 +432,34 @@
     canvas.add(theNew);
   };
 
+  function rotateCapacitor() {
+    canvas.remove(this);
+    var name = this.name;
+    if (this.rotated) {
+      theNew = makeCapacitorGroup(name, this.left, this.top, true);
+      theNew.rotated = false;
+    } else {
+      theNew = makeCapacitorGroup(name, this.left, this.top, false);
+      theNew.rotated = true;
+    }
+    theNew.rotate = rotateCapacitor;
+    canvas.add(theNew);
+  };
+
+  function rotateGnd() {
+    canvas.remove(this);
+    var name = this.name;
+    if (this.rotated) {
+      theNew = makeGndGroup(name, this.left, this.top, true);
+      theNew.rotated = false;
+    } else {
+      theNew = makeGndGroup(name, this.left, this.top, false);
+      theNew.rotated = true;
+    }
+    theNew.rotate = rotateGnd;
+    canvas.add(theNew);
+  };
+
   function findConnection(node) {
     for (var c in mainJson.connections) {
       if (mainJson.connections[c].from == node) {
@@ -273,7 +477,7 @@
     var lastNodeNumber = -1;
     var nodeId = {};
     for (var e in mainJson.elements) {
-      if (e.includes("R") || e.includes("V")) { // two nodes
+      if (e.includes("R") || e.includes("V") || e.includes("C")) { // two nodes
         var line = e+" ";
         var n1 = findConnection(e+"#N1");
         if (!(n1 in nodeId)) {
@@ -379,6 +583,27 @@
       c.appendChild(label);
       c.appendChild(text);
       c.appendChild(s);
+    } else if (element.name.includes("C")) {
+      var label = document.createElement("p");
+      label.appendChild(document.createTextNode("Value (F)"));
+      var oname = document.createElement("input");
+      oname.setAttribute('type', 'hidden');
+      oname.setAttribute('name', 'objName');
+      oname.setAttribute('id', 'objName');
+      oname.setAttribute('value', element.name);
+      var text = document.createElement("input");
+      text.setAttribute('type', 'text');
+      text.setAttribute('name', 'value');
+      text.setAttribute('id', 'value');
+      text.setAttribute('value', e.value);
+      var s = document.createElement('input');
+      s.setAttribute('type', 'submit');
+      s.setAttribute('value', 'Submit');
+      s.setAttribute('onclick', 'endEdit()');
+      c.appendChild(oname);
+      c.appendChild(label);
+      c.appendChild(text);
+      c.appendChild(s);
     }
     $('#edit_window')[0].appendChild(c);
     $('#edit_window').show();
@@ -403,6 +628,26 @@
     mainJson.elements[name] = {'name': name, 'value': 1.0};
   }
 
+  function addCapacitor() {
+    window.Ccount += 1;
+    var name = "C"+window.Ccount;
+    cap = makeCapacitorGroup(name, 5, 5, true);
+    cap.rotate = rotateCapacitor;
+    console.log("Adding capacitor named "+cap.name);
+    canvas.add(cap);
+    mainJson.elements[name] = {'name': name, 'value': 1.0};
+  }
+
+  function addGnd() {
+    window.Gcount += 1;
+    var name = "GND"+window.GNDcount;
+    gnd = makeGndGroup(name, 5, 5, true);
+    gnd.rotate = rotateGnd;
+    console.log("Adding ground named "+gnd.name);
+    canvas.add(gnd);
+    mainJson.elements[name] = {'name': name};
+  }
+
   function addConnection() {
     window.addConnectionMode = true;
     canvas.selection = false;
@@ -416,7 +661,7 @@
     console.log("Deleting element named "+element.name);
     if (element.name.includes("Conn")) {
       deleteConnection(element);
-    } else if (element.name.includes("R") || element.name.includes("V")) {
+    } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C")) {
       deleteElement(element);
     }
   }
@@ -458,16 +703,25 @@
   var canvas = this.__canvas = new fabric.Canvas('c');
   var DCVBtnCanvas = new fabric.Canvas("DCVBtnCanvas");
   var ResistorBtnCanvas = new fabric.Canvas("ResistorBtnCanvas");
+  var CapacitorBtnCanvas = new fabric.Canvas("CapacitorBtnCanvas");
+  var GndBtnCanvas = new fabric.Canvas("GndBtnCanvas");
   var btn = makeDCVGroup("V", 0, 5, true, 1);
   btn.selectable = false;
   DCVBtnCanvas.add(btn);
   btn = makeResistorGroup("R", 0, 5, true, 1)
   btn.selectable = false;
   ResistorBtnCanvas.add(btn);
-  ResistorBtnCanvas.requestRenderAll();
+  var btn = makeCapacitorGroup("C", 0, 5, true, 1);
+  btn.selectable = false;
+  CapacitorBtnCanvas.add(btn);
+  var btn = makeGndGroup("Gnd", 0, 5, true, 1);
+  btn.selectable = false;
+  GndBtnCanvas.add(btn);
   fabric.Object.prototype.transparentCorners = false;
   $("#addDCVoltageSourceBtn")[0].onclick = addDCVoltageSource;
   $("#addResistorBtn")[0].onclick = addResistor;
+  $("#addCapacitorBtn")[0].onclick = addCapacitor;
+  $("#addGndBtn")[0].onclick = addGnd;
   $("#addConnectionBtn")[0].onclick = addConnection;
   $("#deleteBtn")[0].onclick = deleteObj;
   $("#rotateBtn")[0].onclick = rotateElement;
