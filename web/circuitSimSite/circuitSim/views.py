@@ -7,7 +7,7 @@ from django.http import JsonResponse
 import sys
 import os
 from django.conf import settings
-sys.path.append(os.path.join(settings.STATIC_URL, 'circuitPy.so'))
+sys.path.append(settings.STATIC_URL)
 
 # Import the library
 import circuitPy
