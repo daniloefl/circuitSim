@@ -1,0 +1,41 @@
+
+.element {
+}
+
+.resistor {
+}
+
+#drag-me::before {
+  content: "#" attr(id);
+  font-weight: bold;
+}
+
+.canvas {
+}
+
+.container {
+  height: 20em;
+}
+
+#edit_window {
+  z-index: 10;
+  position: fixed;
+  width: 20em;
+  height: 10em;
+  bottom: 10em;
+  right: 10em;
+  border: 2px #00a solid;
+  border-radius: 2px;
+
+}
+#results_window {
+  z-index: 10;
+  position: fixed;
+  width: 40em;
+  height: 20em;
+  bottom: 5em;
+  right: 10em;
+  border: 2px #00a solid;
+  border-radius: 2px;
+  background-color: #aaa;
+}
