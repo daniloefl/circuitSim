@@ -131,7 +131,7 @@
   function addResistor() {
     window.Rcount += 1;
     var name = "R"+window.Rcount;
-    resistor = makeResistorGroup(name, 150, 150, true);
+    resistor = makeResistorGroup(name, 5, 5, true);
     resistor.rotate = rotateResistor;
     console.log("Adding resistor named "+resistor.name);
     canvas.add(resistor);
@@ -396,7 +396,7 @@
   function addDCVoltageSource() {
     window.Vcount += 1;
     var name = "V"+window.Vcount;
-    source = makeDCVGroup(name, 150, 150, true);
+    source = makeDCVGroup(name, 5, 5, true);
     source.rotate = rotateDCV;
     console.log("Adding source named "+source.name);
     canvas.add(source);
@@ -456,6 +456,15 @@
   }
 
   var canvas = this.__canvas = new fabric.Canvas('c');
+  var DCVBtnCanvas = new fabric.Canvas("DCVBtnCanvas");
+  var ResistorBtnCanvas = new fabric.Canvas("ResistorBtnCanvas");
+  var btn = makeDCVGroup("V", 0, 5, true);
+  btn.selectable = false;
+  DCVBtnCanvas.add(btn);
+  btn = makeResistorGroup("R", 0, 5, true)
+  btn.selectable = false;
+  ResistorBtnCanvas.add(btn);
+  ResistorBtnCanvas.requestRenderAll();
   fabric.Object.prototype.transparentCorners = false;
   $("#addDCVoltageSourceBtn")[0].onclick = addDCVoltageSource;
   $("#addResistorBtn")[0].onclick = addResistor;
