@@ -5,6 +5,7 @@ from django.http import JsonResponse
 
 # add the library to the Python PATH
 import sys
+import os
 from django.conf import settings
 sys.path.append(os.path.join(settings.STATIC_URL, 'circuitPy.so'))
 
