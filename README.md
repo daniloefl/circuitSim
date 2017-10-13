@@ -48,12 +48,15 @@ cmake .
 make circuitPy
 ```
 
-Then go to the web directory and run the Django test server:
+Then go to the web directory, copy the static libraries to the correct position using collectstatic and run the Django test server:
 
 ```
 cd web/circuitSimSite
+python manage.py collectstatic
 python manage.py runserver
 ```
+
+You can now access the Web interface in `localhost:8000`, in your browser.
 
 # Python interface
 

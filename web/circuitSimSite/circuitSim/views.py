@@ -5,7 +5,8 @@ from django.http import JsonResponse
 
 # add the library to the Python PATH
 import sys
-sys.path.append('/home/daniloefl/workspace/circuitSim/lib')
+from django.conf import settings
+sys.path.append(os.path.join(settings.STATIC_URL, 'circuitPy.so'))
 
 # Import the library
 import circuitPy
