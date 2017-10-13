@@ -9,7 +9,7 @@ from django.templatetags.static import static
 import sys
 import os
 from django.conf import settings
-sys.path.append(static(''))
+sys.path.append(os.path.join(settings.STATIC_ROOT, 'circuitSim'));
 
 # Import the library
 import circuitPy
