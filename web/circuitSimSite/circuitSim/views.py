@@ -15,14 +15,9 @@ sys.path.append(os.path.join(settings.STATIC_ROOT, 'circuitSim'));
 import circuitPy
 
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-
-import StringIO
-import urllib, base64
+import bokeh.plotting
+import bokeh.embed
 
 def index(request):
     template = loader.get_template('circuitSim/index.html')
@@ -113,74 +108,87 @@ def setupCircuit(circ, e, conn):
 
 def run(request):
   # Create the main object
-  
-  if request.method == "POST":
-    import json
-    data = json.loads(request.POST.get('data'))
-    e = data['elements']
-    conn = data['connections']
-  else:
-    e = request.GET["elements"];
-    conn = request.GET["connections"];
-
-  circ = circuitPy.Circuit()
-  nodeName, nl = setupCircuit(circ, e, conn)
-  nodeList = nodeName.keys()
-
-  # Set simulation parameters
-  tFinal = 1         # duration of simulation
-  dt = 1e-2           # time step
-  method = "BE"       # method can be BE or GEAR
-  internalStep = 1    # number of steps before saving result
-  circ.setSimulationParameters(tFinal, dt, method, internalStep)
-
-  # run simulation
-  circ.simulate()
-
-  # get result in each time
-  t = circ.getTimeList()
-  n = {}
-  maxVal = -9999
-  minVal = 9999
-  for node in nodeList:
-    if node == "0":
-      continue
-    n[node] = circ.getNodeVoltages(node);
-    if np.max(n[node]) > maxVal:
-      maxVal = np.max(n[node])
-    if np.min(n[node]) < minVal:
-      minVal = np.min(n[node])
-  maxVal += 0.2*maxVal
-  
-  f=plt.figure(figsize=(6,3))
-  count = 0
-  sty = ['b-', 'r-', 'g-', 'c-']
-  for node in n:
-    if node == "0":
-      continue
-    plt.plot(t, n[node], sty[count], linewidth=2, label = "Voltage in node "+node)
-    count += 1
-  plt.xlabel("Time [s]")
-  plt.ylabel("Voltage [V]")
-  plt.xlim([0, tFinal])
-  plt.ylim([minVal, maxVal])
-  plt.grid()
-  plt.legend(loc = 'best')
-  imgdata = StringIO.StringIO()
-  f.savefig(imgdata)
-  plt.close(f)
-  imgdata.seek(0)  # rewind the data
-
+  extra_text = ""
   node_desc = ""
-  for node in n:
-    if node == "0":
-      continue
-    node_desc += "Node %s connected to: " % str(node)
-    for i in range(0, len(nodeName[node])):
-      node_desc += "%s" % str(nodeName[node][i])
-      if i != len(nodeName[node])-1:
-        node_desc += ","
-    node_desc += "<br>"
-  extra_text = "Simulation successful."
-  data = {'img': urllib.quote(base64.b64encode(imgdata.buf)), 'node_description': node_desc, 'extra_text': extra_text, 'netlist': nl};
+  final_img = '''
+<link rel="stylesheet" href="%s" type="text/css">
+<script type="text/javascript" src="%s"></script>
+''' % (static("circuitSim/bokeh-0.12.4.min.css"), static("circuitSim/bokeh-0.12.4.min.js"))
+  
+  e = {}
+  conn = {}
+  sim = {'tFinal': float(10), 'dt': float(1e-2), 'method': 'BE', 'internalStep': int(1)}
+  try:
+    if request.method == "POST":
+      import json
+      data = json.loads(request.POST.get('data'))
+      e = data['elements']
+      conn = data['connections']
+      sim = data['simulation']
+    else:
+      raise "This should only be used with the POST method!"
+
+    circ = circuitPy.Circuit()
+    nodeName, nl = setupCircuit(circ, e, conn)
+    nodeList = nodeName.keys()
+
+    # Set simulation parameters
+    tFinal = float(sim['tFinal'])              # duration of simulation
+    dt = float(sim['dt'])                      # time step
+    method = str(sim['method'])                # method can be BE or GEAR
+    internalStep = int(sim['internalStep'])    # number of steps before saving result
+    circ.setSimulationParameters(tFinal, dt, method, internalStep)
+
+    # run simulation
+    circ.simulate()
+
+    # get result in each time
+    t = circ.getTimeList()
+    n = {}
+    maxVal = -9999
+    minVal = 9999
+    for node in nodeList:
+      if node == "0":
+        continue
+      n[node] = circ.getNodeVoltages(node);
+      if np.max(n[node]) > maxVal:
+        maxVal = np.max(n[node])
+      if np.min(n[node]) < minVal:
+        minVal = np.min(n[node])
+    maxVal += 0.2*maxVal
+  
+    f = bokeh.plotting.figure()
+    count = 0
+    lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
+    for node in n:
+      if node == "0":
+        continue
+      l = 'black'
+      l = lc[count % len(lc)]
+      f.line(t, n[node], line_color = l, line_width = 2, legend = "Voltage in node "+node)
+      count += 1
+    f.xaxis.axis_label = "Time [s]"
+    f.yaxis.axis_label = "Voltage [V]"
+    f.legend.location = "top_left"
+    f.sizing_mode = "scale_width"
+    script = ""
+    div = ""
+    script, div = bokeh.embed.components(f)
+    final_img += script
+    final_img += div
+
+    node_desc = ""
+    for node in n:
+      if node == "0":
+        continue
+      node_desc += "Node %s connected to: " % str(node)
+      for i in range(0, len(nodeName[node])):
+        node_desc += "%s" % str(nodeName[node][i])
+        if i != len(nodeName[node])-1:
+          node_desc += ","
+      node_desc += "<br>"
+    extra_text = "Simulation successful."
+  except:
+    extra_text = "Simulation failed!"
+  data = {'img': final_img, 'node_description': node_desc, 'extra_text': extra_text, 'netlist': nl};
   return JsonResponse(data);

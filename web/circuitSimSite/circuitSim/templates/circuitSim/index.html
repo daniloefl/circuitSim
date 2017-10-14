@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--<link rel="author" href="/humans.txt"/>-->
     <!--<link rel="shortcut icon" href="" />-->
     <title>Circuit Simulation</title>
@@ -20,9 +20,47 @@
     <link rel="stylesheet" href="{% static 'circuitSim/style.css' %}">
   </head>
   <body>
-    <div class="container" style="height: 100%;">
+    <nav class="navbar navbar-expand-md navbar-light bg-faded navbar-toggleable-md">
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#containerNavbar" aria-controls="containerNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="#">CircuitSim</a>
+
+      <div class="collapse navbar-collapse" id="containerNavbar">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Insert
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="#" id="addConnectionLink">Wire</a>
+              <a class="dropdown-item" href="#" id="addDCVoltageSourceLink">DCV source</a>
+              <a class="dropdown-item" href="#" id="addResistorLink">Resistor</a>
+              <a class="dropdown-item" href="#" id="addCapacitorLink">Capacitor</a>
+              <a class="dropdown-item" href="#" id="addGndLink">Ground</a>
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Edit
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="#" id="editLink" data-toggle="modal" data-target="#edit_window">Edit element</a>
+              <a class="dropdown-item" href="#" id="deleteLink">Delete</a>
+              <a class="dropdown-item" href="#" id="rotateLink">Rotate</a>
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Simulation</a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="#" id="simulOptLink" data-toggle="modal" data-target="#simulopt_window">Simulation options</a>
+              <a class="dropdown-item" href="#" id="runLink" data-toggle="modal" data-target="#results_window">Run</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container">
     <div class="row table-row">
-      <div class="col-md-2 col-ms-2">
+      <div class="d-none d-md-block col-md-2">
           <br>
           <div class="card card-default">
             <div class="card-header">Add</div>
@@ -44,8 +82,8 @@
             </div>
           </div>
       </div>
-      <div class="col-md-10 col-ms-10" style="min-height: 100%;">
-        <canvas id="c" width="800" height="600" style="min-width: 100%; min-height: 100%;"></canvas>
+      <div class="col-md-10 col-ms-12">
+        <canvas id="c" width="800" height="600"></canvas>
       </div>
     </div>
     <div id="results_window" class="modal fade" role="dialog">
@@ -74,6 +112,42 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal" id="edit_close" onclick="endEdit()">Save and close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="simulopt_window" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Simulation options</h4>
+          </div>
+          <div class="modal-body" id="simulopt_content">
+            <div class="form-group row">
+              <label for="tFinal" class="col-2 col-form-label">Final simulation time</label>
+              <div class="col-10">
+                <input class="form-control" type="number" value="1" id="tFinal">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="dt" class="col-2 col-form-label">Time step</label>
+              <div class="col-10">
+                <input class="form-control" type="number" value="0.001" id="dt">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="method" class="col-2 col-form-label">Simulation method</label>
+              <div class="col-10">
+                <select class="custom-select" id="method">
+                  <option value="BE" selected>Backward Euler</option>
+                  <option value="GEAR">GEAR</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="simulopt_close" onclick="endSimulOpt()">Save and close</button>
           </div>
         </div>
       </div>

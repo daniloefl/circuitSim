@@ -14,7 +14,11 @@
 
   window.line = {};
 
-  var mainJson = {'elements' : {}, 'connections': {}};
+  var mainJson = {'elements' : {}, 'connections': {}, 'simulation': {}};
+  mainJson['simulation']['tFinal'] = 1;
+  mainJson['simulation']['dt'] = 0.001;
+  mainJson['simulation']['method'] = "BE";
+  mainJson['simulation']['internalStep'] = 1;
 
   function getCookie(name) {
     var cookieValue = null;
@@ -469,11 +473,12 @@
     img_div.setAttribute("class", "row");
     var img_div1 = document.createElement("div");
     img_div1.setAttribute("class", "col-ms-12 col-md-12");
+    img_div1.setAttribute("id", "result_img");
     img_div.appendChild(img_div1)
-    var img = document.createElement("img");
-    img.setAttribute("id", "result_img");
-    img.setAttribute("src", "");
-    img_div1.appendChild(img)
+    //var img = document.createElement("img");
+    //img.setAttribute("id", "result_img");
+    //img.setAttribute("src", "");
+    //img_div1.appendChild(img)
     c.appendChild(img_div);
 
     var text_div = document.createElement("div");
@@ -505,7 +510,8 @@
         data: { data: JSON.stringify(mainJson)},
         dataType: 'json',
         success: function (rawImageData) {
-          $("#result_img").attr("src", "data:image/png;base64," + rawImageData.img);
+          $("#result_img").html(rawImageData.img);
+          //attr("src", "data:image/png;base64," + rawImageData.img);
           $("#text1").html(rawImageData.node_description);
           $("#text2")[0].appendChild(document.createTextNode(rawImageData.extra_text));
         }
@@ -520,65 +526,34 @@
     e = mainJson['elements'][element.name];
     var c = document.createElement("div");
     c.setAttribute("id", "content");
-    if (element.name.includes("R")) {
-      var label = document.createElement("p");
-      label.appendChild(document.createTextNode("Value (Ohms)"));
-      var oname = document.createElement("input");
-      oname.setAttribute('type', 'hidden');
-      oname.setAttribute('name', 'objName');
-      oname.setAttribute('id', 'objName');
-      oname.setAttribute('value', element.name);
-      var text = document.createElement("input");
-      text.setAttribute('type', 'text');
-      text.setAttribute('name', 'value');
-      text.setAttribute('id', 'value');
-      text.setAttribute('value', e.value);
-      $("#edit_close").attr("onclick", "endEdit()");
-      c.appendChild(oname);
-      c.appendChild(label);
-      c.appendChild(text);
-    } else if (element.name.includes("V")) {
-      var label = document.createElement("p");
-      label.appendChild(document.createTextNode("Value (V)"));
-      var oname = document.createElement("input");
-      oname.setAttribute('type', 'hidden');
-      oname.setAttribute('name', 'objName');
-      oname.setAttribute('id', 'objName');
-      oname.setAttribute('value', element.name);
-      var text = document.createElement("input");
-      text.setAttribute('type', 'text');
-      text.setAttribute('name', 'value');
-      text.setAttribute('id', 'value');
-      text.setAttribute('value', e.value);
-      $("#edit_close").attr("onclick", "endEdit()");
-      c.appendChild(oname);
-      c.appendChild(label);
-      c.appendChild(text);
-    } else if (element.name.includes("C")) {
-      var label = document.createElement("p");
-      label.appendChild(document.createTextNode("Value (F)"));
-      var oname = document.createElement("input");
-      oname.setAttribute('type', 'hidden');
-      oname.setAttribute('name', 'objName');
-      oname.setAttribute('id', 'objName');
-      oname.setAttribute('value', element.name);
-      var text = document.createElement("input");
-      text.setAttribute('type', 'text');
-      text.setAttribute('name', 'value');
-      text.setAttribute('id', 'value');
-      text.setAttribute('value', e.value);
-      $("#edit_close").attr("onclick", "endEdit()");
-      c.appendChild(oname);
-      c.appendChild(label);
-      c.appendChild(text);
-    }
     $('#edit_content')[0].appendChild(c);
+    if (element.name.includes("R")) {
+      var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Value (Ohms)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value+'" id="value"></div></div>'
+      $('#edit_content').html(toAdd);
+    } else if (element.name.includes("V")) {
+      var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Value (V)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value+'" id="value"></div></div>'
+      $('#edit_content').html(toAdd);
+    } else if (element.name.includes("C")) {
+      var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Value (F)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value+'" id="value"></div></div>'
+      $('#edit_content').html(toAdd);
+    }
   }
   function endEdit() {
-    var objName = $('#edit_content > #content > #objName')[0].value;
-    var value = $('#edit_content > #content > #value')[0].value;
+    var objName = $('#edit_content #content #objName')[0].value;
+    var value = $('#edit_content #content #value')[0].value;
     mainJson['elements'][objName].value = value;
     $('#edit_content').html('');
+  }
+
+  function endSimulOpt() {
+    var tFinal = $('#simulopt_content #tFinal')[0].value;
+    var dt = $('#simulopt_content #dt')[0].value;
+    var method = $('#simulopt_content #method')[0].value;
+    var internalStep = $('#simulopt_content #internalStep')[0].value;
+    mainJson['simulation']['tFinal'] = tFinal;
+    mainJson['simulation']['dt'] = dt;
+    mainJson['simulation']['method'] = method;
+    mainJson['simulation']['internalStep'] = internalStep;
   }
 
   function addDCVoltageSource() {
@@ -682,14 +657,23 @@
   GndBtnCanvas.add(btn);
   fabric.Object.prototype.transparentCorners = false;
   $("#addDCVoltageSourceBtn")[0].onclick = addDCVoltageSource;
+  $("#addDCVoltageSourceLink")[0].onclick = addDCVoltageSource;
   $("#addResistorBtn")[0].onclick = addResistor;
+  $("#addResistorLink")[0].onclick = addResistor;
   $("#addCapacitorBtn")[0].onclick = addCapacitor;
+  $("#addCapacitorLink")[0].onclick = addCapacitor;
   $("#addGndBtn")[0].onclick = addGnd;
+  $("#addGndLink")[0].onclick = addGnd;
   $("#addConnectionBtn")[0].onclick = addConnection;
+  $("#addConnectionLink")[0].onclick = addConnection;
   $("#deleteBtn")[0].onclick = deleteObj;
+  $("#deleteLink")[0].onclick = deleteObj;
   $("#rotateBtn")[0].onclick = rotateElement;
+  $("#rotateLink")[0].onclick = rotateElement;
   $("#editBtn")[0].onclick = edit;
+  $("#editLink")[0].onclick = edit;
   $("#runBtn")[0].onclick = run;
+  $("#runLink")[0].onclick = run;
   
   $(document).keyup(function(e) {
     if (e.keyCode == 27) { // escape key maps to keycode `27`
