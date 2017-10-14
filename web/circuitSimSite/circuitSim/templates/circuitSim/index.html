@@ -17,33 +17,34 @@
 
     <script src="{% static 'circuitSim/fabric.min.js' %}"></script>
    
-
-    <!--<link rel="stylesheet" href="{% static 'circuitSim/style.css' %}">
-    -->
+    <link rel="stylesheet" href="{% static 'circuitSim/style.css' %}">
   </head>
   <body>
     <div class="container" style="height: 100%;">
     <div class="row table-row">
       <div class="col-md-2 col-ms-2">
-        <center>
-        Components:<br>
-
-          <button id="addConnectionBtn" class="btn btn-info">Add wire</button><br>
-          <button id="addDCVoltageSourceBtn" class="btn btn-info"><canvas id="DCVBtnCanvas" width="50" height="40"></canvas></button><br>
-          <button id="addResistorBtn" class="btn btn-info"><canvas id="ResistorBtnCanvas" width="50" height="40"></canvas></button><br>
-          <button id="addCapacitorBtn" class="btn btn-info"><canvas id="CapacitorBtnCanvas" width="50" height="40"></canvas></button><br>
-          <button id="addGndBtn" class="btn btn-info"><canvas id="GndBtnCanvas" width="50" height="40"></canvas></button><br>
-
-        Actions:<br>
-        <button id="deleteBtn" class="btn btn-info">Delete</button><br><br>
-        <button id="rotateBtn" class="btn btn-info">Rotate</button><br><br>
-        <button id="editBtn" class="btn btn-info" data-toggle="modal" data-target="#edit_window">Edit</button><br><br>
-
-        Simulation:<br>
-        <button id="runBtn" class="btn btn-info" data-toggle="modal" data-target="#results_window">Run</button><br><br>
-        </center>
+          <br>
+          <div class="card card-default">
+            <div class="card-header">Add</div>
+            <div class="card-body">
+              <button id="addConnectionBtn" class="btn btn-info"><div class="btn-text">Wire</div></button><br>
+              <button id="addDCVoltageSourceBtn" class="btn btn-info"><canvas id="DCVBtnCanvas" width="50" height="40"></canvas></button><br>
+              <button id="addResistorBtn" class="btn btn-info"><canvas id="ResistorBtnCanvas" width="50" height="40"></canvas></button><br>
+              <button id="addCapacitorBtn" class="btn btn-info"><canvas id="CapacitorBtnCanvas" width="50" height="40"></canvas></button><br>
+              <button id="addGndBtn" class="btn btn-info"><canvas id="GndBtnCanvas" width="50" height="40"></canvas></button><br>
+            </div>
+          </div><br>
+          <div class="card card-default">
+            <div class="card-header">Actions</div>
+            <div class="card-body">
+              <button id="deleteBtn" class="btn btn-info"><div class="btn-text">Delete</div></button><br>
+              <button id="rotateBtn" class="btn btn-info"><div class="btn-text">Rotate</div></button><br>
+              <button id="editBtn" class="btn btn-info" data-toggle="modal" data-target="#edit_window"><div class="btn-text">Edit</div></button><br>
+              <button id="runBtn" class="btn btn-info" data-toggle="modal" data-target="#results_window"><div class="btn-text">Run</div></button><br>
+            </div>
+          </div>
       </div>
-      <div class="col-md-9 col-ms-9" style="min-height: 100%;">
+      <div class="col-md-10 col-ms-10" style="min-height: 100%;">
         <canvas id="c" width="800" height="600" style="min-width: 100%; min-height: 100%;"></canvas>
       </div>
     </div>
@@ -63,7 +64,7 @@
       </div>
     </div>
     <div id="edit_window" class="modal fade" role="dialog">
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal">&times;</button>
