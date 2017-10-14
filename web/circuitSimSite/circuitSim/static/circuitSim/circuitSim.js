@@ -670,7 +670,7 @@
   $("#editLink")[0].onclick = edit;
   
   function save() {
-    var canvas_json = canvas.toJSON();
+    var canvas_json = canvas.toJSON(['name']);
     full_json = {};
     full_json.mainJson = mainJson;
     full_json.canvasJson = canvas_json;
