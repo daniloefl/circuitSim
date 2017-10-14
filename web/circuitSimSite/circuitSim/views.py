@@ -157,7 +157,7 @@ def run(request):
         minVal = np.min(n[node])
     maxVal += 0.2*maxVal
   
-    f = bokeh.plotting.figure()
+    f = bokeh.plotting.figure(title="", toolbar_location="above")
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     for node in n:

@@ -29,6 +29,14 @@
       <div class="collapse navbar-collapse" id="containerNavbar">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">File
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="#" id="openLink">Open circuit from local file</a>
+              <a class="dropdown-item" href="#" id="saveLink" data-toggle="modal" data-target="#save_window">Save circuit in a local file</a>
+            </div>
+          </li>
+          <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Insert
             </a>
             <div class="dropdown-menu">
@@ -51,8 +59,7 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Simulation</a>
             <div class="dropdown-menu">
-              <a class="dropdown-item" href="#" id="simulOptLink" data-toggle="modal" data-target="#simulopt_window">Simulation options</a>
-              <a class="dropdown-item" href="#" id="runLink" data-toggle="modal" data-target="#results_window">Run</a>
+              <a class="dropdown-item" href="#" id="simulOptLink" data-toggle="modal" data-target="#simulopt_window">Simulate</a>
             </div>
           </li>
         </ul>
@@ -78,7 +85,7 @@
               <button id="deleteBtn" class="btn btn-info"><div class="btn-text">Delete</div></button><br>
               <button id="rotateBtn" class="btn btn-info"><div class="btn-text">Rotate</div></button><br>
               <button id="editBtn" class="btn btn-info" data-toggle="modal" data-target="#edit_window"><div class="btn-text">Edit</div></button><br>
-              <button id="runBtn" class="btn btn-info" data-toggle="modal" data-target="#results_window"><div class="btn-text">Run</div></button><br>
+              <button id="runBtn" class="btn btn-info" data-toggle="modal" data-target="#simulopt_window"><div class="btn-text">Run</div></button><br>
             </div>
           </div>
       </div>
@@ -101,6 +108,11 @@
         </div>
       </div>
     </div>
+    <script>
+    $("#results_window").draggable({
+       handle: ".modal-header"
+    });
+    </script>
     <div id="edit_window" class="modal fade" role="dialog">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -116,6 +128,11 @@
         </div>
       </div>
     </div>
+    <script>
+    $("#edit_window").draggable({
+       handle: ".modal-header"
+    });
+    </script>
     <div id="simulopt_window" class="modal fade" role="dialog">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -137,6 +154,12 @@
               </div>
             </div>
             <div class="form-group row">
+              <label for="internalStep" class="col-2 col-form-label">Internal step</label>
+              <div class="col-10">
+                <input class="form-control" type="number" value="1" id="internalStep">
+              </div>
+            </div>
+            <div class="form-group row">
               <label for="method" class="col-2 col-form-label">Simulation method</label>
               <div class="col-10">
                 <select class="custom-select" id="method">
@@ -147,12 +170,32 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal" id="simulopt_close" onclick="endSimulOpt()">Save and close</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="simulopt_close" onclick="endSimulOpt(); run(); $('#results_window').modal('show');">Save, close and simulate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="save_window" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Save to file</h4>
+          </div>
+          <div class="modal-body" id="save_content">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="save_close">Close</button>
           </div>
         </div>
       </div>
     </div>
     </div>
+    <script>
+    $("#simulopt_window").draggable({
+       handle: ".modal-header"
+    });
+    </script>
     <script src="{% static 'circuitSim/circuitSim.js' %}"></script>
   </body>
 </html>
