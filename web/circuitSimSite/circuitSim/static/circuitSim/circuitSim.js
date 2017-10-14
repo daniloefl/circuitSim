@@ -91,14 +91,14 @@
       var n1 = new fabric.Circle({
                         radius: 4,
                         fill: '#aaa',
-                        left: -10+4,
+                        left: -15+4,
                         top: 0-4
                         });
       n1.name = name+"#N1";
       var n2 = new fabric.Circle({
                         radius: 4,
                         fill: '#aaa',
-                        left: -10+4,
+                        left: -15+4,
                         top: 32.5-4
                         });
       n2.name = name+"#N2";
@@ -155,11 +155,11 @@
                         stroke: 'black',
                         fill: ''
                         });
-      var p2 = new fabric.Line([23, 4, 23, 14], {
+      var p2 = new fabric.Line([20, 4, 20, 16], {
                         stroke: 'black',
                         fill: ''
                         });
-      var p3 = new fabric.Line([26, 10, 26, 11], {
+      var p3 = new fabric.Line([23, 8, 23, 12], {
                         stroke: 'black',
                         fill: ''
                         });
@@ -183,19 +183,19 @@
         subTargetCheck: true
       });
     } else {
-      var p1 = new fabric.Line([10, 17, 30, 17], {
+      var p1 = new fabric.Line([18, 18, 22, 18], {
                         stroke: 'black',
                         fill: ''
                         });
-      var p2 = new fabric.Line([16, 10, 24, 10], {
+      var p2 = new fabric.Line([14, 14, 26, 14], {
                         stroke: 'black',
                         fill: ''
                         });
-      var p3 = new fabric.Line([19, 10, 20, 10], {
+      var p3 = new fabric.Line([10, 10, 30, 10], {
                         stroke: 'black',
                         fill: ''
                         });
-      var l1 = new fabric.Line([20, 17, 20, 30],
+      var l1 = new fabric.Line([20, 0, 20, 10],
                         {
                         stroke: 'black',
                         fill: ""}
@@ -204,7 +204,7 @@
                         radius: 4,
                         fill: '#aaa',
                         left: 20-4,
-                        top: 30-4
+                        top: 0-4
                          });
       n1.name = name+"#N1";
       var gnd = new fabric.Group([p1, p2, p3, l1, n1], {
