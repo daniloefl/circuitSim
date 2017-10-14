@@ -31,6 +31,16 @@
   padding-bottom: 0.1rem;
 }
 
+#results_content {
+  height: 400px;
+  overflow-y: auto;
+}
+
+#results_modal {
+    overflow-y: initial !important;
+}
+
+
 .canvas {
 }
 

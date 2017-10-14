@@ -475,11 +475,8 @@
     img_div1.setAttribute("class", "col-ms-12 col-md-12");
     img_div1.setAttribute("id", "result_img");
     img_div.appendChild(img_div1)
-    //var img = document.createElement("img");
-    //img.setAttribute("id", "result_img");
-    //img.setAttribute("src", "");
-    //img_div1.appendChild(img)
     c.appendChild(img_div);
+    c.appendChild(document.createElement("br"));
 
     var text_div = document.createElement("div");
     text_div.setAttribute("class", "row");
@@ -511,7 +508,6 @@
         dataType: 'json',
         success: function (rawImageData) {
           $("#result_img").html(rawImageData.img);
-          //attr("src", "data:image/png;base64," + rawImageData.img);
           $("#text1").html(rawImageData.node_description);
           $("#text2")[0].appendChild(document.createTextNode(rawImageData.extra_text));
         }
@@ -704,6 +700,10 @@
       console.log(e);
       var result = JSON.parse(e.target.result);
       mainJson = result.mainJson;
+      $("#simulopt_content #tFinal")[0].value = mainJson.simulation.tFinal;
+      $("#simulopt_content #dt")[0].value = mainJson.simulation.dt;
+      $("#simulopt_content #internalStep")[0].value = mainJson.simulation.internalStep;
+      $("#simulopt_content #method")[0].value = mainJson.simulation.method;
       canvas.loadFromJSON(result.canvasJson, function() {
         canvas.renderAll(); 
       },function(o,object){

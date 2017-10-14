@@ -16,7 +16,7 @@ import circuitPy
 
 import numpy as np
 
-import bokeh.plotting
+import bokeh.plotting.figure
 import bokeh.embed
 
 def index(request):
@@ -157,7 +157,7 @@ def run(request):
         minVal = np.min(n[node])
     maxVal += 0.2*maxVal
   
-    f = bokeh.plotting.figure(title="", toolbar_location="above")
+    f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     for node in n:
