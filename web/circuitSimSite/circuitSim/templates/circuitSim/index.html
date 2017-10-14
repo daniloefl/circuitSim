@@ -32,7 +32,7 @@
             <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">File
             </a>
             <div class="dropdown-menu">
-              <a class="dropdown-item" href="#" id="openLink">Open circuit from local file</a>
+              <a class="dropdown-item" href="#" id="openLink" data-toggle="modal" data-target="#open_window">Open circuit from local file</a>
               <a class="dropdown-item" href="#" id="saveLink" data-toggle="modal" data-target="#save_window">Save circuit in a local file</a>
             </div>
           </li>
@@ -68,26 +68,28 @@
     <div class="container">
     <div class="row table-row">
       <div class="d-none d-md-block col-md-2">
+        <center>
           <br>
           <div class="card card-default">
             <div class="card-header">Add</div>
             <div class="card-body">
-              <button id="addConnectionBtn" class="btn btn-info"><div class="btn-text">Wire</div></button><br>
-              <button id="addDCVoltageSourceBtn" class="btn btn-info"><canvas id="DCVBtnCanvas" width="50" height="40"></canvas></button><br>
-              <button id="addResistorBtn" class="btn btn-info"><canvas id="ResistorBtnCanvas" width="50" height="40"></canvas></button><br>
-              <button id="addCapacitorBtn" class="btn btn-info"><canvas id="CapacitorBtnCanvas" width="50" height="40"></canvas></button><br>
-              <button id="addGndBtn" class="btn btn-info"><canvas id="GndBtnCanvas" width="50" height="40"></canvas></button><br>
+              <button id="addConnectionBtn" class="btn btn-default"><div class="btn-text">Wire</div></button><br>
+              <button id="addDCVoltageSourceBtn" class="btn btn-default"><canvas id="DCVBtnCanvas" width="50" height="40"></canvas></button><br>
+              <button id="addResistorBtn" class="btn btn-default"><canvas id="ResistorBtnCanvas" width="50" height="40"></canvas></button><br>
+              <button id="addCapacitorBtn" class="btn btn-default"><canvas id="CapacitorBtnCanvas" width="50" height="40"></canvas></button><br>
+              <button id="addGndBtn" class="btn btn-default"><canvas id="GndBtnCanvas" width="50" height="40"></canvas></button><br>
             </div>
           </div><br>
           <div class="card card-default">
             <div class="card-header">Actions</div>
             <div class="card-body">
-              <button id="deleteBtn" class="btn btn-info"><div class="btn-text">Delete</div></button><br>
-              <button id="rotateBtn" class="btn btn-info"><div class="btn-text">Rotate</div></button><br>
-              <button id="editBtn" class="btn btn-info" data-toggle="modal" data-target="#edit_window"><div class="btn-text">Edit</div></button><br>
-              <button id="runBtn" class="btn btn-info" data-toggle="modal" data-target="#simulopt_window"><div class="btn-text">Run</div></button><br>
+              <button id="deleteBtn" class="btn btn-default"><div class="btn-text">Delete</div></button><br>
+              <button id="rotateBtn" class="btn btn-default"><div class="btn-text">Rotate</div></button><br>
+              <button id="editBtn" class="btn btn-default" data-toggle="modal" data-target="#edit_window"><div class="btn-text">Edit</div></button><br>
+              <button id="runBtn" class="btn btn-default" data-toggle="modal" data-target="#simulopt_window"><div class="btn-text">Run</div></button><br>
             </div>
           </div>
+        </center>
       </div>
       <div class="col-md-10 col-ms-12">
         <canvas id="c" width="800" height="600"></canvas>
@@ -108,11 +110,6 @@
         </div>
       </div>
     </div>
-    <script>
-    $("#results_window").draggable({
-       handle: ".modal-header"
-    });
-    </script>
     <div id="edit_window" class="modal fade" role="dialog">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -128,11 +125,6 @@
         </div>
       </div>
     </div>
-    <script>
-    $("#edit_window").draggable({
-       handle: ".modal-header"
-    });
-    </script>
     <div id="simulopt_window" class="modal fade" role="dialog">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -190,12 +182,31 @@
         </div>
       </div>
     </div>
+    <div id="open_window" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Open file</h4>
+          </div>
+          <div class="modal-body" id="open_content">
+            <div class="form-group row">
+              <label for="method" class="col-2 col-form-label">File</label>
+              <div class="col-8">
+                <input type="file" id="open_file_input" value="Open">
+              </div>
+              <div class="col-2">
+                <button class="btn btn-default" id="open_file_load">Load</button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="open_close">Close</button>
+          </div>
+        </div>
+      </div>
     </div>
-    <script>
-    $("#simulopt_window").draggable({
-       handle: ".modal-header"
-    });
-    </script>
+    </div>
     <script src="{% static 'circuitSim/circuitSim.js' %}"></script>
   </body>
 </html>

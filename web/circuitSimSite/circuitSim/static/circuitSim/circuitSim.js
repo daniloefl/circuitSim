@@ -672,14 +672,14 @@
   $("#rotateLink")[0].onclick = rotateElement;
   $("#editBtn")[0].onclick = edit;
   $("#editLink")[0].onclick = edit;
-  $('#saveLink')[0].onclick = save;
-  $('#openLink')[0].onclick = open;
   
   function save() {
-    var full_json = canvas.toJSON();
+    var canvas_json = canvas.toJSON();
+    full_json = {};
     full_json.mainJson = mainJson;
-    var canvas_json = JSON.stringify(full_json);
-    var blob = new Blob([canvas_json], {type: "application/json"});
+    full_json.canvasJson = canvas_json;
+    var str_json = JSON.stringify(full_json);
+    var blob = new Blob([str_json], {type: "application/json"});
     var url  = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.setAttribute("class", "btn btn-default");
@@ -688,6 +688,31 @@
     a.textContent = "Download canvas";
     $('#save_content')[0].appendChild(a);
   }
+  $('#saveLink')[0].onclick = save;
+
+
+  function openFile() {
+    var files = $('#open_file_input')[0].files;
+    console.log(files);
+    if (files.length <= 0) {
+      return false;
+    }
+
+    var fr = new FileReader();
+
+    fr.onload = function(e) { 
+      console.log(e);
+      var result = JSON.parse(e.target.result);
+      mainJson = result.mainJson;
+      canvas.loadFromJSON(result.canvasJson, function() {
+        canvas.renderAll(); 
+      },function(o,object){
+      });
+    }
+
+    fr.readAsText(files.item(0));
+  }
+  $('#open_file_load')[0].onclick = openFile;
 
   $(document).keyup(function(e) {
     if (e.keyCode == 27) { // escape key maps to keycode `27`
@@ -1131,7 +1156,6 @@
       canvas.renderAll();
     }
   });
-
 
 
 

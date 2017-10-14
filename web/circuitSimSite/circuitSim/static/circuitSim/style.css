@@ -45,9 +45,3 @@
 #results_window {
 }
 
-@media only screen and (max-width : 480px) {
-    /* only size 'xs' and below */
-    .container {
-        height: 100%;
-    }
-}
