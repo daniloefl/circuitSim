@@ -946,7 +946,7 @@
         }
       } else { // already selected first node
         // if it is a node, end selection
-        console.log(o);
+        // TODO
         if ("subTargets" in o && o.subTargets.length == 1 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
           // father is the element
           var father = o.target;
@@ -986,6 +986,7 @@
             }
           });
         } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
+          // TODO
           // split line
           // add information in JSON
           bifurcate_name = o.target.name;
@@ -998,8 +999,9 @@
           var o = o.target;
 
           // get x and y of the node where we clicked
-          var nx = o.left;
-          var ny = o.top;
+          var pointer = canvas.getPointer(o.e);
+          var nx = pointer.x;
+          var ny = pointer.y;
 
           // remove old one
           var lastItem = findLine(bifurcate_name);
@@ -1123,7 +1125,7 @@
   });
   canvas.on('mouse:move', function(o){
     if (window.addConnectionMode) {
-      if (!window.isDown) return;
+    if (!window.isDown) return;
       var pointer = canvas.getPointer(o.e);
       var lastX = window.line.get('x1');
       var lastY = window.line.get('y1');
