@@ -533,14 +533,10 @@
       text.setAttribute('name', 'value');
       text.setAttribute('id', 'value');
       text.setAttribute('value', e.value);
-      var s = document.createElement('input');
-      s.setAttribute('type', 'submit');
-      s.setAttribute('value', 'Submit');
-      s.setAttribute('onclick', 'endEdit()');
+      $("#edit_close").attr("onclick", "endEdit()");
       c.appendChild(oname);
       c.appendChild(label);
       c.appendChild(text);
-      c.appendChild(s);
     } else if (element.name.includes("V")) {
       var label = document.createElement("p");
       label.appendChild(document.createTextNode("Value (V)"));
@@ -554,14 +550,10 @@
       text.setAttribute('name', 'value');
       text.setAttribute('id', 'value');
       text.setAttribute('value', e.value);
-      var s = document.createElement('input');
-      s.setAttribute('type', 'submit');
-      s.setAttribute('value', 'Submit');
-      s.setAttribute('onclick', 'endEdit()');
+      $("#edit_close").attr("onclick", "endEdit()");
       c.appendChild(oname);
       c.appendChild(label);
       c.appendChild(text);
-      c.appendChild(s);
     } else if (element.name.includes("C")) {
       var label = document.createElement("p");
       label.appendChild(document.createTextNode("Value (F)"));
@@ -575,26 +567,18 @@
       text.setAttribute('name', 'value');
       text.setAttribute('id', 'value');
       text.setAttribute('value', e.value);
-      var s = document.createElement('input');
-      s.setAttribute('type', 'submit');
-      s.setAttribute('value', 'Submit');
-      s.setAttribute('onclick', 'endEdit()');
+      $("#edit_close").attr("onclick", "endEdit()");
       c.appendChild(oname);
       c.appendChild(label);
       c.appendChild(text);
-      c.appendChild(s);
     }
-    $('#edit_window')[0].appendChild(c);
-    $('#edit_window').show();
+    $('#edit_content')[0].appendChild(c);
   }
   function endEdit() {
-    var objName = $('#content > #objName')[0].value;
-    var value = $('#content > #value')[0].value;
-    console.log(objName);
-    console.log(value);
+    var objName = $('#edit_content > #content > #objName')[0].value;
+    var value = $('#edit_content > #content > #value')[0].value;
     mainJson['elements'][objName].value = value;
-    $('#edit_window > #content').html('');
-    $('#edit_window').hide();
+    $('#edit_content').html('');
   }
 
   function addDCVoltageSource() {

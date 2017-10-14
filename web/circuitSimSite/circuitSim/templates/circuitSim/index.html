@@ -22,11 +22,6 @@
     -->
   </head>
   <body>
-    <div id="edit_window">
-    </div>
-    <script>
-      $('#edit_window').hide();
-    </script>
     <div class="container" style="height: 100%;">
     <div class="row table-row">
       <div class="col-md-2 col-ms-2">
@@ -42,7 +37,7 @@
         Actions:<br>
         <button id="deleteBtn" class="btn btn-info">Delete</button><br><br>
         <button id="rotateBtn" class="btn btn-info">Rotate</button><br><br>
-        <button id="editBtn" class="btn btn-info">Edit</button><br><br>
+        <button id="editBtn" class="btn btn-info" data-toggle="modal" data-target="#edit_window">Edit</button><br><br>
 
         Simulation:<br>
         <button id="runBtn" class="btn btn-info" data-toggle="modal" data-target="#results_window">Run</button><br><br>
@@ -62,7 +57,22 @@
           <div class="modal-body" id="results_content">
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="results_close">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="edit_window" class="modal fade" role="dialog">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Edit component</h4>
+          </div>
+          <div class="modal-body" id="edit_content">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="edit_close" onclick="endEdit()">Save and close</button>
           </div>
         </div>
       </div>
