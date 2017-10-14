@@ -38,12 +38,4 @@
 }
 #results_window {
   z-index: 10;
-  position: fixed;
-  width: 40em;
-  height: 30em;
-  top: 1em;
-  right: 10em;
-  border: 2px #00a solid;
-  border-radius: 2px;
-  background-color: #aaa;
 }
