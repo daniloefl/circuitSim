@@ -16,7 +16,8 @@ import circuitPy
 
 import numpy as np
 
-import bokeh.plotting.figure
+import bokeh.plotting
+import bokeh.models
 import bokeh.embed
 
 def index(request):
@@ -145,37 +146,105 @@ def run(request):
     # get result in each time
     t = circ.getTimeList()
     n = {}
-    maxVal = -9999
-    minVal = 9999
+    fn = {}
+    fnAbs = {}
+    fnAng = {}
+    Ts = t[1] - t[0]
+    k = np.arange(len(t))
+    freq = k/(len(t)*Ts)
+    freq = freq[0:len(freq)/2]
+
     for node in nodeList:
       if node == "0":
         continue
       n[node] = circ.getNodeVoltages(node);
+      if (sim['fft']):
+        fn[node] = np.fft.fft(n[node])
+        fn[node] = fn[node][0:len(freq)]
+        fnAbs[node] = np.absolute(fn[node])
+        fnAng[node] = np.angle(fn[node])
+
+
+    maxVal = -9999
+    minVal = 9999
+    maxValF = -9999
+    minValF = 9999
+    maxValFA = -9999
+    minValFA = 9999
+    for node in nodeList:
+      if node == "0":
+        continue
       if np.max(n[node]) > maxVal:
         maxVal = np.max(n[node])
       if np.min(n[node]) < minVal:
         minVal = np.min(n[node])
+      if (sim['fft']):
+        if np.max(fnAbs[node]) > maxValF:
+          maxValF = np.max(fnAbs[node])
+        if np.min(fnAbs[node]) < minValF:
+          minValF = np.min(fnAbs[node])
+        if np.max(fnAng[node]) > maxValFA:
+          maxValFA = np.max(fnAng[node])
+        if np.min(fnAng[node]) < minValFA:
+          minValFA = np.min(fnAng[node])
     maxVal += 0.2*maxVal
-  
-    f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
+    maxValF += 0.2*maxValF
+    maxValFA += 0.2*maxValFA
+
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
-    for node in n:
-      if node == "0":
-        continue
-      l = 'black'
-      l = lc[count % len(lc)]
-      f.line(t, n[node], line_color = l, line_width = 2, legend = "Voltage in node "+node)
-      count += 1
-    f.xaxis.axis_label = "Time [s]"
-    f.yaxis.axis_label = "Voltage [V]"
-    f.legend.location = "top_left"
-    f.sizing_mode = "scale_width"
-    script = ""
-    div = ""
-    script, div = bokeh.embed.components(f)
-    final_img += script
-    final_img += div
+    if (not sim['fft']):
+      f = bokeh.plotting.figure(x_range=(0, t[-1]), y_range=(minVal, maxVal), plot_width=800, plot_height = 400, title="", toolbar_location="above")
+      for node in n:
+        if node == "0":
+          continue
+        l = 'black'
+        l = lc[count % len(lc)]
+        f.line(t, n[node], line_color = l, line_width = 2, legend = "Node "+node)
+        count += 1
+      f.xaxis.axis_label = "Time [s]"
+      f.yaxis.axis_label = "Voltage [V]"
+      f.legend.location = "top_left"
+      f.sizing_mode = "scale_width"
+      script = ""
+      div = ""
+      script, div = bokeh.embed.components(f)
+      final_img += script
+      final_img += div
+    else:
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
+      count = 0
+      for node in n:
+        if node == "0":
+          continue
+        l = 'black'
+        l = lc[count % len(lc)]
+        f.line(freq, fnAbs[node], line_color = l, line_width = 2, legend = "Node "+node)
+        count += 1
+      f.xaxis.axis_label = "Frequency [Hz]"
+      f.yaxis.axis_label = "|FFT| (V)"
+      f.legend.location = "top_left"
+      #f.sizing_mode = "scale_width"
+      script, div = bokeh.embed.components(f)
+      final_img += script
+      final_img += div
+
+      count = 0
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
+      for node in n:
+        if node == "0":
+          continue
+        l = 'black'
+        l = lc[count % len(lc)]
+        f.line(freq, fnAng[node], line_color = l, line_width = 2, legend = "Node "+node)
+        count += 1
+      f.xaxis.axis_label = "Frequency [Hz]"
+      f.yaxis.axis_label = "Angle(FFT)"
+      f.legend.location = "top_left"
+      #f.sizing_mode = "scale_width"
+      script, div = bokeh.embed.components(f)
+      final_img += script
+      final_img += div
 
     node_desc = ""
     for node in n:

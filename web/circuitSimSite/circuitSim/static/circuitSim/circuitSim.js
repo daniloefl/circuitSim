@@ -19,6 +19,8 @@
   mainJson['simulation']['dt'] = 0.001;
   mainJson['simulation']['method'] = "BE";
   mainJson['simulation']['internalStep'] = 1;
+  mainJson['simulation']['nodes'] = [];
+  mainJson['simulation']['fft'] = false;
 
   function getCookie(name) {
     var cookieValue = null;
@@ -132,7 +134,6 @@
     canvas.add(theNew);
   };
 
-  console.log("Running");
   function addResistor() {
     window.Rcount += 1;
     var name = "R"+window.Rcount;
@@ -492,7 +493,6 @@
 
     // run! (AJAX)
     var csrftoken = getCookie('csrftoken');
-    console.log(csrftoken);
     $.ajaxSetup({
       crossDomain: false, // obviates need for sameOrigin test
       beforeSend: function(xhr, settings) {
@@ -546,10 +546,17 @@
     var dt = $('#simulopt_content #dt')[0].value;
     var method = $('#simulopt_content #method')[0].value;
     var internalStep = $('#simulopt_content #internalStep')[0].value;
+    var fft = $('#simulopt_content #fft')[0].value;
+    var nodes = $('#simulopt_content #nodes')[0].value;
     mainJson['simulation']['tFinal'] = tFinal;
     mainJson['simulation']['dt'] = dt;
     mainJson['simulation']['method'] = method;
     mainJson['simulation']['internalStep'] = internalStep;
+    if (fft == "true")
+      mainJson['simulation']['fft'] = true;
+    else
+      mainJson['simulation']['fft'] = false;
+    mainJson['simulation']['nodes'] = $("#simulopt_content #nodes").val();
   }
 
   function addDCVoltageSource() {
@@ -582,12 +589,20 @@
     mainJson.elements[name] = {'name': name};
   }
 
-  function addConnection() {
-    window.addConnectionMode = true;
-    canvas.selection = false;
-    canvas.forEachObject(function(o) {
-      o.selectable = false;
-    });
+  function addConnection(e, state) {
+    if (state) {
+      window.addConnectionMode = true;
+      canvas.selection = false;
+      canvas.forEachObject(function(o) {
+        o.selectable = false;
+      });
+    } else {
+      window.addConnectionMode = false;
+      canvas.selection = true;
+      canvas.forEachObject(function(o) {
+        o.selectable = true;
+      });
+    }
   }
 
   function deleteObj() {
@@ -634,6 +649,41 @@
     canvas.requestRenderAll();
   }
 
+  function prepareSimulOpt() {
+    $("#simulopt_content #tFinal")[0].value = mainJson.simulation.tFinal;
+    $("#simulopt_content #dt")[0].value = mainJson.simulation.dt;
+    $("#simulopt_content #internalStep")[0].value = mainJson.simulation.internalStep;
+    $("#simulopt_content #method")[0].value = mainJson.simulation.method;
+    if (mainJson.simulation.fft) {
+      $("#simulopt_content #fft").val("true");
+    } else {
+      $("#simulopt_content #fft").val("false");
+    }
+    $("#simulopt_content #nodes").html("");
+    for (var k in mainJson.elements) {
+      if (k.includes("Conn")) continue;
+      if (k.includes("E")) continue;
+      if (k.includes("GND")) continue;
+      var number_nodes = 2;
+      for (var n = 1; n <= number_nodes; ++n) {
+        var nname = k + "#N" + n;
+        var sel = false;
+        for (var j = 0; j < mainJson.simulation.nodes.length; ++j) {
+          if (mainJson.simulation.nodes[j] == nname) {
+            sel = true;
+            break;
+          }
+        }
+        var o = document.createElement("option");
+        o.value = nname;
+        o.innerHTML = nname;
+        $("#simulopt_content #nodes")[0].appendChild(o);
+        $("#simulopt_content #nodes option[value='" + nname + "']").prop("selected", sel);
+      }
+    }
+  }
+
+
   var canvas = this.__canvas = new fabric.Canvas('c');
   var DCVBtnCanvas = new fabric.Canvas("DCVBtnCanvas");
   var ResistorBtnCanvas = new fabric.Canvas("ResistorBtnCanvas");
@@ -660,14 +710,19 @@
   $("#addCapacitorLink")[0].onclick = addCapacitor;
   $("#addGndBtn")[0].onclick = addGnd;
   $("#addGndLink")[0].onclick = addGnd;
-  $("#addConnectionBtn")[0].onclick = addConnection;
-  $("#addConnectionLink")[0].onclick = addConnection;
+  $("#addConnectionBtn").on('switchChange.bootstrapSwitch', addConnection);
+  function addConnectionLink() {
+    $('#addConnectionBtn').bootstrapSwitch('toggleState');
+  }
+  $("#addConnectionLink")[0].onclick = addConnectionLink;
   $("#deleteBtn")[0].onclick = deleteObj;
   $("#deleteLink")[0].onclick = deleteObj;
   $("#rotateBtn")[0].onclick = rotateElement;
   $("#rotateLink")[0].onclick = rotateElement;
   $("#editBtn")[0].onclick = edit;
   $("#editLink")[0].onclick = edit;
+  $("#simulOptBtn")[0].onclick = prepareSimulOpt;
+  $("#simulOptLink")[0].onclick = prepareSimulOpt;
   
   function save() {
     var canvas_json = canvas.toJSON(['name']);
@@ -677,19 +732,22 @@
     var str_json = JSON.stringify(full_json);
     var blob = new Blob([str_json], {type: "application/json"});
     var url  = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.setAttribute("class", "btn btn-default");
-    a.download = "circuitSim.json";
-    a.href = url;
-    a.textContent = "Download canvas";
-    $('#save_content')[0].appendChild(a);
+    $('#save_content').html('<div class="form-group row"><label for="download_fname" class="col-2 col-form-label">File name</label><div class="col-10"><input class="form-control" type="text" value="circuit.json" id="download_fname"></div></div>');
+    $('#save_close')[0].onclick = function() {
+      var element = document.createElement('a');
+      element.setAttribute('href', url);
+      element.setAttribute('download', $('#download_fname')[0].value);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      $('#save_close')[0].download = $('#download_fname')[0].value;
+      element.click();
+      document.body.removeChild(element);
+    }
   }
   $('#saveLink')[0].onclick = save;
 
-
   function openFile() {
     var files = $('#open_file_input')[0].files;
-    console.log(files);
     if (files.length <= 0) {
       return false;
     }
@@ -697,13 +755,9 @@
     var fr = new FileReader();
 
     fr.onload = function(e) { 
-      console.log(e);
       var result = JSON.parse(e.target.result);
       mainJson = result.mainJson;
-      $("#simulopt_content #tFinal")[0].value = mainJson.simulation.tFinal;
-      $("#simulopt_content #dt")[0].value = mainJson.simulation.dt;
-      $("#simulopt_content #internalStep")[0].value = mainJson.simulation.internalStep;
-      $("#simulopt_content #method")[0].value = mainJson.simulation.method;
+      prepareSimulOpt();
       canvas.loadFromJSON(result.canvasJson, function() {
         canvas.renderAll(); 
       },function(o,object){
@@ -732,6 +786,7 @@
           o.lockMovementY = true;
         }
       });
+      $('#addConnectionBtn').bootstrapSwitch('state', false, false);
     } else if (e.keyCode == 127) { // delete
       deleteObj();
     }
@@ -794,6 +849,8 @@
     canvas.add(nline);
   }
 
+  // TODO
+  // Fails in many cases!
   canvas.on('object:moving', function(o) {
     o = o.target;
     for (var i = 0; i < o._objects.length; ++i) {
@@ -804,26 +861,26 @@
             // move this connection
             moveLine(key, o._objects[i].name, true);
             // check other connections
-            if (mainJson.connections[key].to.includes("E")) {
-              for (var key2 in mainJson.connections) {
-                if (mainJson.connections[key2].from == mainJson.connections[key].to) {
-                  moveLineAndLine(key, key2, false);
-                }
-              }
-            }
+            //if (mainJson.connections[key].to.includes("E")) {
+            //  for (var key2 in mainJson.connections) {
+            //    if (key2 != key && (mainJson.connections[key2].from == mainJson.connections[key].to)) {
+            //      moveLineAndLine(key, key2, false);
+            //    }
+            //  }
+            //}
 
           }
           if (mainJson.connections[key].to == o._objects[i].name) {
             // move this connection
             moveLine(key, o._objects[i].name, false);
             // check other connections
-            if (mainJson.connections[key].from.includes("E")) {
-              for (var key2 in mainJson.connections) {
-                if (mainJson.connections[key2].to == mainJson.connections[key].from) {
-                  moveLineAndLine(key, key2, true);
-                }
-              }
-            }
+            //if (mainJson.connections[key].from.includes("E")) {
+            //  for (var key2 in mainJson.connections) {
+            //    if (key2 != key && (mainJson.connections[key2].to == mainJson.connections[key].from)) {
+            //      moveLineAndLine(key, key2, true);
+            //    }
+            //  }
+            //}
 
           }
         }
@@ -857,8 +914,8 @@
     var ny = elObj.top + elObj.scaleY*nObj.top + elObj.scaleY*elObj.height/2 + elObj.scaleY*nObj.height/2;
     var x1 = 0;
     var y1 = 0;
-    var x2 = 0;
-    var y2 = 0;
+    var x2 = lineObj.get('x2');
+    var y2 = lineObj.get('y2');
     if (first) {
       var dx = Math.abs(nx - lineObj.get('x1'));
       var dy = Math.abs(ny - lineObj.get('y1'));
@@ -867,9 +924,6 @@
       if (dx > dy) {
         x2 = nx;
         y2 = lineObj.get('y2');
-      } else {
-        x2 = lineObj.get('x2');
-        y2 = ny;
       }
     } else {
       var dx = Math.abs(nx - lineObj.get('x2'));
@@ -879,9 +933,6 @@
       if (dx > dy) {
         x1 = nx;
         y1 = lineObj.get('y1');
-      } else {
-        x1 = lineObj.get("x1");
-        y1 = ny;
       }
     }
 
@@ -973,18 +1024,7 @@
           canvas.add(l);
 
           window.isDown = false;
-          window.addConnectionMode = false;
           window.line = {};
-          canvas.forEachObject(function(o) {
-            o.selectable = true;
-            o.lockRotation = true;
-            o.lockScalingX = true;
-            o.lockScalingY = true;
-            if (o.name.includes("Conn")) {
-              o.lockMovementX = true;
-              o.lockMovementY = true;
-            }
-          });
         } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
           // TODO
           // split line
@@ -1050,18 +1090,7 @@
           canvas.add(l);
 
           window.isDown = false;
-          window.addConnectionMode = false;
           window.line = {};
-          canvas.forEachObject(function(o) {
-            o.selectable = true;
-            o.lockRotation = true;
-            o.lockScalingX = true;
-            o.lockScalingY = true;
-            if (o.name.includes("Conn")) {
-              o.lockMovementX = true;
-              o.lockMovementY = true;
-            }
-          });
         } else { // it is not a node, nor another line, so make a line and keep going
           // add new connection point in JSON
           window.extraCount += 1;

@@ -10,11 +10,13 @@
     <title>Circuit Simulation</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'circuitSim/bootstrap-switch.min.css' %}">
   
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 
+    <script src="{% static 'circuitSim/bootstrap-switch.min.js' %}"></script>
     <script src="{% static 'circuitSim/fabric.min.js' %}"></script>
    
     <link rel="stylesheet" href="{% static 'circuitSim/style.css' %}">
@@ -73,7 +75,9 @@
           <div class="card card-default">
             <div class="card-header">Add</div>
             <div class="card-body">
-              <button id="addConnectionBtn" class="btn btn-default"><div class="btn-text">Wire</div></button><br>
+              <!--<button id="addConnectionBtn" class="btn btn-default" data-toggle="button" aria-pressed="false" autocomplete="off"></button><br>-->
+              Connection: <input type="checkbox" id="addConnectionBtn"><br>
+              <script>$("#addConnectionBtn").bootstrapSwitch();</script>
               <button id="addDCVoltageSourceBtn" class="btn btn-default"><canvas id="DCVBtnCanvas" width="50" height="40"></canvas></button><br>
               <button id="addResistorBtn" class="btn btn-default"><canvas id="ResistorBtnCanvas" width="50" height="40"></canvas></button><br>
               <button id="addCapacitorBtn" class="btn btn-default"><canvas id="CapacitorBtnCanvas" width="50" height="40"></canvas></button><br>
@@ -86,7 +90,7 @@
               <button id="deleteBtn" class="btn btn-default"><div class="btn-text">Delete</div></button><br>
               <button id="rotateBtn" class="btn btn-default"><div class="btn-text">Rotate</div></button><br>
               <button id="editBtn" class="btn btn-default" data-toggle="modal" data-target="#edit_window"><div class="btn-text">Edit</div></button><br>
-              <button id="runBtn" class="btn btn-default" data-toggle="modal" data-target="#simulopt_window"><div class="btn-text">Run</div></button><br>
+              <button id="simulOptBtn" class="btn btn-default" data-toggle="modal" data-target="#simulopt_window"><div class="btn-text">Run</div></button><br>
             </div>
           </div>
         </center>
@@ -134,7 +138,7 @@
           </div>
           <div class="modal-body" id="simulopt_content">
             <div class="form-group row">
-              <label for="tFinal" class="col-2 col-form-label">Final simulation time</label>
+              <label for="tFinal" class="col-2 col-form-label">Simulation time</label>
               <div class="col-10">
                 <input class="form-control" type="number" value="1" id="tFinal">
               </div>
@@ -153,10 +157,24 @@
             </div>
             <div class="form-group row">
               <label for="method" class="col-2 col-form-label">Simulation method</label>
-              <div class="col-10">
+              <div class="col-5">
                 <select class="custom-select" id="method">
                   <option value="BE" selected>Backward Euler</option>
                   <option value="GEAR">GEAR</option>
+                </select>
+              </div>
+              <label for="fft" class="col-2 col-form-label">Fourier analysis</label>
+              <div class="col-3">
+                <select class="custom-select" id="fft">
+                  <option value="true">Yes</option>
+                  <option value="false" selected>No</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="nodes" class="col-2 col-form-label">Nodes to watch</label>
+              <div class="col-10">
+                <select class="custom-select" id="nodes" multiple="multiple" size="5" style="max-width:90%; width: 90%; max-height: 6rem; height: 6rem;">
                 </select>
               </div>
             </div>
@@ -177,7 +195,7 @@
           <div class="modal-body" id="save_content">
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal" id="save_close">Close</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="save_close">Download and close</button>
           </div>
         </div>
       </div>
@@ -195,13 +213,10 @@
               <div class="col-8">
                 <input type="file" id="open_file_input" value="Open">
               </div>
-              <div class="col-2">
-                <button class="btn btn-default" id="open_file_load">Load</button>
-              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal" id="open_close">Close</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="open_file_load">Load circuit</button>
           </div>
         </div>
       </div>
