@@ -161,7 +161,6 @@
     var name = "R"+window.Rcount;
     resistor = makeResistorGroup(name, 5, 5, true);
     resistor.rotate = rotateResistor;
-    console.log("Adding resistor named "+resistor.name);
     canvas.add(resistor);
     mainJson['elements'][name] = {'name': name, 'value': 1.0};
   }
@@ -593,7 +592,6 @@
     var name = "V"+window.Vcount;
     source = makeDCVGroup(name, 5, 5, true);
     source.rotate = rotateDCV;
-    console.log("Adding source named "+source.name);
     canvas.add(source);
     mainJson['elements'][name] = {'name': name, 'value': 1.0};
   }
@@ -603,7 +601,6 @@
     var name = "C"+window.Ccount;
     cap = makeCapacitorGroup(name, 5, 5, true);
     cap.rotate = rotateCapacitor;
-    console.log("Adding capacitor named "+cap.name);
     canvas.add(cap);
     mainJson.elements[name] = {'name': name, 'value': 1.0};
   }
@@ -613,7 +610,6 @@
     var name = "GND"+window.GNDcount;
     gnd = makeGndGroup(name, 5, 5, true);
     gnd.rotate = rotateGnd;
-    console.log("Adding ground named "+gnd.name);
     canvas.add(gnd);
     mainJson.elements[name] = {'name': name};
   }
@@ -636,7 +632,6 @@
 
   function deleteObj() {
     element = canvas.getActiveObject();
-    console.log("Deleting element named "+element.name);
     if (element.name.includes("Conn")) {
       deleteConnection(element);
     } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C")) {
@@ -651,7 +646,6 @@
 
   function deleteElement(element) {
     element = canvas.getActiveObject();
-    console.log("Deleting element named "+element.name);
 
     var toDeleteConn = [];
     for (var i = 0; i < element._objects.length; ++i) {
@@ -880,7 +874,6 @@
 
   function moveNode(nodeName, x, y) {
     // TODO
-    console.log("Move node "+nodeName+" x, y = "+x+","+y);
     var idx = -1;
     for (var k = 0; k < canvas.getObjects().length; ++k) {
       if (canvas.getObjects()[k].name == nodeName) {
@@ -950,7 +943,6 @@
       }
     }
     
-    console.log("Move line "+lineName+", connected to "+elName+", node "+nodeName+", on first? "+first);
     lineObj = canvas.getObjects()[idx];
     if (lineObj.fresh) return;
 
