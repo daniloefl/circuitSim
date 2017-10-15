@@ -40,6 +40,28 @@
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
   }
 
+  function makeNodeGroup (name, left, top, scale = 2) {
+    var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 0-4,
+                        top: 5-4
+                        });
+    n1.name = name+"#N1";
+    var singleNode = new fabric.Group([n1], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+    });
+    singleNode.name = name;
+    singleNode.lockRotation = true;
+    singleNode.lockScalingX = true;
+    singleNode.lockScalingY = true;
+    singleNode.rotated = false;
+    return singleNode;
+  }
 
   function makeResistorGroup (name, left, top, horizontal, scale = 2) {
     if (horizontal) {
@@ -778,8 +800,8 @@
   $(document).keyup(function(e) {
     if (e.keyCode == 27) { // escape key maps to keycode `27`
       if (window.addConnectionMode) {
-        canvas.remove(line);
-        line = null;
+        canvas.remove(window.line);
+        window.line = null;
         window.isDown = false;
       }
       window.addConnectionMode = false;
@@ -794,7 +816,7 @@
         }
       });
       $('#addConnectionBtn').bootstrapSwitch('state', false, false);
-    } else if (e.keyCode == 127) { // delete
+    } else if (e.keyCode == 46) { // delete
       deleteObj();
     }
   });
@@ -856,9 +878,38 @@
     canvas.add(nline);
   }
 
+  function moveNode(nodeName, x, y) {
+    // TODO
+    console.log("Move node "+nodeName+" x, y = "+x+","+y);
+    var idx = -1;
+    for (var k = 0; k < canvas.getObjects().length; ++k) {
+      if (canvas.getObjects()[k].name == nodeName) {
+        idx = k;
+        break;
+      }
+    }
+    if (canvas.getObjects()[idx].fresh) return;
+    canvas.remove(canvas.getObjects()[idx]);
+    var en = makeNodeGroup(nodeName, x-4, y-4, 2);
+    en.fresh = true;
+    canvas.add(en);
+
+    for (var key in mainJson.connections) {
+      if (mainJson.connections[key].from == nodeName) {
+        moveLine(key, nodeName, true);
+      }
+      if (mainJson.connections[key].to == nodeName) {
+        moveLine(key, nodeName, false);
+      }
+    }
+  }
+
   // TODO
   // Fails in many cases!
   canvas.on('object:moving', function(o) {
+    for (var k = 0; k < canvas.getObjects().length; ++k) {
+      canvas.getObjects()[k].fresh = false;
+    }
     o = o.target;
     for (var i = 0; i < o._objects.length; ++i) {
       if (("name" in o._objects[i]) && o._objects[i].name.includes("#N")) {
@@ -867,28 +918,11 @@
           if (mainJson.connections[key].from == o._objects[i].name) {
             // move this connection
             moveLine(key, o._objects[i].name, true);
-            // check other connections
-            //if (mainJson.connections[key].to.includes("E")) {
-            //  for (var key2 in mainJson.connections) {
-            //    if (key2 != key && (mainJson.connections[key2].from == mainJson.connections[key].to)) {
-            //      moveLineAndLine(key, key2, false);
-            //    }
-            //  }
-            //}
 
           }
           if (mainJson.connections[key].to == o._objects[i].name) {
             // move this connection
             moveLine(key, o._objects[i].name, false);
-            // check other connections
-            //if (mainJson.connections[key].from.includes("E")) {
-            //  for (var key2 in mainJson.connections) {
-            //    if (key2 != key && (mainJson.connections[key2].to == mainJson.connections[key].from)) {
-            //      moveLineAndLine(key, key2, true);
-            //    }
-            //  }
-            //}
-
           }
         }
       }
@@ -897,7 +931,8 @@
 
   function moveLine(lineName, nodeName, first) {
     var elName = nodeName.split("#")[0];
-    var nName = nodeName.split('#')[1];
+    var nName = "";
+    if (!nodeName.includes("E")) nName = nodeName.split('#')[1];
     var idx = -1;
     var elObj = -1;
     var nObj = -1;
@@ -915,31 +950,41 @@
       }
     }
     
+    console.log("Move line "+lineName+", connected to "+elName+", node "+nodeName+", on first? "+first);
     lineObj = canvas.getObjects()[idx];
+    if (lineObj.fresh) return;
+
     // update path
-    var nx = elObj.left + elObj.scaleX*nObj.left + elObj.scaleX*elObj.width/2 + elObj.scaleX*nObj.width/2;
-    var ny = elObj.top + elObj.scaleY*nObj.top + elObj.scaleY*elObj.height/2 + elObj.scaleY*nObj.height/2;
-    var x1 = 0;
-    var y1 = 0;
+    var nx = elObj.left;
+    var ny = elObj.top;
+    if (nName != "") {
+      nx += elObj.scaleX*nObj.left + elObj.scaleX*elObj.width/2 + elObj.scaleX*nObj.width/2;
+      ny += elObj.scaleY*nObj.top + elObj.scaleY*elObj.height/2 + elObj.scaleY*nObj.height/2;
+    } else {
+      nx += 4;
+      ny += 4;
+    }
+    var x1 = lineObj.get('x1');
+    var y1 = lineObj.get('y1');
     var x2 = lineObj.get('x2');
     var y2 = lineObj.get('y2');
+    var dx = Math.abs(x1 - x2);
+    var dy = Math.abs(y1 - y2);
     if (first) {
-      var dx = Math.abs(nx - lineObj.get('x1'));
-      var dy = Math.abs(ny - lineObj.get('y1'));
       x1 = nx;
       y1 = ny;
       if (dx > dy) {
+        y2 = ny;
+      } else {
         x2 = nx;
-        y2 = lineObj.get('y2');
       }
     } else {
-      var dx = Math.abs(nx - lineObj.get('x2'));
-      var dy = Math.abs(ny - lineObj.get('y2'));
       x2 = nx;
       y2 = ny;
       if (dx > dy) {
+        y1 = ny;
+      } else {
         x1 = nx;
-        y1 = lineObj.get('y1');
       }
     }
 
@@ -957,7 +1002,24 @@
     nline.lockScalingY = true;
     canvas.remove(canvas.getObjects()[idx]);
     nline.name=lineName;
+    nline.fresh = true;
     canvas.add(nline);
+
+    // look for all connected to this line
+    for (var key in mainJson.connections) {
+      if (first && mainJson.connections[key].from == nodeName) {
+        var toMove = mainJson.connections[key].to;
+        if (toMove.includes("E")) {
+          moveNode(toMove, x2, y2);
+        }
+      }
+      if (!first && mainJson.connections[key].to == nodeName) {
+        var toMove = mainJson.connections[key].from;
+        if (toMove.includes("E")) {
+          moveNode(toMove, x1, y1);
+        }
+      }
+    }
   }
 
   function findLine(name) {
@@ -975,7 +1037,7 @@
       var pointer = canvas.getPointer(o.e); // mouse pointer
       if (!window.isDown) { // did not start drawing a wire yet
         // check if we clicked in an element
-        if (o.subTargets && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
+        if (o.subTargets && o.subTargets.length > 0 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
           // father is the element
           var father = o.target;
           o = o.subTargets[0]; // o is the node itself
@@ -1001,6 +1063,19 @@
           canvas.add(window.line);
           window.connectionPoint1 = o.name;
           canvas.renderAll();
+        } else { // nothing selected yet and we did not select an element
+          // just stop
+          canvas.forEachObject(function(o) {
+            o.selectable = true;
+            o.lockRotation = true;
+            o.lockScalingX = true;
+            o.lockScalingY = true;
+            if (o.name.includes("Conn")) {
+              o.lockMovementX = true;
+              o.lockMovementY = true;
+            }
+          });
+          $('#addConnectionBtn').bootstrapSwitch('state', false, false);
         }
       } else { // already selected first node
         // if it is a node, end selection
@@ -1017,11 +1092,22 @@
           var ny = elObj.top + elObj.scaleY*nObj.top + elObj.scaleY*elObj.height/2 + elObj.scaleY*nObj.height/2;
 
           var lastItem = window.line;
+
+          var lastX = lastItem.get('x1');
+          var lastY = lastItem.get('y1');
+          var dx = Math.abs(lastX - nx);
+          var dy = Math.abs(lastY - ny);
+          if (dx > dy) {
+            lastY = ny;
+          } else {
+            lastX = nx;
+          }
+
           canvas.remove(lastItem)
           // add information in JSON
           mainJson.connections[lastItem.name] = {'from': window.connectionPoint1, 'to': o.name};
 
-          var l = new fabric.Line( [lastItem.get('x1'), lastItem.get('y1'), nx, ny],
+          var l = new fabric.Line( [lastX, lastY, nx, ny],
                     {
                     stroke: 'black',
                     fill: "",
@@ -1029,6 +1115,9 @@
                     });
           l.name = lastItem.name;
           canvas.add(l);
+          var en = findLine(window.connectionPoint1);
+          en.left = lastX-4;
+          en.top = lastY-4;
 
           window.isDown = false;
           window.line = {};
@@ -1039,7 +1128,7 @@
           bifurcate_name = o.target.name;
           bifurcate = mainJson.connections[bifurcate_name];
           window.extraCount += 1;
-          mainJson.elements['E'+window.extraCount] = {}
+          mainJson.elements['E'+window.extraCount] = {'name': 'E'+window.extraCount}
 
           // bifurcate removing old line and making 2
           // o is the node where the bifurcation happens
@@ -1052,7 +1141,6 @@
 
           // remove old one
           var lastItem = findLine(bifurcate_name);
-          canvas.remove(lastItem)
 
           window.connectionCount += 1;
           var l = new fabric.Line( [lastItem.get('x1'), lastItem.get('y1'), nx, ny],
@@ -1062,8 +1150,12 @@
                     strokeWidth: 3,
                     });
           l.name = "Conn"+window.connectionCount;
+          canvas.remove(lastItem)
           canvas.add(l);
           mainJson.connections['Conn'+window.connectionCount] = {'from': bifurcate.from, 'to': 'E'+window.extraCount}
+
+          var en = makeNodeGroup("E"+window.extraCount, nx-4, ny-4, 2);
+          canvas.add(en);
 
           window.connectionCount += 1;
           var l = new fabric.Line( [nx, ny, lastItem.get('x2'), lastItem.get('y2')],
@@ -1102,7 +1194,7 @@
           // add new connection point in JSON
           window.extraCount += 1;
           var origname = window.line.name;
-          mainJson.elements["E"+window.extraCount] = {}
+          mainJson.elements["E"+window.extraCount] = {'name': "E"+window.extraCount}
           mainJson.connections[origname] = {'from': window.connectionPoint1, 'to': 'E'+window.extraCount};
 
           // and draw the new connection
@@ -1121,6 +1213,9 @@
             var nx = lastX;
             var ny = pointer.y;
           }
+
+          var en = makeNodeGroup("E"+window.extraCount, nx, ny, 2);
+          canvas.add(en);
 
           var l = new fabric.Line( [lastItem.get('x1'), lastItem.get('y1'), nx, ny],
                     {
