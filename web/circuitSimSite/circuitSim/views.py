@@ -118,7 +118,7 @@ def run(request):
   
   e = {}
   conn = {}
-  sim = {'tFinal': float(10), 'dt': float(1e-2), 'method': 'BE', 'internalStep': int(1)}
+  sim = {'tFinal': float(10), 'dt': float(1e-2), 'method': 'BE', 'internalStep': int(1), 'fft': False, 'nodes' : []}
   try:
     if request.method == "POST":
       import json
@@ -131,7 +131,17 @@ def run(request):
 
     circ = circuitPy.Circuit()
     nodeName, nl = setupCircuit(circ, e, conn)
-    nodeList = nodeName.keys()
+    nodeList = []
+    nodeListHuman = {}
+    if len(sim['nodes']) == 0:
+      nodeList = nodeName.keys()
+    else: # read it from input
+      for k in sim['nodes']:
+        kstr = str(k)
+        nid = findNodeId(kstr, nodeName)
+        nodeList.append(nid)
+        nodeListHuman[kstr] = nid
+
 
     # Set simulation parameters
     tFinal = float(sim['tFinal'])              # duration of simulation
@@ -154,15 +164,20 @@ def run(request):
     freq = k/(len(t)*Ts)
     freq = freq[0:len(freq)/2]
 
-    for node in nodeList:
+    for nname in nodeListHuman:
+      node = nodeListHuman[nname]
       if node == "0":
+        n[nname] = [0.0 for i in range(0, len(t))]
+        fn[nname] = [0.0 for i in range(0, len(freq))]
+        fnAbs[nname] = [0.0 for i in range(0, len(freq))]
+        fnAng[nname] = [0.0 for i in range(0, len(freq))]
         continue
-      n[node] = circ.getNodeVoltages(node);
+      n[nname] = circ.getNodeVoltages(node);
       if (sim['fft']):
-        fn[node] = np.fft.fft(n[node])
-        fn[node] = fn[node][0:len(freq)]
-        fnAbs[node] = np.absolute(fn[node])
-        fnAng[node] = np.angle(fn[node])
+        fn[nname] = np.fft.fft(n[nname])
+        fn[nname] = fn[nname][0:len(freq)]
+        fnAbs[nname] = np.absolute(fn[nname])
+        fnAng[nname] = np.angle(fn[nname])
 
 
     maxVal = -9999
@@ -171,36 +186,40 @@ def run(request):
     minValF = 9999
     maxValFA = -9999
     minValFA = 9999
-    for node in nodeList:
+    for nname in nodeListHuman:
+      node = nodeListHuman[nname]
       if node == "0":
         continue
-      if np.max(n[node]) > maxVal:
-        maxVal = np.max(n[node])
-      if np.min(n[node]) < minVal:
-        minVal = np.min(n[node])
+      if np.max(n[nname]) > maxVal:
+        maxVal = np.max(n[nname])
+      if np.min(n[nname]) < minVal:
+        minVal = np.min(n[nname])
       if (sim['fft']):
-        if np.max(fnAbs[node]) > maxValF:
-          maxValF = np.max(fnAbs[node])
-        if np.min(fnAbs[node]) < minValF:
-          minValF = np.min(fnAbs[node])
-        if np.max(fnAng[node]) > maxValFA:
-          maxValFA = np.max(fnAng[node])
-        if np.min(fnAng[node]) < minValFA:
-          minValFA = np.min(fnAng[node])
+        if np.max(fnAbs[nname]) > maxValF:
+          maxValF = np.max(fnAbs[nname])
+        if np.min(fnAbs[nname]) < minValF:
+          minValF = np.min(fnAbs[nname])
+        if np.max(fnAng[nname]) > maxValFA:
+          maxValFA = np.max(fnAng[nname])
+        if np.min(fnAng[nname]) < minValFA:
+          minValFA = np.min(fnAng[nname])
     maxVal += 0.2*maxVal
     maxValF += 0.2*maxValF
     maxValFA += 0.2*maxValFA
+    minVal -= 0.01*np.abs(maxVal)
+    if minValF <= 0:
+      minValF = 1e-3*maxValF
+    if minValFA <= 0:
+      minValFA = 1e-3*maxValFA
 
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     if (not sim['fft']):
       f = bokeh.plotting.figure(x_range=(0, t[-1]), y_range=(minVal, maxVal), plot_width=800, plot_height = 400, title="", toolbar_location="above")
-      for node in n:
-        if node == "0":
-          continue
+      for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
-        f.line(t, n[node], line_color = l, line_width = 2, legend = "Node "+node)
+        f.line(t, n[nname], line_color = l, line_width = 2, legend = nname)
         count += 1
       f.xaxis.axis_label = "Time [s]"
       f.yaxis.axis_label = "Voltage [V]"
@@ -212,50 +231,37 @@ def run(request):
       final_img += script
       final_img += div
     else:
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log", x_range = [0, freq[-1]])
       count = 0
-      for node in n:
-        if node == "0":
-          continue
+      for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
-        f.line(freq, fnAbs[node], line_color = l, line_width = 2, legend = "Node "+node)
+        f.line(freq, fnAbs[nname], line_color = l, line_width = 2, legend = nname)
         count += 1
       f.xaxis.axis_label = "Frequency [Hz]"
       f.yaxis.axis_label = "|FFT| (V)"
       f.legend.location = "top_left"
-      #f.sizing_mode = "scale_width"
+      f.sizing_mode = "scale_width"
       script, div = bokeh.embed.components(f)
       final_img += script
       final_img += div
 
       count = 0
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
-      for node in n:
-        if node == "0":
-          continue
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, freq[-1]])
+      for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
-        f.line(freq, fnAng[node], line_color = l, line_width = 2, legend = "Node "+node)
+        f.line(freq, fnAng[nname], line_color = l, line_width = 2, legend = nname)
         count += 1
       f.xaxis.axis_label = "Frequency [Hz]"
       f.yaxis.axis_label = "Angle(FFT)"
       f.legend.location = "top_left"
-      #f.sizing_mode = "scale_width"
+      f.sizing_mode = "scale_width"
       script, div = bokeh.embed.components(f)
       final_img += script
       final_img += div
 
-    node_desc = ""
-    for node in n:
-      if node == "0":
-        continue
-      node_desc += "Node %s connected to: " % str(node)
-      for i in range(0, len(nodeName[node])):
-        node_desc += "%s" % str(nodeName[node][i])
-        if i != len(nodeName[node])-1:
-          node_desc += ","
-      node_desc += "<br>"
+    node_desc = "Net list:<br>"+nl.replace("\n", "<br>")
     extra_text = "Simulation successful."
   except:
     extra_text = "Simulation failed!"
