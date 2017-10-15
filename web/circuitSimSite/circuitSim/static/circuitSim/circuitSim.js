@@ -542,6 +542,10 @@
   }
 
   function endSimulOpt() {
+    if (!$("#simulopt_content #nodes").val() || $("#simulopt_content #nodes").val().length == 0) {
+      window.alert("You must select at least one node to analyse.");
+      return;
+    }
     var tFinal = $('#simulopt_content #tFinal')[0].value;
     var dt = $('#simulopt_content #dt')[0].value;
     var method = $('#simulopt_content #method')[0].value;
@@ -557,6 +561,9 @@
     else
       mainJson['simulation']['fft'] = false;
     mainJson['simulation']['nodes'] = $("#simulopt_content #nodes").val();
+    $('#simulopt_window').modal('hide');
+    run();
+    $('#results_window').modal('show');
   }
 
   function addDCVoltageSource() {
