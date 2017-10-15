@@ -2,6 +2,7 @@
   window.Rcount = 0;
   window.Vcount = 0;
   window.Ccount = 0;
+  window.Lcount = 0;
   window.connectionCount = 0;
   window.extraCount = 0;
   window.GNDcount = 0;
@@ -273,6 +274,142 @@
     gnd.lockScalingY = true;
     gnd.rotated = false;
     return gnd;
+  }
+
+  function makeInductorGroup (name, left, top, horizontal, scale = 2) {
+    if (horizontal) {
+      var a1 = new fabric.Circle({
+                        radius: 8,
+                        fill: '',
+                        left: 0,
+                        top: 10-4,
+                        startAngle: 0,
+                        endAngle: 1.5*Math.PI
+                         });
+      var a2 = new fabric.Circle({
+                        radius: 8,
+                        fill: '',
+                        left: 12,
+                        top: 10-4,
+                        startAngle: -0.5*Math.PI,
+                        endAngle: Math.PI
+                         });
+      var l1 = new fabric.Line([0, 10, 17, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([23, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 10,
+                        top: 20
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 10-4+8
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4,
+                        top: 10-4+8
+                        });
+      var inductor = new fabric.Group([a1, a2, l1, l2, n1, n2, t1, t2, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    } else {
+      var a1 = new fabric.Circle({
+                        radius: 8,
+                        fill: '',
+                        left: 0,
+                        top: 10-4,
+                        startAngle: 0,
+                        endAngle: 1.5*Math.PI
+                         });
+      var a2 = new fabric.Circle({
+                        radius: 8,
+                        fill: '',
+                        left: 12,
+                        top: 10-4,
+                        startAngle: -0.5*Math.PI,
+                        endAngle: Math.PI
+                         });
+      var l1 = new fabric.Line([20, 17, 20, 30],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([20, -3, 20, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 35,
+                        top: 10
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 20-4,
+                        top: -3-4
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 20-4,
+                        top: 30-4
+                        });
+      n2.name = name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: -3-4
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: 30-4
+                        });
+      var inductor = new fabric.Group([a1, a2, l1, l2, n1, n2, t1, t2, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    }
+    inductor.name = name;
+    inductor.lockRotation = true;
+    inductor.lockScalingX = true;
+    inductor.lockScalingY = true;
+    inductor.rotated = false;
+    return inductor;
   }
 
   function makeCapacitorGroup (name, left, top, horizontal, scale = 2) {
@@ -560,6 +697,19 @@
     theNew.rotate = rotateCapacitor;
     canvas.add(theNew);
   };
+  function rotateInductor() {
+    canvas.remove(this);
+    var name = this.name;
+    if (this.rotated) {
+      theNew = makeInductorGroup(name, this.left, this.top, true);
+      theNew.rotated = false;
+    } else {
+      theNew = makeInductorGroup(name, this.left, this.top, false);
+      theNew.rotated = true;
+    }
+    theNew.rotate = rotateInductor;
+    canvas.add(theNew);
+  };
 
   function rotateGnd() {
     canvas.remove(this);
@@ -643,6 +793,9 @@
     } else if (element.name.includes("C")) {
       var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Value (F)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value+'" id="value"></div></div>'
       $('#edit_content').html(toAdd);
+    } else if (element.name.includes("L")) {
+      var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Value (H)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value+'" id="value"></div></div>'
+      $('#edit_content').html(toAdd);
     }
   }
   function endEdit() {
@@ -692,6 +845,15 @@
     cap = makeCapacitorGroup(name, 5, 5, true);
     cap.rotate = rotateCapacitor;
     canvas.add(cap);
+    mainJson.elements[name] = {'name': name, 'value': 1.0};
+  }
+
+  function addInductor() {
+    window.Lcount += 1;
+    var name = "L"+window.Lcount;
+    ind = makeInductorGroup(name, 5, 5, true);
+    ind.rotate = rotateInductor;
+    canvas.add(ind);
     mainJson.elements[name] = {'name': name, 'value': 1.0};
   }
 
@@ -801,6 +963,7 @@
   var DCVBtnCanvas = new fabric.Canvas("DCVBtnCanvas");
   var ResistorBtnCanvas = new fabric.Canvas("ResistorBtnCanvas");
   var CapacitorBtnCanvas = new fabric.Canvas("CapacitorBtnCanvas");
+  var InductorBtnCanvas = new fabric.Canvas("InductorBtnCanvas");
   var GndBtnCanvas = new fabric.Canvas("GndBtnCanvas");
   var btn = makeDCVGroup("V", 0, 5, true, 1);
   btn.selectable = false;
@@ -811,6 +974,9 @@
   var btn = makeCapacitorGroup("C", 0, 5, true, 1);
   btn.selectable = false;
   CapacitorBtnCanvas.add(btn);
+  var btn = makeInductorGroup("L", 0, 5, true, 1);
+  btn.selectable = false;
+  InductorBtnCanvas.add(btn);
   var btn = makeGndGroup("Gnd", 0, 5, true, 1);
   btn.selectable = false;
   GndBtnCanvas.add(btn);
@@ -821,6 +987,8 @@
   $("#addResistorLink")[0].onclick = addResistor;
   $("#addCapacitorBtn")[0].onclick = addCapacitor;
   $("#addCapacitorLink")[0].onclick = addCapacitor;
+  $("#addInductorBtn")[0].onclick = addInductor;
+  $("#addInductorLink")[0].onclick = addInductor;
   $("#addGndBtn")[0].onclick = addGnd;
   $("#addGndLink")[0].onclick = addGnd;
   $("#addConnectionBtn").on('switchChange.bootstrapSwitch', addConnection);
