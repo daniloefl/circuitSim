@@ -100,8 +100,8 @@ def setupCircuit(circ, e, conn):
       nl += "%s %s %s %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))
       circ.addResistor(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))
     if "V" in name:
-      circ.addDCVoltageSource(str(name), findNodeId(name+"#N2", nodeName), findNodeId(name+"#N1", nodeName), float(e[name]['value']))
-      nl += "%s %s %s %f\n" %(str(name), findNodeId(name+"#N2", nodeName), findNodeId(name+"#N1", nodeName), float(e[name]['value']))
+      circ.addDCVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))
+      nl += "%s %s %s %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))
     if "C" in name:
       circ.addCapacitor(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))
       nl += "%s %s %s %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))

@@ -91,7 +91,17 @@
                         top: 5-4
                         });
       n2.name = name+"#N2";
-      var resistor = new fabric.Group([poly, n1, n2, text], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 5-4+8
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 32.5-4,
+                        top: 5-4+8
+                        });
+      var resistor = new fabric.Group([poly, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -126,7 +136,17 @@
                         top: 32.5-4
                         });
       n2.name = name+"#N2";
-      var resistor = new fabric.Group([poly, n1, n2, text], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: -15+4+8,
+                        top: 0-4
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: -15+4+8,
+                        top: 32.5-4
+                        });
+      var resistor = new fabric.Group([poly, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -197,7 +217,12 @@
                         top: 10-4
                          });
       n1.name = name+"#N1";
-      var gnd = new fabric.Group([p1, p2, p3, l1, n1,], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 10-4+8
+                        });
+      var gnd = new fabric.Group([p1, p2, p3, l1, n1, t1], {
         left: left,
         top: top,
         scaleX: scale,
@@ -229,7 +254,12 @@
                         top: 0-4
                          });
       n1.name = name+"#N1";
-      var gnd = new fabric.Group([p1, p2, p3, l1, n1], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: 0-4
+                        });
+      var gnd = new fabric.Group([p1, p2, p3, l1, n1, t1], {
         left: left,
         top: top,
         scaleX: scale,
@@ -284,7 +314,17 @@
                         top: 10-4
                         });
       n2.name = name+"#N2";
-      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, text], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 10-4+8
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4,
+                        top: 10-4+8
+                        });
+      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -319,17 +359,27 @@
                         radius: 4,
                         fill: '#aaa',
                         left: 20-4,
-                        top: 30-4
+                        top: -3-4
                          });
       n1.name = name+"#N1";
       var n2 = new fabric.Circle({
                         radius: 4,
                         fill: '#aaa',
                         left: 20-4,
-                        top: -3-4
+                        top: 30-4
                         });
       n2.name = name+"#N2";
-      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, text], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: -3-4
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: 30-4
+                        });
+      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -354,6 +404,16 @@
                         left: 10,
                         top: 0 }
                         );
+      var tp = new fabric.Text("+", {
+                        fontSize: 10,
+                        left: 15,
+                        top: 5
+                        });
+      var tm = new fabric.Text("-", {
+                        fontSize: 10,
+                        left: 22,
+                        top: 5
+                        });
       var l1 = new fabric.Line([0, 10, 10, 10],
                         {
                         stroke: 'black',
@@ -383,7 +443,17 @@
                         top: 10-4
                         });
       n2.name = name+"#N2";
-      var source = new fabric.Group([c, l1, l2, n1, n2, text], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 10-4+8
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4,
+                        top: 10-4+8
+                        });
+      var source = new fabric.Group([c, tp, tm, l1, l2, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -398,6 +468,16 @@
                         left: 10,
                         top: 0 }
                         );
+      var tp = new fabric.Text("+", {
+                        fontSize: 10,
+                        left: 17,
+                        top: 3
+                        });
+      var tm = new fabric.Text("-", {
+                        fontSize: 10,
+                        left: 18,
+                        top: 8
+                        });
       var l1 = new fabric.Line([20, 20, 20, 30],
                         {
                         stroke: 'black',
@@ -417,17 +497,27 @@
                         radius: 4,
                         fill: '#aaa',
                         left: 20-4,
-                        top: 30-4
+                        top: -10-4
                          });
       n1.name = name+"#N1";
       var n2 = new fabric.Circle({
                         radius: 4,
                         fill: '#aaa',
                         left: 20-4,
-                        top: -10-4
+                        top: 30-4
                         });
       n2.name = name+"#N2";
-      var source = new fabric.Group([c, l1, l2, n1, n2, text], {
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: -10-4
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: 30-4
+                        });
+      var source = new fabric.Group([c, tp, tm, l1, l2, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -634,7 +724,7 @@
     element = canvas.getActiveObject();
     if (element.name.includes("Conn")) {
       deleteConnection(element);
-    } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C")) {
+    } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C") || element.name.includes("E")) {
       deleteElement(element);
     }
   }
