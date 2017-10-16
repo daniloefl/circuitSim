@@ -456,12 +456,12 @@
                         top: 30-4
                         });
       n3.name = name+"#N3";
-      var t1 = new fabric.Text("1 (C)", {
+      var t1 = new fabric.Text("1 (E)", {
                         fontSize: 9,
                         left: 0-4,
                         top: 10-4+8
                         });
-      var t2 = new fabric.Text("2 (E)", {
+      var t2 = new fabric.Text("2 (C)", {
                         fontSize: 9,
                         left: 40-4,
                         top: 10-4+8
@@ -520,12 +520,12 @@
                         top: 20-4
                         });
       n3.name = name+"#N3";
-      var t1 = new fabric.Text("1 (C)", {
+      var t1 = new fabric.Text("1 (E)", {
                         fontSize: 9,
                         left: 20-4+8,
                         top: 40-4
                         });
-      var t2 = new fabric.Text("2 (E)", {
+      var t2 = new fabric.Text("2 (C)", {
                         fontSize: 9,
                         left: 20-4+8,
                         top: 0-4
@@ -1080,6 +1080,10 @@
       window.alert("Please select an element to edit.");
       return;
     }
+    if (element.name.includes("GND")) {
+      window.alert("Nothing to edit in the ground element.");
+      return;
+    }
     if (element.name.includes("Conn")) return;
     e = mainJson['elements'][element.name];
     var c = document.createElement("div");
@@ -1353,6 +1357,7 @@
       if (k.includes("E")) continue;
       if (k.includes("GND")) continue;
       var number_nodes = 2;
+      if (k.includes("Q")) number_nodes = 3;
       for (var n = 1; n <= number_nodes; ++n) {
         var nname = k + "#N" + n;
         var sel = false;
@@ -1431,6 +1436,7 @@
   $("#simulOptLink")[0].onclick = prepareSimulOpt;
   $("#example_rc")[0].onclick = loadExampleRC;
   $("#example_rc_pulse")[0].onclick = loadExampleRCPulse;
+  $("#example_amp")[0].onclick = loadExampleAmp;
   
   function save() {
     var canvas_json = canvas.toJSON(['name']);
@@ -1493,6 +1499,9 @@
   function loadExampleRCPulse() {
     loadExample('rc_pulse');
   }
+  function loadExampleAmp() {
+    loadExample('amp');
+  }
 
   $(document).keyup(function(e) {
     if (($("#edit_window").data('bs.modal') || {})._isShown) return;
@@ -1522,6 +1531,8 @@
       deleteObj();
     } else if (e.keyCode == 114 || e.keyCode == 82) { // r -> rotate
       rotateElement();
+    } else if (e.keyCode == 101 || e.keyCode == 69) { // e -> edit
+      edit();
     }
   });
 
