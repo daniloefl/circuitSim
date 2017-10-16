@@ -1443,7 +1443,6 @@
           window.isDown = false;
           window.line = {};
         } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
-          console.log("Bifurcate");
           // TODO
           // split line
           // add information in JSON
