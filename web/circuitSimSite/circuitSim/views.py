@@ -105,10 +105,11 @@ def setupCircuit(circ, e, conn):
         nl += "%s %s %s %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value_dc']))
       elif e[name]['type'] == 'PULSE':
         circ.addPulseVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['amplitude1_pulse']), float(e[name]['amplitude2_pulse']), float(e[name]['delay_pulse']), float(e[name]['tRise_pulse']), float(e[name]['tFall_pulse']), float(e[name]['tOn_pulse']), float(e[name]['period_pulse']), float(e[name]['nCycles_pulse']) )
-        nl += "%s %s %s SIN ***\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName))
-      elif e[name]['type'] == 'SIN':
-        circ.addSinVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['dc_sin']), float(e[name]['amplitude_sin']), float(e[name]['freq_sin']), float(e[name]['delay_sin']), float(e[name]['atenuation_sin']), float(e[name]['angle_sin']), float(e[name]['nCycles_sin']))
         nl += "%s %s %s PULSE ***\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName))
+      elif e[name]['type'] == 'SIN':
+        #circ.addDCVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value_dc']))
+        circ.addSinVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['dc_sin']), float(e[name]['amplitude_sin']), float(e[name]['freq_sin']), float(e[name]['delay_sin']), float(e[name]['atenuation_sin']), float(e[name]['angle_sin']), float(e[name]['nCycles_sin']))
+        nl += "%s %s %s SIN ***\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName))
     if "C" in name:
       circ.addCapacitor(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))
       nl += "%s %s %s %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value']))
