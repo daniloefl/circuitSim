@@ -1300,7 +1300,7 @@
     element = canvas.getActiveObject();
     if (element.name.includes("Conn")) {
       deleteConnection(element);
-    } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C") || element.name.includes("E")) {
+    } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C") || element.name.includes("E") || element.name.includes("D") || element.name.includes("Q")) {
       deleteElement(element);
     }
   }
