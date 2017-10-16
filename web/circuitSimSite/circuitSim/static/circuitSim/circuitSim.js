@@ -1430,6 +1430,7 @@
   $("#simulOptBtn")[0].onclick = prepareSimulOpt;
   $("#simulOptLink")[0].onclick = prepareSimulOpt;
   $("#example_rc")[0].onclick = loadExampleRC;
+  $("#example_rc_pulse")[0].onclick = loadExampleRCPulse;
   
   function save() {
     var canvas_json = canvas.toJSON(['name']);
@@ -1488,6 +1489,9 @@
   }
   function loadExampleRC() {
     loadExample('rc');
+  }
+  function loadExampleRCPulse() {
+    loadExample('rc_pulse');
   }
 
   $(document).keyup(function(e) {
