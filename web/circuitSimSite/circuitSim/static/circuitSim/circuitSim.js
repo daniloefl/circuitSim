@@ -779,6 +779,10 @@
 
   function edit() {
     element = canvas.getActiveObject();
+    if (!element || !("name" in element)) {
+      window.alert("Please select an element to edit.");
+      return;
+    }
     if (element.name.includes("Conn")) return;
     e = mainJson['elements'][element.name];
     var c = document.createElement("div");
@@ -852,6 +856,7 @@
       var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Value (H)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value+'" id="value"></div></div>'
       $('#edit_content').html(toAdd);
     }
+    $('#edit_window').modal('show');
   }
   function endEdit() {
     var objName = $('#edit_content #objName')[0].value;
