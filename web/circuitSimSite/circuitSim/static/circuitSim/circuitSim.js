@@ -3,6 +3,8 @@
   window.Vcount = 0;
   window.Ccount = 0;
   window.Lcount = 0;
+  window.Dcount = 0;
+  window.Qcount = 0;
   window.connectionCount = 0;
   window.extraCount = 0;
   window.GNDcount = 0;
@@ -412,6 +414,274 @@
     return inductor;
   }
 
+  function makeTransistorGroup (name, left, top, horizontal, scale = 2) {
+    if (horizontal) {
+      var l1 = new fabric.Line([0, 10, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([30, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l3 = new fabric.Line([20, 20, 20, 30],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 0,
+                        top: 30
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = name+"#N2";
+      var n3 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 20-4,
+                        top: 30-4
+                        });
+      n3.name = name+"#N3";
+      var t1 = new fabric.Text("1 (C)", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 10-4+8
+                        });
+      var t2 = new fabric.Text("2 (E)", {
+                        fontSize: 9,
+                        left: 40-4,
+                        top: 10-4+8
+                        });
+      var t3 = new fabric.Text("3 (B)", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: 30-4
+                        });
+      var source = new fabric.Group([l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    } else {
+      var l1 = new fabric.Line([20, 30, 20, 40],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([20, 0, 20, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l3 = new fabric.Line([0, 20, 10, 20],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 35,
+                        top: 10
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 20-4,
+                        top: 40-4
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 20-4,
+                        top: 0-4
+                        });
+      n2.name = name+"#N2";
+      var n3 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 0-4,
+                        top: 20-4
+                        });
+      n3.name = name+"#N3";
+      var t1 = new fabric.Text("1 (C)", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: 40-4
+                        });
+      var t2 = new fabric.Text("2 (E)", {
+                        fontSize: 9,
+                        left: 20-4+8,
+                        top: 0-4
+                        });
+      var t3 = new fabric.Text("3 (B)", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 20-4+8
+                        });
+      var source = new fabric.Group([l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    }
+    source.name = name;
+    source.lockRotation = true;
+    source.lockScalingX = true;
+    source.lockScalingY = true;
+    source.rotated = false;
+    return source;
+  }
+
+  function makeDiodeGroup (name, left, top, horizontal, scale = 2) {
+    if (horizontal) {
+      var tr1 = new fabric.Triangle({
+                        stroke: 'black',
+                        fill: '',
+                        top: 0,
+                        left: 30,
+                        width: 20,
+                        height: 20,
+                        angle: 90,
+                        });
+      var p1 = new fabric.Line([30, 0, 30, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([0, 10, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([30, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 10,
+                        top: 20
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4,
+                        top: 10-4+8
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4,
+                        top: 10-4+8
+                        });
+      var source = new fabric.Group([tr1, p1, l1, l2, n1, n2, t1, t2, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    } else {
+      var tr1 = new fabric.Triangle({
+                        stroke: 'black',
+                        fill: '',
+                        top: 30,
+                        left: 20,
+                        width: 20,
+                        height: 20,
+                        angle: 180,
+                        });
+      var p1 = new fabric.Line([0, 30, 20, 30], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([10, 0, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([10, 30, 10, 40],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(name, {
+                        fontSize: 12,
+                        left: 35,
+                        top: 10
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 10-4,
+                        top: 0-4
+                         });
+      n1.name = name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#aaa',
+                        left: 10-4,
+                        top: 40-4
+                        });
+      n2.name = name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 10-4+8,
+                        top: 0-4
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 10-4+8,
+                        top: 40-4
+                        });
+      var source = new fabric.Group([tr1, p1, l1, l2, n1, n2, t1, t2, text], {
+        left: left,
+        top: top,
+        scaleX: scale,
+        scaleY: scale,
+        subTargetCheck: true
+      });
+    }
+    source.name = name;
+    source.lockRotation = true;
+    source.lockScalingX = true;
+    source.lockScalingY = true;
+    source.rotated = false;
+    return source;
+  }
+
   function makeCapacitorGroup (name, left, top, horizontal, scale = 2) {
     if (horizontal) {
       var p1 = new fabric.Line([17, 0, 17, 20], {
@@ -684,6 +954,34 @@
     canvas.add(theNew);
   };
 
+  function rotateDiode() {
+    canvas.remove(this);
+    var name = this.name;
+    if (this.rotated) {
+      theNew = makeDiodeGroup(name, this.left, this.top, true);
+      theNew.rotated = false;
+    } else {
+      theNew = makeDiodeGroup(name, this.left, this.top, false);
+      theNew.rotated = true;
+    }
+    theNew.rotate = rotateDiode;
+    canvas.add(theNew);
+  };
+
+  function rotateTransistor() {
+    canvas.remove(this);
+    var name = this.name;
+    if (this.rotated) {
+      theNew = makeTransistorGroup(name, this.left, this.top, true);
+      theNew.rotated = false;
+    } else {
+      theNew = makeTransistorGroup(name, this.left, this.top, false);
+      theNew.rotated = true;
+    }
+    theNew.rotate = rotateTransistor;
+    canvas.add(theNew);
+  };
+
   function rotateCapacitor() {
     canvas.remove(this);
     var name = this.name;
@@ -855,6 +1153,22 @@
     } else if (element.name.includes("L")) {
       var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Value (H)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value+'" id="value"></div></div>'
       $('#edit_content').html(toAdd);
+    } else if (element.name.includes("D")) {
+      var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'"><div class="form-group row"><label for="objName" class="col-2 col-form-label">Is</label><div class="col-4"><input class="form-control" type="number" value="'+e.Is+'" id="Is"></div><label for="objName" class="col-2 col-form-label">Vt</label><div class="col-4"><input class="form-control" type="number" value="'+e.Vt+'" id="Vt"></div></div>'
+      $('#edit_content').html(toAdd);
+    } else if (element.name.includes("Q")) {
+      var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'">';
+      var selNPN = "selected";
+      var selPNP = "";
+      if (e.type == "pnp") {
+        selPNP = "selected";
+        selNPN = "";
+      }
+      toAdd += '<div class="form-group row"><label for="objName" class="col-2 col-form-label">Type</label><div class="col-8"><select class="custom-select" id="type"><option value="npn" '+selNPN+'>NPN</option><option value="pnp" '+selPNP+'>PNP</option></select></div></div>'
+      toAdd += '<div class="form-group row"><label for="objName" class="col-2 col-form-label">alpha</label><div class="col-4"><input class="form-control" type="number" value="'+e.alpha+'" id="alpha"></div><label for="objName" class="col-2 col-form-label">alpha reverse</label><div class="col-4"><input class="form-control" type="number" value="'+e.alphaRev+'" id="alphaRev"></div></div>'
+      toAdd += '<div class="form-group row"><label for="objName" class="col-2 col-form-label">IsBE</label><div class="col-4"><input class="form-control" type="number" value="'+e.IsBE+'" id="IsBE"></div><label for="objName" class="col-2 col-form-label">VtBE</label><div class="col-4"><input class="form-control" type="number" value="'+e.VtBE+'" id="VtBE"></div></div>'
+      toAdd += '<div class="form-group row"><label for="objName" class="col-2 col-form-label">IsBC</label><div class="col-4"><input class="form-control" type="number" value="'+e.IsBC+'" id="IsBC"></div><label for="objName" class="col-2 col-form-label">VtBC</label><div class="col-4"><input class="form-control" type="number" value="'+e.VtBC+'" id="VtBC"></div></div>'
+      $('#edit_content').html(toAdd);
     }
     $('#edit_window').modal('show');
   }
@@ -869,6 +1183,18 @@
       mainJson['elements'][objName]['type'] = 'DC';
       if ($('#edit_content #type_pulse').prop('checked')) mainJson['elements'][objName]['type'] = 'PULSE';
       if ($('#edit_content #type_sin').prop('checked')) mainJson['elements'][objName]['type'] = 'SIN';
+    } else if (objName.includes("D")) {
+      var props = ['Is', 'Vt'];
+      for (var i = 0; i < props.length; ++i) {
+        var k = props[i];
+        mainJson['elements'][objName][k] = $('#edit_content #'+k)[0].value;
+      }
+    } else if (objName.includes("Q")) {
+      var props = ['IsBE', 'VtBE', 'IsBC', 'VtBC'];
+      for (var i = 0; i < props.length; ++i) {
+        var k = props[i];
+        mainJson['elements'][objName][k] = $('#edit_content #'+k)[0].value;
+      }
     } else {
       var value = $('#edit_content #value')[0].value;
       mainJson['elements'][objName].value = value;
@@ -908,6 +1234,24 @@
     source.rotate = rotateDCV;
     canvas.add(source);
     mainJson['elements'][name] = {'name': name, 'type': 'DC', 'value_dc': 1.0, 'amplitude1_pulse': 0, 'amplitude2_pulse': 1, 'delay_pulse': 0, 'tRise_pulse': 0, 'tFall_pulse': 0, 'tOn_pulse': 0.5, 'period_pulse': 1, 'nCycles_pulse': 10, 'dc_sin': 0, 'amplitude_sin': 1, 'freq_sin': 10, 'delay_sin': 0, 'atenuation_sin': 0, 'angle_sin': 0, 'nCycles_sin': 10};
+  }
+
+  function addDiode() {
+    window.Dcount += 1;
+    var name = "D"+window.Dcount;
+    dio = makeDiodeGroup(name, 5, 5, true);
+    dio.rotate = rotateDiode;
+    canvas.add(dio);
+    mainJson.elements[name] = {'name': name, 'Is': 3.7751345e-14, 'Vt': 25e-3};
+  }
+
+  function addTransistor() {
+    window.Qcount += 1;
+    var name = "Q"+window.Qcount;
+    tra = makeTransistorGroup(name, 5, 5, true);
+    tra.rotate = rotateTransistor;
+    canvas.add(tra);
+    mainJson.elements[name] = {'name': name, 'alpha': 0.99, 'alphaRev': 0.5, 'type': 'npn', 'IsBE': 3.7751345e-14, 'VtBE': 25e-3, 'IsBC': 3.7751345e-14, 'VtBC': 25e-3};
   }
 
   function addCapacitor() {
@@ -1036,6 +1380,8 @@
   var CapacitorBtnCanvas = new fabric.Canvas("CapacitorBtnCanvas");
   var InductorBtnCanvas = new fabric.Canvas("InductorBtnCanvas");
   var GndBtnCanvas = new fabric.Canvas("GndBtnCanvas");
+  var DiodeBtnCanvas = new fabric.Canvas("DiodeBtnCanvas");
+  var TransistorBtnCanvas = new fabric.Canvas("TransistorBtnCanvas");
   var btn = makeDCVGroup("V", 0, 5, true, 1);
   btn.selectable = false;
   DCVBtnCanvas.add(btn);
@@ -1051,6 +1397,12 @@
   var btn = makeGndGroup("Gnd", 0, 5, true, 1);
   btn.selectable = false;
   GndBtnCanvas.add(btn);
+  var btn = makeDiodeGroup("D", 0, 5, true, 1);
+  btn.selectable = false;
+  DiodeBtnCanvas.add(btn);
+  var btn = makeTransistorGroup("Q", 0, 5, true, 1);
+  btn.selectable = false;
+  TransistorBtnCanvas.add(btn);
   fabric.Object.prototype.transparentCorners = false;
   $("#addDCVoltageSourceBtn")[0].onclick = addDCVoltageSource;
   $("#addDCVoltageSourceLink")[0].onclick = addDCVoltageSource;
@@ -1062,6 +1414,10 @@
   $("#addInductorLink")[0].onclick = addInductor;
   $("#addGndBtn")[0].onclick = addGnd;
   $("#addGndLink")[0].onclick = addGnd;
+  $("#addDiodeBtn")[0].onclick = addDiode;
+  $("#addDiodeLink")[0].onclick = addDiode;
+  $("#addTransistorBtn")[0].onclick = addTransistor;
+  $("#addTransistorLink")[0].onclick = addTransistor;
   $("#addConnectionBtn").on('switchChange.bootstrapSwitch', addConnection);
   function addConnectionLink() {
     $('#addConnectionBtn').bootstrapSwitch('toggleState');
