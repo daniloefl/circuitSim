@@ -191,7 +191,6 @@
   function rotateElement() {
     o = canvas.getActiveObject();
     o.rotate();
-    canvas.requestRenderAll();
   }
 
   function makeGndGroup (name, left, top, horizontal, scale = 2) {
@@ -1336,7 +1335,6 @@
 
     delete mainJson.elements[element.name];
     canvas.remove(element);
-    canvas.requestRenderAll();
   }
 
   function prepareSimulOpt() {
@@ -1423,9 +1421,9 @@
     $('#addConnectionBtn').bootstrapSwitch('toggleState');
   }
   $("#addConnectionLink")[0].onclick = addConnectionLink;
-  $("#deleteBtn")[0].onclick = deleteObj;
+  //$("#deleteBtn")[0].onclick = deleteObj;
   $("#deleteLink")[0].onclick = deleteObj;
-  $("#rotateBtn")[0].onclick = rotateElement;
+  //$("#rotateBtn")[0].onclick = rotateElement;
   $("#rotateLink")[0].onclick = rotateElement;
   $("#editBtn")[0].onclick = edit;
   $("#editLink")[0].onclick = edit;
@@ -1497,6 +1495,8 @@
       $('#addConnectionBtn').bootstrapSwitch('state', false, false);
     } else if (e.keyCode == 46) { // delete
       deleteObj();
+    } else if (e.keyCode == 114 || e.keyCode == 82) { // r -> rotate
+      rotateElement();
     }
   });
 
