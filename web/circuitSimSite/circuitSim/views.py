@@ -107,7 +107,6 @@ def setupCircuit(circ, e, conn):
         circ.addPulseVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['amplitude1_pulse']), float(e[name]['amplitude2_pulse']), float(e[name]['delay_pulse']), float(e[name]['tRise_pulse']), float(e[name]['tFall_pulse']), float(e[name]['tOn_pulse']), float(e[name]['period_pulse']), float(e[name]['nCycles_pulse']) )
         nl += "%s %s %s PULSE %f %f %f %f %f %f %f %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['amplitude1_pulse']), float(e[name]['amplitude2_pulse']), float(e[name]['delay_pulse']), float(e[name]['tRise_pulse']), float(e[name]['tFall_pulse']), float(e[name]['tOn_pulse']), float(e[name]['period_pulse']), float(e[name]['nCycles_pulse']) )
       elif e[name]['type'] == 'SIN':
-        #circ.addDCVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value_dc']))
         circ.addSinVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['dc_sin']), float(e[name]['amplitude_sin']), float(e[name]['freq_sin']), float(e[name]['delay_sin']), float(e[name]['atenuation_sin']), float(e[name]['angle_sin']), float(e[name]['nCycles_sin']))
         nl += "%s %s %s SIN %f %f %f %f %f %f %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['dc_sin']), float(e[name]['amplitude_sin']), float(e[name]['freq_sin']), float(e[name]['delay_sin']), float(e[name]['atenuation_sin']), float(e[name]['angle_sin']), float(e[name]['nCycles_sin']))
     if "C" in name:
@@ -121,7 +120,7 @@ def setupCircuit(circ, e, conn):
       nl += "%s %s %s %f %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['Is']), float(e[name]['Vt']))
     if "Q" in name:
       circ.addTransistor(str(name), findNodeId(name+"#N3", nodeName), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), str(e[name]['type']), float(e[name]['alpha']), float(e[name]['alphaRev']), float(e[name]['IsBE']), float(e[name]['VtBE']), float(e[name]['IsBC']), float(e[name]['VtBC']))
-      nl += "%s %s %s %f %f\n" %(str(name), findNodeId(name+"#N3", nodeName), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), str(e[name]['type']), float(e[name]['alpha']), float(e[name]['alphaRev']), float(e[name]['IsBE']), float(e[name]['VtBE']), float(e[name]['IsBC']), float(e[name]['VtBC']))
+      nl += "%s %s %s %s %s %f %f %f %f %f %f\n" %(str(name), findNodeId(name+"#N3", nodeName), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), str(e[name]['type']), float(e[name]['alpha']), float(e[name]['alphaRev']), float(e[name]['IsBE']), float(e[name]['VtBE']), float(e[name]['IsBC']), float(e[name]['VtBC']))
   return [nodeName, nl]
 
 def run(request):
@@ -132,7 +131,8 @@ def run(request):
 <link rel="stylesheet" href="%s" type="text/css">
 <script type="text/javascript" src="%s"></script>
 ''' % (static("circuitSim/bokeh-0.12.4.min.css"), static("circuitSim/bokeh-0.12.4.min.js"))
-  
+  nl = ""
+
   e = {}
   conn = {}
   sim = {'tFinal': float(10), 'dt': float(1e-2), 'method': 'BE', 'internalStep': int(1), 'fft': False, 'nodes' : []}
@@ -281,6 +281,7 @@ def run(request):
     node_desc = "Net list:<br>"+nl.replace("\n", "<br>")
     extra_text = "Simulation successful."
   except:
+    node_desc = "Net list:<br>"+nl.replace("\n", "<br>")
     extra_text = "Simulation failed!"
   data = {'img': final_img, 'node_description': node_desc, 'extra_text': extra_text, 'netlist': nl};
   return JsonResponse(data);
