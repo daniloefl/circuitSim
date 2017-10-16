@@ -1443,6 +1443,7 @@
           window.isDown = false;
           window.line = {};
         } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
+          console.log("Bifurcate");
           // TODO
           // split line
           // add information in JSON
@@ -1453,10 +1454,11 @@
 
           // bifurcate removing old line and making 2
           // o is the node where the bifurcation happens
+          var e = o;
           var o = o.target;
 
           // get x and y of the node where we clicked
-          var pointer = canvas.getPointer(o.e);
+          var pointer = canvas.getPointer(e.e);
           var nx = pointer.x;
           var ny = pointer.y;
 
