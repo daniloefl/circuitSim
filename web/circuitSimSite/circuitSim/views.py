@@ -102,7 +102,7 @@ def setupCircuit(circ, e, conn):
     if "V" in name:
       if e[name]['type'] == 'DC':
         circ.addDCVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value_dc']))
-        nl += "%s %s %s %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value_dc']))
+        nl += "%s %s %s DC %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['value_dc']))
       elif e[name]['type'] == 'PULSE':
         circ.addPulseVoltageSource(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['amplitude1_pulse']), float(e[name]['amplitude2_pulse']), float(e[name]['delay_pulse']), float(e[name]['tRise_pulse']), float(e[name]['tFall_pulse']), float(e[name]['tOn_pulse']), float(e[name]['period_pulse']), float(e[name]['nCycles_pulse']) )
         nl += "%s %s %s PULSE %f %f %f %f %f %f %f %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['amplitude1_pulse']), float(e[name]['amplitude2_pulse']), float(e[name]['delay_pulse']), float(e[name]['tRise_pulse']), float(e[name]['tFall_pulse']), float(e[name]['tOn_pulse']), float(e[name]['period_pulse']), float(e[name]['nCycles_pulse']) )
@@ -119,8 +119,8 @@ def setupCircuit(circ, e, conn):
       circ.addDiode(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['Is']), float(e[name]['Vt']))
       nl += "%s %s %s %f %f\n" %(str(name), findNodeId(name+"#N1", nodeName), findNodeId(name+"#N2", nodeName), float(e[name]['Is']), float(e[name]['Vt']))
     if "Q" in name:
-      circ.addTransistor(str(name), findNodeId(name+"#N3", nodeName), findNodeId(name+"#N2", nodeName), findNodeId(name+"#N1", nodeName), str(e[name]['type']), float(e[name]['alpha']), float(e[name]['alphaRev']), float(e[name]['IsBE']), float(e[name]['VtBE']), float(e[name]['IsBC']), float(e[name]['VtBC']))
-      nl += "%s %s %s %s %s %f %f %f %f %f %f\n" %(str(name), findNodeId(name+"#N3", nodeName), findNodeId(name+"#N2", nodeName), findNodeId(name+"#N1", nodeName), str(e[name]['type']), float(e[name]['alpha']), float(e[name]['alphaRev']), float(e[name]['IsBE']), float(e[name]['VtBE']), float(e[name]['IsBC']), float(e[name]['VtBC']))
+      circ.addTransistor(str(name), findNodeId(name+"#N2", nodeName), findNodeId(name+"#N3", nodeName), findNodeId(name+"#N1", nodeName), str(e[name]['type']), float(e[name]['alpha']), float(e[name]['alphaRev']), -1, -1, -1, -1)
+      nl += "%s %s %s %s %s %f %f %f %f %f %f\n" %(str(name), findNodeId(name+"#N2", nodeName), findNodeId(name+"#N3", nodeName), findNodeId(name+"#N1", nodeName), str(e[name]['type']), float(e[name]['alpha']), float(e[name]['alphaRev']), float(e[name]['IsBE']), float(e[name]['VtBE']), float(e[name]['IsBC']), float(e[name]['VtBC']))
   return [nodeName, nl]
 
 def run(request):
