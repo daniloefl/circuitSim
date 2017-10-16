@@ -790,17 +790,17 @@
     } else if (element.name.includes("V")) {
       var toAdd = '<input type="hidden" name="objName" id="objName" value="'+element.name+'">'
       toAdd += '<div class="form-group row"><label for="objName" class="col-2 col-form-label">Type</label><div class="col-2"><input class="form-control" type="radio" value="DC" id="type_dc" name="type">DC</div><div class="col-2"><input class="form-control" type="radio" value="PULSE" id="type_pulse" name="type">Pulse</div><div class="col-2"><input class="form-control" type="radio" value="SIN" id="type_sin" name="type">Sin</div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_dc"><label for="objName" class="col-2 col-form-label">Value (V)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value_dc+'" id="value_dc"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_pulse"><label for="objName" class="col-2 col-form-label">Amplitude 1 (V)</label><div class="col-2"><input class="form-control" type="number" value="'+e.amplitude1_pulse+'" id="amplitude1_pulse"></div><label for="objName" class="col-2 col-form-label">Amplitude 2 (V)</label><div class="col-2"><input class="form-control" type="number" value="'+e.amplitude2_pulse+'" id="amplitude2_pulse"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_pulse"><label for="objName" class="col-2 col-form-label">Delay (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.delay_pulse+'" id="delay_pulse"></div><label for="objName" class="col-2 col-form-label">Rise time (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.tRise_pulse+'" id="tRise_pulse"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_pulse"><label for="objName" class="col-2 col-form-label">Fall time (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.tFall_pulse+'" id="tFall_pulse"></div><label for="objName" class="col-2 col-form-label">Time on (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.tOn_pulse+'" id="tOn_pulse"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_pulse"><label for="objName" class="col-2 col-form-label">Period (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.period_pulse+'" id="period_pulse"></div><label for="objName" class="col-2 col-form-label">Cycles</label><div class="col-2"><input class="form-control" type="number" value="'+e.nCycles_pulse+'" id="nCycles_pulse"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_sin"><label for="objName" class="col-2 col-form-label">Amplitude (V)</label><div class="col-2"><input class="form-control" type="number" value="'+e.amplitude_sin+'" id="amplitude_sin"></div><label for="objName" class="col-2 col-form-label">DC (V)</label><div class="col-2"><input class="form-control" type="number" value="'+e.dc_sin+'" id="dc_sin"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_sin"><label for="objName" class="col-2 col-form-label">Frequency (Hz)</label><div class="col-2"><input class="form-control" type="number" value="'+e.freq_sin+'" id="freq_sin"></div><label for="objName" class="col-2 col-form-label">Delay (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.delay_sin+'" id="delay_sin"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_sin"><label for="objName" class="col-2 col-form-label">Atenuation</label><div class="col-2"><input class="form-control" type="number" value="'+e.atenuation_sin+'" id="atenuation_sin"></div><label for="objName" class="col-2 col-form-label">Angle</label><div class="col-2"><input class="form-control" type="number" value="'+e.angle_sin+'" id="angle_sin"></div></div>'
-      toAdd += '<div class="form-group row" class="v_opt_sin"><label for="objName" class="col-2 col-form-label">Cycles</label><div class="col-2"><input class="form-control" type="number" value="'+e.nCycles_sin+'" id="nCycles_sin"></div></div>'
+      toAdd += '<div class="form-group row v_opt_dc"><label for="objName" class="col-2 col-form-label">Value (V)</label><div class="col-10"><input class="form-control" type="number" value="'+e.value_dc+'" id="value_dc"></div></div>'
+      toAdd += '<div class="form-group row v_opt_pulse"><label for="objName" class="col-1 col-form-label">Amplitude 1 (V)</label><div class="col-3"><input class="form-control" type="number" value="'+e.amplitude1_pulse+'" id="amplitude1_pulse"></div><label for="objName" class="col-2 col-form-label">Amplitude 2 (V)</label><div class="col-2"><input class="form-control" type="number" value="'+e.amplitude2_pulse+'" id="amplitude2_pulse"></div><label for="objName" class="col-2 col-form-label">Delay (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.delay_pulse+'" id="delay_pulse"></div></div>'
+      toAdd += '<div class="form-group row v_opt_pulse"><label for="objName" class="col-2 col-form-label">Rise time (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.tRise_pulse+'" id="tRise_pulse"></div><label for="objName" class="col-2 col-form-label">Fall time (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.tFall_pulse+'" id="tFall_pulse"></div><label for="objName" class="col-2 col-form-label">Time on (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.tOn_pulse+'" id="tOn_pulse"></div></div>'
+      toAdd += '<div class="form-group row v_opt_pulse"><label for="objName" class="col-2 col-form-label">Period (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.period_pulse+'" id="period_pulse"></div><label for="objName" class="col-2 col-form-label">Cycles</label><div class="col-2"><input class="form-control" type="number" value="'+e.nCycles_pulse+'" id="nCycles_pulse"></div></div>'
+      toAdd += '<div class="form-group row v_opt_sin"><label for="objName" class="col-2 col-form-label">Amplitude (V)</label><div class="col-2"><input class="form-control" type="number" value="'+e.amplitude_sin+'" id="amplitude_sin"></div><label for="objName" class="col-2 col-form-label">DC (V)</label><div class="col-2"><input class="form-control" type="number" value="'+e.dc_sin+'" id="dc_sin"></div><label for="objName" class="col-2 col-form-label">Frequency (Hz)</label><div class="col-2"><input class="form-control" type="number" value="'+e.freq_sin+'" id="freq_sin"></div></div>'
+      toAdd += '<div class="form-group row v_opt_sin"><label for="objName" class="col-2 col-form-label">Delay (s)</label><div class="col-2"><input class="form-control" type="number" value="'+e.delay_sin+'" id="delay_sin"></div><label for="objName" class="col-2 col-form-label">Atenuation</label><div class="col-2"><input class="form-control" type="number" value="'+e.atenuation_sin+'" id="atenuation_sin"></div><label for="objName" class="col-2 col-form-label">Angle</label><div class="col-2"><input class="form-control" type="number" value="'+e.angle_sin+'" id="angle_sin"></div></div>'
+      toAdd += '<div class="form-group row v_opt_sin"><label for="objName" class="col-2 col-form-label">Cycles</label><div class="col-2"><input class="form-control" type="number" value="'+e.nCycles_sin+'" id="nCycles_sin"></div></div>'
       $('#edit_content').html(toAdd);
+      $("#edit_content [name='type']").bootstrapSwitch();
       if (e.type == "DC") {
+        $('#edit_content #type_dc').bootstrapSwitch('toggleState');
         $("#edit_content #type_dc").prop("checked", true);
         $("#edit_content #type_pulse").prop("checked", false);
         $("#edit_content #type_sin").prop("checked", false);
@@ -808,6 +808,7 @@
         $("#edit_content .v_opt_pulse").hide();
         $("#edit_content .v_opt_sin").hide();
       } else if (e.type == "SIN") {
+        $('#edit_content #type_sin').bootstrapSwitch('toggleState');
         $("#edit_content #type_dc").prop("checked", false);
         $("#edit_content #type_pulse").prop("checked", false);
         $("#edit_content #type_sin").prop("checked", true);
@@ -815,6 +816,7 @@
         $("#edit_content .v_opt_pulse").hide();
         $("#edit_content .v_opt_sin").show();
       } else if (e.type == "PULSE") {
+        $('#edit_content #type_pulse').bootstrapSwitch('toggleState');
         $("#edit_content #type_dc").prop("checked", false);
         $("#edit_content #type_pulse").prop("checked", true);
         $("#edit_content #type_sin").prop("checked", false);
@@ -822,21 +824,21 @@
         $("#edit_content .v_opt_pulse").show();
         $("#edit_content .v_opt_sin").sin();
       }
-      $("#edit_content #type_dc").change(function() {
+      $("#edit_content #type_dc").on('switchChange.bootstrapSwitch', function() {
         if ($(this).is(':checked')) {
           $("#edit_content .v_opt_dc").show();
           $("#edit_content .v_opt_pulse").hide();
           $("#edit_content .v_opt_sin").hide();
         }
       });
-      $("#edit_content #type_pulse").change(function() {
+      $("#edit_content #type_pulse").on('switchChange.bootstrapSwitch', function() {
         if ($(this).is(':checked')) {
           $("#edit_content .v_opt_pulse").show();
           $("#edit_content .v_opt_dc").hide();
           $("#edit_content .v_opt_sin").hide();
         }
       });
-      $("#edit_content #type_sin").change(function() {
+      $("#edit_content #type_sin").on('switchChange.bootstrapSwitch', function() {
         if ($(this).is(':checked')) {
           $("#edit_content .v_opt_sin").show();
           $("#edit_content .v_opt_dc").hide();
