@@ -1429,6 +1429,7 @@
   $("#editLink")[0].onclick = edit;
   $("#simulOptBtn")[0].onclick = prepareSimulOpt;
   $("#simulOptLink")[0].onclick = prepareSimulOpt;
+  $("#example_rc")[0].onclick = loadExampleRC;
   
   function save() {
     var canvas_json = canvas.toJSON(['name']);
@@ -1474,7 +1475,27 @@
   }
   $('#open_file_load')[0].onclick = openFile;
 
+  function loadExample(fname) {
+    $.getJSON( "static/circuitSim/"+fname+".json", function( data ) {
+      var result = data;
+      mainJson = result.mainJson;
+      prepareSimulOpt();
+      canvas.loadFromJSON(result.canvasJson, function() {
+        canvas.renderAll(); 
+      },function(o,object){
+      });
+    });
+  }
+  function loadExampleRC() {
+    loadExample('rc');
+  }
+
   $(document).keyup(function(e) {
+    if (($("#edit_window").data('bs.modal') || {})._isShown) return;
+    if (($("#simulopt_window").data('bs.modal') || {})._isShown) return;
+    if (($("#results_window").data('bs.modal') || {})._isShown) return;
+    if (($("#save_window").data('bs.modal') || {})._isShown) return;
+    if (($("#open_window").data('bs.modal') || {})._isShown) return;
     if (e.keyCode == 27) { // escape key maps to keycode `27`
       if (window.addConnectionMode) {
         canvas.remove(window.line);
