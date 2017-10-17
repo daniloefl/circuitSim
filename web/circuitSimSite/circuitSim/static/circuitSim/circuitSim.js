@@ -279,28 +279,13 @@
 
   function makeInductorGroup (name, left, top, horizontal, scale = 2) {
     if (horizontal) {
-      var a1 = new fabric.Circle({
-                        radius: 8,
-                        fill: '',
-                        left: 0,
-                        top: 10-4,
-                        startAngle: 0,
-                        endAngle: 1.5*Math.PI
-                         });
-      var a2 = new fabric.Circle({
-                        radius: 8,
-                        fill: '',
-                        left: 12,
-                        top: 10-4,
-                        startAngle: -0.5*Math.PI,
-                        endAngle: Math.PI
-                         });
-      var l1 = new fabric.Line([0, 10, 17, 10],
+      var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black'});
+      var l1 = new fabric.Line([4, 10, 10, 10],
                         {
                         stroke: 'black',
                         fill: ""}
                         );
-      var l2 = new fabric.Line([23, 10, 40, 10],
+      var l2 = new fabric.Line([32, 10, 40, 10],
                         {
                         stroke: 'black',
                         fill: ""}
@@ -334,7 +319,7 @@
                         left: 40-4,
                         top: 10-4+8
                         });
-      var inductor = new fabric.Group([a1, a2, l1, l2, n1, n2, t1, t2, text], {
+      var inductor = new fabric.Group([a1, l1, l2, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -342,28 +327,13 @@
         subTargetCheck: true
       });
     } else {
-      var a1 = new fabric.Circle({
-                        radius: 8,
-                        fill: '',
-                        left: 0,
-                        top: 10-4,
-                        startAngle: 0,
-                        endAngle: 1.5*Math.PI
-                         });
-      var a2 = new fabric.Circle({
-                        radius: 8,
-                        fill: '',
-                        left: 12,
-                        top: 10-4,
-                        startAngle: -0.5*Math.PI,
-                        endAngle: Math.PI
-                         });
-      var l1 = new fabric.Line([20, 17, 20, 30],
+      var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black', angle: 90, left: 31, top: 2});
+      var l1 = new fabric.Line([20, 25, 20, 30],
                         {
                         stroke: 'black',
                         fill: ""}
                         );
-      var l2 = new fabric.Line([20, -3, 20, 10],
+      var l2 = new fabric.Line([20, -3, 20, 2],
                         {
                         stroke: 'black',
                         fill: ""}
@@ -397,7 +367,7 @@
                         left: 20-4+8,
                         top: 30-4
                         });
-      var inductor = new fabric.Group([a1, a2, l1, l2, n1, n2, t1, t2, text], {
+      var inductor = new fabric.Group([a1, l1, l2, n1, n2, t1, t2, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -1354,14 +1324,13 @@
     element = canvas.getActiveObject();
     if (element.name.includes("Conn")) {
       deleteConnection(element);
-    } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C") || element.name.includes("E") || element.name.includes("D") || element.name.includes("Q")) {
+    } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C") || element.name.includes("E") || element.name.includes("D") || element.name.includes("Q") || element.name.includes("L")) {
       deleteElement(element);
     }
   }
   function deleteConnection(element) {
     delete mainJson.connections[element.name];
     canvas.remove(element);
-    canvas.requestRenderAll();
   }
 
   function deleteElement(element) {
