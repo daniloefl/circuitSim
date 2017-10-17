@@ -415,6 +415,31 @@
 
   function makeTransistorGroup (name, left, top, horizontal, scale = 2) {
     if (horizontal) {
+      var tr1 = new fabric.Line([30, 10, 20, 20],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var tr2 = new fabric.Line([20, 20, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var tr3 = new fabric.Triangle(
+                        {
+                        height: 4,
+                        width: 4,
+                        left: 10-2,
+                        top: 10+2,
+                        angle: -45,
+                        stroke: 'black',
+                        fill: "black"}
+                        );
+      var lp1 = new fabric.Line([10, 20, 30, 20],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
       var l1 = new fabric.Line([0, 10, 10, 10],
                         {
                         stroke: 'black',
@@ -459,19 +484,19 @@
       var t1 = new fabric.Text("1 (E)", {
                         fontSize: 9,
                         left: 0-4,
-                        top: 10-4+8
+                        top: 10-4-8
                         });
       var t2 = new fabric.Text("2 (C)", {
                         fontSize: 9,
                         left: 40-4,
-                        top: 10-4+8
+                        top: 10-4-8
                         });
       var t3 = new fabric.Text("3 (B)", {
                         fontSize: 9,
                         left: 20-4+8,
                         top: 30-4
                         });
-      var source = new fabric.Group([l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
+      var source = new fabric.Group([lp1, tr1, tr2, tr3, l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
         left: left,
         top: top,
         scaleX: scale,
@@ -479,6 +504,31 @@
         subTargetCheck: true
       });
     } else {
+      var tr1 = new fabric.Line([20, 10, 10, 20],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var tr2 = new fabric.Line([10, 20, 20, 30],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var tr3 = new fabric.Triangle(
+                        {
+                        height: 4,
+                        width: 4,
+                        left: 20+3,
+                        top: 30,
+                        angle: 135,
+                        stroke: 'black',
+                        fill: "black"}
+                        );
+      var lp1 = new fabric.Line([10, 10, 10, 30],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
       var l1 = new fabric.Line([20, 30, 20, 40],
                         {
                         stroke: 'black',
@@ -533,9 +583,9 @@
       var t3 = new fabric.Text("3 (B)", {
                         fontSize: 9,
                         left: 0-4,
-                        top: 20-4+8
+                        top: 20-4+12
                         });
-      var source = new fabric.Group([l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
+      var source = new fabric.Group([lp1, tr1, tr2, tr3, l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
         left: left,
         top: top,
         scaleX: scale,
