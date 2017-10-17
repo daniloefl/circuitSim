@@ -130,7 +130,7 @@ def run(request):
   final_img = '''
 <link rel="stylesheet" href="%s" type="text/css">
 <script type="text/javascript" src="%s"></script>
-''' % (static("circuitSim/bokeh-0.12.4.min.css"), static("circuitSim/bokeh-0.12.4.min.js"))
+''' % (static("circuitSim/bokeh.min.css"), static("circuitSim/bokeh.min.js"))
   nl = ""
 
   e = {}
@@ -140,11 +140,12 @@ def run(request):
     if request.method == "POST":
       import json
       data = json.loads(request.POST.get('data'))
-      e = data['elements']
-      conn = data['connections']
-      sim = data['simulation']
-    else:
-      raise "This should only be used with the POST method!"
+    elif request.method == "GET":
+      import json
+      data = json.loads(request.GET.get('data'))
+    e = data['elements']
+    conn = data['connections']
+    sim = data['simulation']
 
     circ = circuitPy.Circuit()
     nodeName, nl = setupCircuit(circ, e, conn)
