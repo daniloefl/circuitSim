@@ -40,6 +40,14 @@ A Web interface is available, on which Django is used on the server-side and Jav
 on the client. The server-side component communicates with the Python interface to perform the simulation.
 
 To install the Web interface, one must have Python, the Boost Python libraries and Django installed.
+To get the requirements in Ubuntu (substitute `python` with `python3` and `pip` with `pip3` to use Python 3 instead;
+one can also remove `--user` and use `sudo -H pip install bokeh` for a global installation):
+
+```
+sudo apt-get install libboost-python-dev libboost-python python libpython-dev python-pip python-django cmake
+pip install --user bokeh==0.12.10
+```
+
 First compile the Python interface. This will also copy the library `circuitPy.so` produced in the lib directory to
 the static area of the web interface (`web/circuitSimSite/circuitSim/static/circuitSim`):
 
