@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import loader
 from django.http import JsonResponse
+from django.template import RequestContext
 
 from django.templatetags.static import static
 
@@ -21,8 +22,9 @@ import bokeh.models
 import bokeh.embed
 
 def index(request):
+    c = RequestContext(request);
     template = loader.get_template('circuitSim/index.html')
-    return HttpResponse(template.render(request))
+    return HttpResponse(template.render(c))
 
 def findConnection(conn, key):
   for c in conn:

@@ -1124,7 +1124,7 @@
     });
     $.ajax({
         type: 'GET',
-        url: base_url+'/run',
+        url: 'run',
         data: { data: JSON.stringify(mainJson)},
         dataType: 'json',
         success: function (rawImageData) {
