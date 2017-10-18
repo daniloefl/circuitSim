@@ -1866,10 +1866,12 @@
     // advance from (x1,y1) to point of closest approach
     if (Math.abs(x2 - x1) > Math.abs(y2 - y1)) {
       var theta = Math.atan((y2 - y1)/(x2 - x1));
+      if (x2 < x1) dl = -dl;
       nx = x1 + dl*Math.cos(theta);
       ny = y1 + dl*Math.sin(theta);
     } else {
       var theta = Math.atan((x2 - x1)/(y2 - y1));
+      if (y2 < y1) dl = -dl;
       nx = x1 + dl*Math.sin(theta);
       ny = y1 + dl*Math.cos(theta);
     }
