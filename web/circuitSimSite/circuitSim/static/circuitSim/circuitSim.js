@@ -1147,7 +1147,7 @@
         $("#edit_content #type_sin").prop("checked", false);
         $("#edit_content .v_opt_dc").hide();
         $("#edit_content .v_opt_pulse").show();
-        $("#edit_content .v_opt_sin").sin();
+        $("#edit_content .v_opt_sin").hide();
       }
       $("#edit_content #type_dc").on('switchChange.bootstrapSwitch', function() {
         if ($(this).is(':checked')) {
