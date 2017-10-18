@@ -190,6 +190,47 @@
 
   function rotateElement() {
     o = canvas.getActiveObject();
+
+    // delete lines connected to it
+    var element = o;
+    if (!element.name.includes("E")) {
+      var toDeleteConn = [];
+      for (var i = 0; i < element._objects.length; ++i) {
+        if (("name" in element._objects[i]) && element._objects[i].name.includes("#N")) {
+          // found node
+          for (var key in mainJson.connections) {
+            if (mainJson.connections[key].from == element._objects[i].name) {
+              // remove this connection
+              deleteLine(key);
+              toDeleteConn.push(key);
+            }
+            if (mainJson.connections[key].to == element._objects[i].name) {
+              // remove this connection
+              deleteLine(key);
+              toDeleteConn.push(key);
+            }
+          }
+        }
+      }
+      for (var i = 0 ; i < toDeleteConn.length; ++i)
+        delete mainJson.connections[toDeleteConn[i]];
+    } else {
+      var toDeleteConn = [];
+      for (var key in mainJson.connections) {
+        if (mainJson.connections[key].from == element.name) {
+          // remove this connection
+          deleteLine(key);
+          toDeleteConn.push(key);
+        }
+        if (mainJson.connections[key].to == element.name) {
+          // remove this connection
+          deleteLine(key);
+          toDeleteConn.push(key);
+        }
+      }
+      for (var i = 0 ; i < toDeleteConn.length; ++i)
+        delete mainJson.connections[toDeleteConn[i]];
+    }
     o.rotate();
   }
 
@@ -1951,6 +1992,30 @@
     window.line = {};
   }
 
+  function startConnectionInE(o) {
+    window.isDown = true; // set state so we know that we now started drawing a wire
+
+    // get x and y of the node where we clicked
+    var elObj = o.target;
+    var x0 = elObj.left + 8;
+    var y0 = elObj.top + 8;
+    // draw connection and save each line to be drawn in line
+    
+    var l = new fabric.Line([x0,y0,x0,y0],
+                  {
+                  stroke: 'black',
+                  fill: "",
+                  strokeWidth: 3,
+                  });
+    window.line = l;
+    window.connectionCount += 1;
+    window.line.name = "Conn"+window.connectionCount;
+    canvas.add(window.line);
+    canvas.bringToFront(elObj);
+    window.connectionPoint1 = elObj.name;
+    canvas.renderAll();
+  }
+
   function startConnection(o) {
     // father is the element
     var father = o.target;
@@ -2126,7 +2191,9 @@
       var pointer = canvas.getPointer(o.e); // mouse pointer
       if (!window.isDown) { // did not start drawing a wire yet
         // check if we clicked in an element
-        if (o.subTargets && o.subTargets.length > 0 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
+        if ("target" in o && o.target && "name" in o.target && o.target.name.includes("E")) {
+          startConnectionInE(o);
+        } else if (o.subTargets && o.subTargets.length > 0 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
           startConnection(o);
         } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
           bifurcateFrom(o);
