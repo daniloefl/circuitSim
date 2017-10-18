@@ -1336,26 +1336,44 @@
   function deleteElement(element) {
     element = canvas.getActiveObject();
 
-    var toDeleteConn = [];
-    for (var i = 0; i < element._objects.length; ++i) {
-      if (("name" in element._objects[i]) && element._objects[i].name.includes("#N")) {
-        // found node
-        for (var key in mainJson.connections) {
-          if (mainJson.connections[key].from == element._objects[i].name) {
-            // remove this connection
-            deleteLine(key);
+    if (!element.name.includes("E")) {
+      var toDeleteConn = [];
+      for (var i = 0; i < element._objects.length; ++i) {
+        if (("name" in element._objects[i]) && element._objects[i].name.includes("#N")) {
+          // found node
+          for (var key in mainJson.connections) {
+            if (mainJson.connections[key].from == element._objects[i].name) {
+              // remove this connection
+              deleteLine(key);
+              toDeleteConn.push(key);
+            }
+            if (mainJson.connections[key].to == element._objects[i].name) {
+              // remove this connection
+              deleteLine(key);
+              toDeleteConn.push(key);
+            }
           }
-          if (mainJson.connections[key].to == element._objects[i].name) {
-            // remove this connection
-            deleteLine(key);
-          }
+        }
+      }
+      for (var i = 0 ; i < toDeleteConn.length; ++i)
+        delete mainJson.connections[toDeleteConn[i]];
+    } else {
+      var toDeleteConn = [];
+      for (var key in mainJson.connections) {
+        if (mainJson.connections[key].from == element.name) {
+          // remove this connection
+          deleteLine(key);
+          toDeleteConn.push(key);
+        }
+        if (mainJson.connections[key].to == element.name) {
+          // remove this connection
+          deleteLine(key);
           toDeleteConn.push(key);
         }
       }
+      for (var i = 0 ; i < toDeleteConn.length; ++i)
+        delete mainJson.connections[toDeleteConn[i]];
     }
-    for (var i = 0 ; i < toDeleteConn.length; ++i)
-      delete mainJson.connections[toDeleteConn[i]];
-
     delete mainJson.elements[element.name];
     canvas.remove(element);
   }
@@ -2124,10 +2142,10 @@
         }
       } else { // already selected first node
         // if it is a node, end selection
-        if ("subTargets" in o && o.subTargets.length == 1 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
-          endSelectionInNode(o);
-        } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("E")) {
+        if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("E")) {
           endSelectionInENode(o);
+        } else if ("subTargets" in o && o.subTargets.length == 1 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
+          endSelectionInNode(o);
         } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
           bifurcateTo(o);
         } else { // it is not a node, nor another line, so make a line and keep going
