@@ -233,7 +233,7 @@ def run(request):
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     if (not sim['fft']):
-      f = bokeh.plotting.figure(x_range=(0, t[-1]), y_range=(minVal, maxVal), plot_width=600, plot_height = 400, title="", toolbar_location="above")
+      f = bokeh.plotting.figure(plot_width=600, plot_height = 400, title="", toolbar_location="above")
       for nname in n:
         l = 'black'
         l = lc[count % len(lc)]

@@ -19,6 +19,10 @@
     <script src="{% static 'circuitSim/fabric.min.js' %}"></script>
    
     <link rel="stylesheet" href="{% static 'circuitSim/style.css' %}">
+    <script>
+      var static_path="{% static 'circuitSim/' %}";
+      var base_url="{% url 'index' %}";
+    </script>
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-light bg-faded navbar-toggleable-md" style="background-color: #e3f2fd;">

@@ -25,20 +25,24 @@
   mainJson['simulation']['nodes'] = [];
   mainJson['simulation']['fft'] = false;
 
+  // using jQuery
   function getCookie(name) {
     var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-      var cookies = document.cookie.split(';');
-      for (var i = 0; i < cookies.length; i++) {
-        var cookie = jQuery.trim(cookies[i]);
-        if (cookie.substring(0, name.length + 1) == (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
         }
-      }
     }
     return cookieValue;
   }
+  var csrftoken = getCookie('csrftoken');
+
   function csrfSafeMethod(method) {
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
   }
@@ -1111,18 +1115,16 @@
     c.appendChild(text_div);
 
     // run! (AJAX)
-    var csrftoken = getCookie('csrftoken');
     $.ajaxSetup({
-      crossDomain: false, // obviates need for sameOrigin test
       beforeSend: function(xhr, settings) {
-        if (!csrfSafeMethod(settings.type)) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
       }
     });
     $.ajax({
-        type: 'POST',
-        url: '/run',
+        type: 'GET',
+        url: base_url+'/run',
         data: { data: JSON.stringify(mainJson)},
         dataType: 'json',
         success: function (rawImageData) {
@@ -1562,7 +1564,7 @@
   $('#open_file_load')[0].onclick = openFile;
 
   function loadExample(fname) {
-    $.getJSON( "static/circuitSim/"+fname+".json", function( data ) {
+    $.getJSON(static_path+"/"+fname+".json", function( data ) {
       var result = data;
       mainJson = result.mainJson;
       prepareSimulOpt();
