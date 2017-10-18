@@ -50,7 +50,7 @@
   function makeNodeGroup (name, left, top, scale = 2) {
     var n1 = new fabric.Circle({
                         radius: 4,
-                        fill: '#aaa',
+                        fill: '#000',
                         left: 0-4,
                         top: 5-4
                         });
@@ -66,119 +66,79 @@
     singleNode.lockRotation = true;
     singleNode.lockScalingX = true;
     singleNode.lockScalingY = true;
-    singleNode.rotated = false;
+    singleNode.rotated = 0;
     return singleNode;
   }
 
-  function makeResistorGroup (name, left, top, horizontal, scale = 2) {
-    if (horizontal) {
-      var poly = new fabric.Path('M0,5L5,5L7.5,0L10,10L12.5,0L15,10L17.5,0L20,10L22.5,0L25,10L27.5,5L32.5,5',
-                        {
-                        stroke: 'black',
-                        fill: "",
-                        left: 0,
-                        top: 0
-                        });
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 10,
-                        top: 20
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 5-4
-                        });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 32.5-4,
-                        top: 5-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 5-4+8
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 32.5-4,
-                        top: 5-4+8
-                        });
-      var resistor = new fabric.Group([poly, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    } else {
-      var poly = new fabric.Path('M0,5L5,5L7.5,0L10,10L12.5,0L15,10L17.5,0L20,10L22.5,0L25,10L27.5,5L32.5,5',
-                        {
-                        stroke: 'black',
-                        fill: "",
-                        left: 0,
-                        angle: 90,
-                        top: 0
-                        });
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 10,
-                        top: 20
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: -15+4,
-                        top: 0-4
-                        });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: -15+4,
-                        top: 32.5-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: -15+4+8,
-                        top: 0-4
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: -15+4+8,
-                        top: 32.5-4
-                        });
-      var resistor = new fabric.Group([poly, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    }
+  function makeResistorGroup (name, left, top, r, scale = 2) {
+    var angle = (r%4)*90;
+    var angleText = -(r%4)*90;
+    var textTop = 0;
+    var textLeft = 0;
+    if (r % 4 == 1) textTop = 10;
+    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
+    if (r % 4 == 3) textLeft = 10;
+    var poly = new fabric.Path('M0,5L5,5L7.5,0L10,10L12.5,0L15,10L17.5,0L20,10L22.5,0L25,10L27.5,5L32.5,5',
+                      {
+                      stroke: 'black',
+                      fill: "",
+                      left: 0,
+                      top: 0,
+                      });
+    var text = new fabric.Text(name, {
+                      fontSize: 12,
+                      left: 10+textLeft,
+                      top: 20+textTop,
+                      angle: angleText
+                      });
+    var n1 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 0-4,
+                      top: 5-4,
+                      });
+    n1.name = name+"#N1";
+    var n2 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 32.5-4,
+                      top: 5-4,
+                      });
+    n2.name = name+"#N2";
+    var t1 = new fabric.Text("1", {
+                      fontSize: 9,
+                      left: 0-4+textLeft,
+                      top: 5-4+8+textTop,
+                      angle: angleText
+                      });
+    var t2 = new fabric.Text("2", {
+                      fontSize: 9,
+                      left: 32.5-4+textLeft,
+                      top: 5-4+8+textTop,
+                      angle: angleText
+                      });
+    var resistor = new fabric.Group([poly, n1, n2, t1, t2, text], {
+      left: left,
+      top: top,
+      scaleX: scale,
+      scaleY: scale,
+      subTargetCheck: true,
+      angle: angle
+    });
     resistor.name = name;
     resistor.lockRotation = true;
     resistor.lockScalingX = true;
     resistor.lockScalingY = true;
-    resistor.rotated = false;
+    resistor.rotated = r;
     return resistor;
   }
 
   function rotateResistor() {
     canvas.remove(this);
     var name = this.name;
-    if (this.rotated) {
-      theNew = makeResistorGroup(name, this.left, this.top, true);
-      theNew.rotated = false;
-    } else {
-      theNew = makeResistorGroup(name, this.left, this.top, false);
-      theNew.rotated = true;
-    }
+    var r = (this.rotated + 1) % 4;
+    theNew = makeResistorGroup(name, this.left, this.top, r);
+    theNew.rotated = r;
     theNew.rotate = rotateResistor;
     canvas.add(theNew);
   };
@@ -186,7 +146,7 @@
   function addResistor() {
     window.Rcount += 1;
     var name = "R"+window.Rcount;
-    resistor = makeResistorGroup(name, 5, 5, true);
+    resistor = makeResistorGroup(name, 5, 5, 0);
     resistor.rotate = rotateResistor;
     canvas.add(resistor);
     mainJson['elements'][name] = {'name': name, 'value': 1.0};
@@ -238,376 +198,228 @@
     o.rotate();
   }
 
-  function makeGndGroup (name, left, top, horizontal, scale = 2) {
-    if (horizontal) {
-      var p1 = new fabric.Line([17, 0, 17, 20], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var p2 = new fabric.Line([20, 4, 20, 16], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var p3 = new fabric.Line([23, 8, 23, 12], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var l1 = new fabric.Line([0, 10, 17, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 10-4
-                         });
-      n1.name = name+"#N1";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 10-4+8
-                        });
-      var gnd = new fabric.Group([p1, p2, p3, l1, n1, t1], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    } else {
-      var p1 = new fabric.Line([18, 18, 22, 18], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var p2 = new fabric.Line([14, 14, 26, 14], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var p3 = new fabric.Line([10, 10, 30, 10], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var l1 = new fabric.Line([20, 0, 20, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: 0-4
-                         });
-      n1.name = name+"#N1";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: 0-4
-                        });
-      var gnd = new fabric.Group([p1, p2, p3, l1, n1, t1], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    }
+  function makeGndGroup (name, left, top, r, scale = 2) {
+    var angle = (r%4)*90;
+    var angleText = -(r%4)*90;
+    var textTop = 0;
+    var textLeft = 0;
+    if (r % 4 == 1) textTop = 15;
+    if (r % 4 == 2) textTop = -10;
+    if (r % 4 == 3) textLeft = 10;
+    var p1 = new fabric.Line([17, 0, 17, 20], {
+                      stroke: 'black',
+                      fill: ''
+                      });
+    var p2 = new fabric.Line([20, 4, 20, 16], {
+                      stroke: 'black',
+                      fill: ''
+                      });
+    var p3 = new fabric.Line([23, 8, 23, 12], {
+                      stroke: 'black',
+                      fill: ''
+                      });
+    var l1 = new fabric.Line([0, 10, 17, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var n1 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 0-4,
+                      top: 10-4
+                       });
+    n1.name = name+"#N1";
+    var t1 = new fabric.Text("1", {
+                      fontSize: 9,
+                      left: 0-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var gnd = new fabric.Group([p1, p2, p3, l1, n1, t1], {
+      left: left,
+      top: top,
+      scaleX: scale,
+      scaleY: scale,
+      subTargetCheck: true,
+      angle: angle
+    });
     gnd.name = name;
     gnd.lockRotation = true;
     gnd.lockScalingX = true;
     gnd.lockScalingY = true;
-    gnd.rotated = false;
+    gnd.rotated = r;
     return gnd;
   }
 
-  function makeInductorGroup (name, left, top, horizontal, scale = 2) {
-    if (horizontal) {
-      var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black'});
-      var l1 = new fabric.Line([4, 10, 10, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([32, 10, 40, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 10,
-                        top: 20
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 10-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 40-4,
-                        top: 10-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 10-4+8
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 40-4,
-                        top: 10-4+8
-                        });
-      var inductor = new fabric.Group([a1, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    } else {
-      var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black', angle: 90, left: 31, top: 2});
-      var l1 = new fabric.Line([20, 25, 20, 30],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([20, -3, 20, 2],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 35,
-                        top: 10
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: -3-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: 30-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: -3-4
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: 30-4
-                        });
-      var inductor = new fabric.Group([a1, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    }
+  function makeInductorGroup (name, left, top, r, scale = 2) {
+    var angle = (r%4)*90;
+    var angleText = -(r%4)*90;
+    var textTop = 0;
+    var textLeft = 0;
+    if (r % 4 == 1) textTop = 15;
+    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
+    if (r % 4 == 3) textLeft = 10;
+    var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black'});
+    var l1 = new fabric.Line([4, 10, 10, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var l2 = new fabric.Line([32, 10, 40, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var text = new fabric.Text(name, {
+                      fontSize: 12,
+                      left: 10+textLeft,
+                      top: 20+textTop,
+                      angle: angleText
+                      });
+    var n1 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 0-4,
+                      top: 10-4
+                       });
+    n1.name = name+"#N1";
+    var n2 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 40-4,
+                      top: 10-4
+                      });
+    n2.name = name+"#N2";
+    var t1 = new fabric.Text("1", {
+                      fontSize: 9,
+                      left: 0-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var t2 = new fabric.Text("2", {
+                      fontSize: 9,
+                      left: 40-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var inductor = new fabric.Group([a1, l1, l2, n1, n2, t1, t2, text], {
+      left: left,
+      top: top,
+      scaleX: scale,
+      scaleY: scale,
+      subTargetCheck: true,
+      angle: angle
+    });
     inductor.name = name;
     inductor.lockRotation = true;
     inductor.lockScalingX = true;
     inductor.lockScalingY = true;
-    inductor.rotated = false;
+    inductor.rotated = r;
     return inductor;
   }
 
-  function makeTransistorGroup (name, left, top, horizontal, scale = 2) {
-    if (horizontal) {
-      var tr1 = new fabric.Line([30, 10, 20, 20],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var tr2 = new fabric.Line([20, 20, 10, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var tr3 = new fabric.Triangle(
-                        {
-                        height: 4,
-                        width: 4,
-                        left: 10-2,
-                        top: 10+2,
-                        angle: -45,
-                        stroke: 'black',
-                        fill: "black"}
-                        );
-      var lp1 = new fabric.Line([10, 20, 30, 20],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l1 = new fabric.Line([0, 10, 10, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([30, 10, 40, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l3 = new fabric.Line([20, 20, 20, 30],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 0,
-                        top: 30
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 10-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 40-4,
-                        top: 10-4
-                        });
-      n2.name = name+"#N2";
-      var n3 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: 30-4
-                        });
-      n3.name = name+"#N3";
-      var t1 = new fabric.Text("1 (E)", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 10-4-8
-                        });
-      var t2 = new fabric.Text("2 (C)", {
-                        fontSize: 9,
-                        left: 40-4,
-                        top: 10-4-8
-                        });
-      var t3 = new fabric.Text("3 (B)", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: 30-4
-                        });
-      var source = new fabric.Group([lp1, tr1, tr2, tr3, l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    } else {
-      var tr1 = new fabric.Line([20, 10, 10, 20],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var tr2 = new fabric.Line([10, 20, 20, 30],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var tr3 = new fabric.Triangle(
-                        {
-                        height: 4,
-                        width: 4,
-                        left: 20+3,
-                        top: 30,
-                        angle: 135,
-                        stroke: 'black',
-                        fill: "black"}
-                        );
-      var lp1 = new fabric.Line([10, 10, 10, 30],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l1 = new fabric.Line([20, 30, 20, 40],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([20, 0, 20, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l3 = new fabric.Line([0, 20, 10, 20],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 35,
-                        top: 10
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: 40-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: 0-4
-                        });
-      n2.name = name+"#N2";
-      var n3 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 20-4
-                        });
-      n3.name = name+"#N3";
-      var t1 = new fabric.Text("1 (E)", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: 40-4
-                        });
-      var t2 = new fabric.Text("2 (C)", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: 0-4
-                        });
-      var t3 = new fabric.Text("3 (B)", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 20-4+12
-                        });
-      var source = new fabric.Group([lp1, tr1, tr2, tr3, l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    }
+  function makeTransistorGroup (name, left, top, r, scale = 2) {
+    var angle = (r%4)*90;
+    var angleText = -(r%4)*90;
+    var textTop = 0;
+    var textLeft = 0;
+    if (r % 4 == 1) { textTop = 7; }
+    if (r % 4 == 2) { textTop = 10; textLeft = 20; }
+    if (r % 4 == 3) { textLeft = 10; textTop = -10; }
+    var tr1 = new fabric.Line([30, 10, 20, 20],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var tr2 = new fabric.Line([20, 20, 10, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var tr3 = new fabric.Triangle(
+                      {
+                      height: 4,
+                      width: 4,
+                      left: 10-2,
+                      top: 10+2,
+                      angle: -45,
+                      stroke: 'black',
+                      fill: "black"}
+                      );
+    var lp1 = new fabric.Line([10, 20, 30, 20],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var l1 = new fabric.Line([0, 10, 10, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var l2 = new fabric.Line([30, 10, 40, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var l3 = new fabric.Line([20, 20, 20, 30],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var text = new fabric.Text(name, {
+                      fontSize: 12,
+                      left: 0+textLeft,
+                      top: 30+textTop,
+                      angle: angleText
+                      });
+    var n1 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 0-4,
+                      top: 10-4
+                       });
+    n1.name = name+"#N1";
+    var n2 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 40-4,
+                      top: 10-4
+                      });
+    n2.name = name+"#N2";
+    var n3 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 20-4,
+                      top: 30-4
+                      });
+    n3.name = name+"#N3";
+    var t1 = new fabric.Text("1 (E)", {
+                      fontSize: 9,
+                      left: 0-4+textLeft,
+                      top: 10-4-8+textTop,
+                      angle: angleText
+                      });
+    var t2 = new fabric.Text("2 (C)", {
+                      fontSize: 9,
+                      left: 40-4+textLeft,
+                      top: 10-4-8+textTop,
+                      angle: angleText
+                      });
+    var t3 = new fabric.Text("3 (B)", {
+                      fontSize: 9,
+                      left: 20-4+8+textLeft,
+                      top: 30-4+textTop,
+                      angle: angleText
+                      });
+    var source = new fabric.Group([lp1, tr1, tr2, tr3, l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
+      left: left,
+      top: top,
+      scaleX: scale,
+      scaleY: scale,
+      subTargetCheck: true,
+      angle: angle
+    });
     source.name = name;
     source.lockRotation = true;
     source.lockScalingX = true;
@@ -616,386 +428,234 @@
     return source;
   }
 
-  function makeDiodeGroup (name, left, top, horizontal, scale = 2) {
-    if (horizontal) {
-      var tr1 = new fabric.Triangle({
-                        stroke: 'black',
-                        fill: '',
-                        top: 0,
-                        left: 30,
-                        width: 20,
-                        height: 20,
-                        angle: 90,
-                        });
-      var p1 = new fabric.Line([30, 0, 30, 20], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var l1 = new fabric.Line([0, 10, 10, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([30, 10, 40, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 10,
-                        top: 20
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 10-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 40-4,
-                        top: 10-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 10-4+8
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 40-4,
-                        top: 10-4+8
-                        });
-      var source = new fabric.Group([tr1, p1, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    } else {
-      var tr1 = new fabric.Triangle({
-                        stroke: 'black',
-                        fill: '',
-                        top: 30,
-                        left: 20,
-                        width: 20,
-                        height: 20,
-                        angle: 180,
-                        });
-      var p1 = new fabric.Line([0, 30, 20, 30], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var l1 = new fabric.Line([10, 0, 10, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([10, 30, 10, 40],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 35,
-                        top: 10
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 10-4,
-                        top: 0-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 10-4,
-                        top: 40-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 10-4+8,
-                        top: 0-4
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 10-4+8,
-                        top: 40-4
-                        });
-      var source = new fabric.Group([tr1, p1, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    }
+  function makeDiodeGroup (name, left, top, r, scale = 2) {
+    var angle = (r%4)*90;
+    var angleText = -(r%4)*90;
+    var textTop = 0;
+    var textLeft = 0;
+    if (r % 4 == 1) textTop = 15;
+    if (r % 4 == 2) textTop = -10;
+    if (r % 4 == 3) textLeft = 10;
+    var tr1 = new fabric.Triangle({
+                      stroke: 'black',
+                      fill: '',
+                      top: 0,
+                      left: 30,
+                      width: 20,
+                      height: 20,
+                      angle: 90,
+                      });
+    var p1 = new fabric.Line([30, 0, 30, 20], {
+                      stroke: 'black',
+                      fill: ''
+                      });
+    var l1 = new fabric.Line([0, 10, 10, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var l2 = new fabric.Line([30, 10, 40, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var text = new fabric.Text(name, {
+                      fontSize: 12,
+                      left: 10+textLeft,
+                      top: 20+textTop,
+                      angle: angleText
+                      });
+    var n1 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 0-4,
+                      top: 10-4
+                       });
+    n1.name = name+"#N1";
+    var n2 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 40-4,
+                      top: 10-4
+                      });
+    n2.name = name+"#N2";
+    var t1 = new fabric.Text("1", {
+                      fontSize: 9,
+                      left: 0-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var t2 = new fabric.Text("2", {
+                      fontSize: 9,
+                      left: 40-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var source = new fabric.Group([tr1, p1, l1, l2, n1, n2, t1, t2, text], {
+      left: left,
+      top: top,
+      scaleX: scale,
+      scaleY: scale,
+      subTargetCheck: true,
+      angle: angle
+    });
     source.name = name;
     source.lockRotation = true;
     source.lockScalingX = true;
     source.lockScalingY = true;
-    source.rotated = false;
+    source.rotated = r;
     return source;
   }
 
-  function makeCapacitorGroup (name, left, top, horizontal, scale = 2) {
-    if (horizontal) {
-      var p1 = new fabric.Line([17, 0, 17, 20], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var p2 = new fabric.Line([23, 0, 23, 20], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var l1 = new fabric.Line([0, 10, 17, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([23, 10, 40, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 10,
-                        top: 20
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 10-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 40-4,
-                        top: 10-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 10-4+8
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 40-4,
-                        top: 10-4+8
-                        });
-      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    } else {
-      var p1 = new fabric.Line([10, 17, 30, 17], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var p2 = new fabric.Line([10, 10, 30, 10], {
-                        stroke: 'black',
-                        fill: ''
-                        });
-      var l1 = new fabric.Line([20, 17, 20, 30],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([20, -3, 20, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 35,
-                        top: 10
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: -3-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: 30-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: -3-4
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: 30-4
-                        });
-      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    }
+  function makeCapacitorGroup (name, left, top, r, scale = 2) {
+    var angle = (r%4)*90;
+    var angleText = -(r%4)*90;
+    var textTop = 0;
+    var textLeft = 0;
+    if (r % 4 == 1) textTop = 15;
+    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
+    if (r % 4 == 3) textLeft = 10;
+    var p1 = new fabric.Line([17, 0, 17, 20], {
+                      stroke: 'black',
+                      fill: ''
+                      });
+    var p2 = new fabric.Line([23, 0, 23, 20], {
+                      stroke: 'black',
+                      fill: ''
+                      });
+    var l1 = new fabric.Line([0, 10, 17, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var l2 = new fabric.Line([23, 10, 40, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var text = new fabric.Text(name, {
+                      fontSize: 12,
+                      left: 10+textLeft,
+                      top: 20+textTop,
+                      angle: angleText
+                      });
+    var n1 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 0-4,
+                      top: 10-4
+                       });
+    n1.name = name+"#N1";
+    var n2 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 40-4,
+                      top: 10-4
+                      });
+    n2.name = name+"#N2";
+    var t1 = new fabric.Text("1", {
+                      fontSize: 9,
+                      left: 0-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var t2 = new fabric.Text("2", {
+                      fontSize: 9,
+                      left: 40-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var source = new fabric.Group([p1, p2, l1, l2, n1, n2, t1, t2, text], {
+      left: left,
+      top: top,
+      scaleX: scale,
+      scaleY: scale,
+      subTargetCheck: true,
+      angle: angle
+    });
     source.name = name;
     source.lockRotation = true;
     source.lockScalingX = true;
     source.lockScalingY = true;
-    source.rotated = false;
+    source.rotated = r;
     return source;
   }
 
-  function makeDCVGroup (name, left, top, horizontal, scale = 2) {
-    if (horizontal) {
-      var c = new fabric.Circle({
-                        radius: 10,
-                        fill: '',
-                        stroke: 'black',
-                        left: 10,
-                        top: 0 }
-                        );
-      var tp = new fabric.Text("+", {
-                        fontSize: 10,
-                        left: 15,
-                        top: 5
-                        });
-      var tm = new fabric.Text("-", {
-                        fontSize: 10,
-                        left: 22,
-                        top: 5
-                        });
-      var l1 = new fabric.Line([0, 10, 10, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([30, 10, 40, 10],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 10,
-                        top: 20
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 0-4,
-                        top: 10-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 40-4,
-                        top: 10-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 0-4,
-                        top: 10-4+8
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 40-4,
-                        top: 10-4+8
-                        });
-      var source = new fabric.Group([c, tp, tm, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    } else {
-      var c = new fabric.Circle({
-                        radius: 10,
-                        fill: '',
-                        stroke: 'black',
-                        left: 10,
-                        top: 0 }
-                        );
-      var tp = new fabric.Text("+", {
-                        fontSize: 10,
-                        left: 17,
-                        top: 3
-                        });
-      var tm = new fabric.Text("-", {
-                        fontSize: 10,
-                        left: 18,
-                        top: 8
-                        });
-      var l1 = new fabric.Line([20, 20, 20, 30],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var l2 = new fabric.Line([20, -10, 20, 0],
-                        {
-                        stroke: 'black',
-                        fill: ""}
-                        );
-      var text = new fabric.Text(name, {
-                        fontSize: 12,
-                        left: 35,
-                        top: 10
-                        });
-      var n1 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: -10-4
-                         });
-      n1.name = name+"#N1";
-      var n2 = new fabric.Circle({
-                        radius: 4,
-                        fill: '#aaa',
-                        left: 20-4,
-                        top: 30-4
-                        });
-      n2.name = name+"#N2";
-      var t1 = new fabric.Text("1", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: -10-4
-                        });
-      var t2 = new fabric.Text("2", {
-                        fontSize: 9,
-                        left: 20-4+8,
-                        top: 30-4
-                        });
-      var source = new fabric.Group([c, tp, tm, l1, l2, n1, n2, t1, t2, text], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-      });
-    }
+  function makeDCVGroup (name, left, top, r, scale = 2) {
+    var angle = (r%4)*90;
+    var angleText = -(r%4)*90;
+    var textTop = 0;
+    var textLeft = 0;
+    if (r % 4 == 1) textTop = 15;
+    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
+    if (r % 4 == 3) textLeft = 10;
+    var c = new fabric.Circle({
+                      radius: 10,
+                      fill: '',
+                      stroke: 'black',
+                      left: 10,
+                      top: 0 }
+                      );
+    var tp = new fabric.Text("+", {
+                      fontSize: 10,
+                      left: 15,
+                      top: 5,
+                      });
+    var tm = new fabric.Text("-", {
+                      fontSize: 10,
+                      left: 22,
+                      top: 5
+                      });
+    var l1 = new fabric.Line([0, 10, 10, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var l2 = new fabric.Line([30, 10, 40, 10],
+                      {
+                      stroke: 'black',
+                      fill: ""}
+                      );
+    var text = new fabric.Text(name, {
+                      fontSize: 12,
+                      left: 10+textLeft,
+                      top: 20+textTop,
+                      angle: angleText
+                      });
+    var n1 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 0-4,
+                      top: 10-4
+                       });
+    n1.name = name+"#N1";
+    var n2 = new fabric.Circle({
+                      radius: 4,
+                      fill: '#000',
+                      left: 40-4,
+                      top: 10-4
+                      });
+    n2.name = name+"#N2";
+    var t1 = new fabric.Text("1", {
+                      fontSize: 9,
+                      left: 0-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var t2 = new fabric.Text("2", {
+                      fontSize: 9,
+                      left: 40-4+textLeft,
+                      top: 10-4+8+textTop,
+                      angle: angleText
+                      });
+    var source = new fabric.Group([c, tp, tm, l1, l2, n1, n2, t1, t2, text], {
+      left: left,
+      top: top,
+      scaleX: scale,
+      scaleY: scale,
+      subTargetCheck: true,
+      angle: angle
+    });
     source.name = name;
     source.lockRotation = true;
     source.lockScalingX = true;
@@ -1007,27 +667,18 @@
   function rotateDCV() {
     canvas.remove(this);
     var name = this.name;
-    if (this.rotated) {
-      theNew = makeDCVGroup(name, this.left, this.top, true);
-      theNew.rotated = false;
-    } else {
-      theNew = makeDCVGroup(name, this.left, this.top, false);
-      theNew.rotated = true;
-    }
+    var r = (this.rotated + 1) % 4;
+    theNew = makeDCVGroup(name, this.left, this.top, r);
+    theNew.rotated = r;
     theNew.rotate = rotateDCV;
     canvas.add(theNew);
   };
 
   function rotateDiode() {
     canvas.remove(this);
-    var name = this.name;
-    if (this.rotated) {
-      theNew = makeDiodeGroup(name, this.left, this.top, true);
-      theNew.rotated = false;
-    } else {
-      theNew = makeDiodeGroup(name, this.left, this.top, false);
-      theNew.rotated = true;
-    }
+    var r = (this.rotated + 1) % 4;
+    theNew = makeDiodeGroup(name, this.left, this.top, r);
+    theNew.rotated = r;
     theNew.rotate = rotateDiode;
     canvas.add(theNew);
   };
@@ -1035,13 +686,9 @@
   function rotateTransistor() {
     canvas.remove(this);
     var name = this.name;
-    if (this.rotated) {
-      theNew = makeTransistorGroup(name, this.left, this.top, true);
-      theNew.rotated = false;
-    } else {
-      theNew = makeTransistorGroup(name, this.left, this.top, false);
-      theNew.rotated = true;
-    }
+    var r = (this.rotated + 1) % 4;
+    theNew = makeTransistorGroup(name, this.left, this.top, r);
+    theNew.rotated = r;
     theNew.rotate = rotateTransistor;
     canvas.add(theNew);
   };
@@ -1049,26 +696,18 @@
   function rotateCapacitor() {
     canvas.remove(this);
     var name = this.name;
-    if (this.rotated) {
-      theNew = makeCapacitorGroup(name, this.left, this.top, true);
-      theNew.rotated = false;
-    } else {
-      theNew = makeCapacitorGroup(name, this.left, this.top, false);
-      theNew.rotated = true;
-    }
+    var r = (this.rotated + 1) % 4;
+    theNew = makeCapacitorGroup(name, this.left, this.top, r);
+    theNew.rotated = r;
     theNew.rotate = rotateCapacitor;
     canvas.add(theNew);
   };
   function rotateInductor() {
     canvas.remove(this);
     var name = this.name;
-    if (this.rotated) {
-      theNew = makeInductorGroup(name, this.left, this.top, true);
-      theNew.rotated = false;
-    } else {
-      theNew = makeInductorGroup(name, this.left, this.top, false);
-      theNew.rotated = true;
-    }
+    var r = (this.rotated + 1) % 4;
+    theNew = makeInductorGroup(name, this.left, this.top, r);
+    theNew.rotated = r;
     theNew.rotate = rotateInductor;
     canvas.add(theNew);
   };
@@ -1076,13 +715,9 @@
   function rotateGnd() {
     canvas.remove(this);
     var name = this.name;
-    if (this.rotated) {
-      theNew = makeGndGroup(name, this.left, this.top, true);
-      theNew.rotated = false;
-    } else {
-      theNew = makeGndGroup(name, this.left, this.top, false);
-      theNew.rotated = true;
-    }
+    var r = (this.rotated + 1) % 4;
+    theNew = makeGndGroup(name, this.left, this.top, r);
+    theNew.rotated = r;
     theNew.rotate = rotateGnd;
     canvas.add(theNew);
   };
@@ -1296,7 +931,7 @@
   function addDCVoltageSource() {
     window.Vcount += 1;
     var name = "V"+window.Vcount;
-    source = makeDCVGroup(name, 5, 5, true);
+    source = makeDCVGroup(name, 5, 5, 0);
     source.rotate = rotateDCV;
     canvas.add(source);
     mainJson['elements'][name] = {'name': name, 'type': 'DC', 'value_dc': 1.0, 'amplitude1_pulse': 0, 'amplitude2_pulse': 1, 'delay_pulse': 0, 'tRise_pulse': 0, 'tFall_pulse': 0, 'tOn_pulse': 0.5, 'period_pulse': 1, 'nCycles_pulse': 10, 'dc_sin': 0, 'amplitude_sin': 1, 'freq_sin': 10, 'delay_sin': 0, 'atenuation_sin': 0, 'angle_sin': 0, 'nCycles_sin': 10};
@@ -1305,7 +940,7 @@
   function addDiode() {
     window.Dcount += 1;
     var name = "D"+window.Dcount;
-    dio = makeDiodeGroup(name, 5, 5, true);
+    dio = makeDiodeGroup(name, 5, 5, 0);
     dio.rotate = rotateDiode;
     canvas.add(dio);
     mainJson.elements[name] = {'name': name, 'Is': 3.7751345e-14, 'Vt': 25e-3};
@@ -1314,7 +949,7 @@
   function addTransistor() {
     window.Qcount += 1;
     var name = "Q"+window.Qcount;
-    tra = makeTransistorGroup(name, 5, 5, true);
+    tra = makeTransistorGroup(name, 5, 5, 0);
     tra.rotate = rotateTransistor;
     canvas.add(tra);
     mainJson.elements[name] = {'name': name, 'alpha': 0.99, 'alphaRev': 0.5, 'type': 'npn', 'IsBE': 3.7751345e-14, 'VtBE': 25e-3, 'IsBC': 3.7751345e-14, 'VtBC': 25e-3};
@@ -1323,7 +958,7 @@
   function addCapacitor() {
     window.Ccount += 1;
     var name = "C"+window.Ccount;
-    cap = makeCapacitorGroup(name, 5, 5, true);
+    cap = makeCapacitorGroup(name, 5, 5, 0);
     cap.rotate = rotateCapacitor;
     canvas.add(cap);
     mainJson.elements[name] = {'name': name, 'value': 1.0};
@@ -1332,7 +967,7 @@
   function addInductor() {
     window.Lcount += 1;
     var name = "L"+window.Lcount;
-    ind = makeInductorGroup(name, 5, 5, true);
+    ind = makeInductorGroup(name, 5, 5, 0);
     ind.rotate = rotateInductor;
     canvas.add(ind);
     mainJson.elements[name] = {'name': name, 'value': 1.0};
@@ -1341,7 +976,7 @@
   function addGnd() {
     window.GNDcount += 1;
     var name = "GND"+window.GNDcount;
-    gnd = makeGndGroup(name, 5, 5, true);
+    gnd = makeGndGroup(name, 5, 5, 0);
     gnd.rotate = rotateGnd;
     canvas.add(gnd);
     mainJson.elements[name] = {'name': name};
@@ -1465,25 +1100,25 @@
   var GndBtnCanvas = new fabric.Canvas("GndBtnCanvas");
   var DiodeBtnCanvas = new fabric.Canvas("DiodeBtnCanvas");
   var TransistorBtnCanvas = new fabric.Canvas("TransistorBtnCanvas");
-  var btn = makeDCVGroup("V", 0, 5, true, 1);
+  var btn = makeDCVGroup("V", 0, 5, 0, 1);
   btn.selectable = false;
   DCVBtnCanvas.add(btn);
-  btn = makeResistorGroup("R", 0, 5, true, 1)
+  btn = makeResistorGroup("R", 0, 5, 0, 1)
   btn.selectable = false;
   ResistorBtnCanvas.add(btn);
-  var btn = makeCapacitorGroup("C", 0, 5, true, 1);
+  var btn = makeCapacitorGroup("C", 0, 5, 0, 1);
   btn.selectable = false;
   CapacitorBtnCanvas.add(btn);
-  var btn = makeInductorGroup("L", 0, 5, true, 1);
+  var btn = makeInductorGroup("L", 0, 5, 0, 1);
   btn.selectable = false;
   InductorBtnCanvas.add(btn);
-  var btn = makeGndGroup("Gnd", 0, 5, true, 1);
+  var btn = makeGndGroup("Gnd", 0, 5, 0, 1);
   btn.selectable = false;
   GndBtnCanvas.add(btn);
-  var btn = makeDiodeGroup("D", 0, 5, true, 1);
+  var btn = makeDiodeGroup("D", 0, 5, 0, 1);
   btn.selectable = false;
   DiodeBtnCanvas.add(btn);
-  var btn = makeTransistorGroup("Q", 0, 5, true, 1);
+  var btn = makeTransistorGroup("Q", 0, 5, 0, 1);
   btn.selectable = false;
   TransistorBtnCanvas.add(btn);
   fabric.Object.prototype.transparentCorners = false;
@@ -1506,13 +1141,9 @@
     $('#addConnectionBtn').bootstrapSwitch('toggleState');
   }
   $("#addConnectionLink")[0].onclick = addConnectionLink;
-  //$("#deleteBtn")[0].onclick = deleteObj;
   $("#deleteLink")[0].onclick = deleteObj;
-  //$("#rotateBtn")[0].onclick = rotateElement;
   $("#rotateLink")[0].onclick = rotateElement;
-  $("#editBtn")[0].onclick = edit;
   $("#editLink")[0].onclick = edit;
-  $("#simulOptBtn")[0].onclick = prepareSimulOpt;
   $("#simulOptLink")[0].onclick = prepareSimulOpt;
   $("#example_rc")[0].onclick = loadExampleRC;
   $("#example_rc_pulse")[0].onclick = loadExampleRCPulse;
@@ -1761,8 +1392,9 @@
     var nx = elObj.left;
     var ny = elObj.top;
     if (nName != "") {
-      nx += elObj.scaleX*nObj.left + elObj.scaleX*elObj.width/2 + elObj.scaleX*nObj.width/2;
-      ny += elObj.scaleY*nObj.top + elObj.scaleY*elObj.height/2 + elObj.scaleY*nObj.height/2;
+      var matrix = nObj.calcTransformMatrix();
+      nx = matrix[4];
+      ny = matrix[5];
     } else {
       nx += 8;
       ny += 8;
@@ -2028,8 +1660,9 @@
     // get x and y of the node where we clicked
     var elObj = father;
     var nObj = o;
-    var x0 = elObj.left + elObj.scaleX*nObj.left + elObj.scaleX*elObj.width/2 + elObj.scaleX*nObj.width/2;
-    var y0 = elObj.top + elObj.scaleY*nObj.top + elObj.scaleY*elObj.height/2 + elObj.scaleY*nObj.height/2;
+    var matrix = nObj.calcTransformMatrix();
+    var x0 = matrix[4];
+    var y0 = matrix[5];
     // draw connection and save each line to be drawn in line
     
     var l = new fabric.Line([x0,y0,x0,y0],
@@ -2055,8 +1688,9 @@
     // get x and y of the node where we clicked
     var elObj = father;
     var nObj = o;
-    var nx = elObj.left + elObj.scaleX*nObj.left + elObj.scaleX*elObj.width/2 + elObj.scaleX*nObj.width/2;
-    var ny = elObj.top + elObj.scaleY*nObj.top + elObj.scaleY*elObj.height/2 + elObj.scaleY*nObj.height/2;
+    var matrix = nObj.calcTransformMatrix();
+    var nx = matrix[4];
+    var ny = matrix[5];
 
     var lastItem = window.line;
 
@@ -2093,8 +1727,8 @@
 
     // get x and y of the node where we clicked
     var nObj = o;
-    var nx = nObj.left+4;
-    var ny = nObj.top+4;
+    var nx = nObj.left+8;
+    var ny = nObj.top+8;
 
     var lastItem = window.line;
 
