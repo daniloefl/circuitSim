@@ -235,7 +235,7 @@ def run(request):
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     if (not sim['fft']):
-      f = bokeh.plotting.figure(plot_width=400, plot_height = 400, title="", toolbar_location="above")
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
       for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
@@ -251,7 +251,7 @@ def run(request):
       final_img += script
       final_img += div
     else:
-      f = bokeh.plotting.figure(plot_width=400, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log", x_range = [0, freq[-1]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log", x_range = [0, freq[-1]])
       count = 0
       for nname in n:
         l = 'black'
@@ -267,7 +267,7 @@ def run(request):
       final_img += div
 
       count = 0
-      f = bokeh.plotting.figure(plot_width=400, plot_height = 400, title="", toolbar_location="above", x_range = [0, freq[-1]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, freq[-1]])
       for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
