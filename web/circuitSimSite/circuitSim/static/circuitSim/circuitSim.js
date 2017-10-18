@@ -1474,6 +1474,7 @@
   $("#example_rc")[0].onclick = loadExampleRC;
   $("#example_rc_pulse")[0].onclick = loadExampleRCPulse;
   $("#example_amp")[0].onclick = loadExampleAmp;
+  $("#example_rectifier")[0].onclick = loadExampleRectifier;
   
   function save() {
     var canvas_json = canvas.toJSON(['name']);
@@ -1538,6 +1539,9 @@
   }
   function loadExampleAmp() {
     loadExample('amp');
+  }
+  function loadExampleRectifier() {
+    loadExample('rectifier');
   }
 
   $(document).keyup(function(e) {
