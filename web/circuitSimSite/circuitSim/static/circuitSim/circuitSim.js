@@ -1163,6 +1163,12 @@
   $("#panLeft")[0].onclick = panLeft;
   $("#panRight")[0].onclick = panRight;
   $("#panReset")[0].onclick = panReset;
+
+  $("#panUpLink")[0].onclick = panUp;
+  $("#panDownLink")[0].onclick = panDown;
+  $("#panLeftLink")[0].onclick = panLeft;
+  $("#panRightLink")[0].onclick = panRight;
+  $("#panResetLink")[0].onclick = panReset;
   
   function save() {
     var canvas_json = canvas.toJSON(['name']);
