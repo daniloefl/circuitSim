@@ -146,7 +146,7 @@
   function addResistor() {
     window.Rcount += 1;
     var name = "R"+window.Rcount;
-    resistor = makeResistorGroup(name, 5, 5, 0);
+    resistor = makeResistorGroup(name, canvas.width/2, canvas.height/2, 0);
     resistor.rotate = rotateResistor;
     canvas.add(resistor);
     mainJson['elements'][name] = {'name': name, 'value': 1.0};
@@ -933,7 +933,7 @@
   function addDCVoltageSource() {
     window.Vcount += 1;
     var name = "V"+window.Vcount;
-    source = makeDCVGroup(name, 5, 5, 0);
+    source = makeDCVGroup(name, canvas.width/2, canvas.height/2, 0);
     source.rotate = rotateDCV;
     canvas.add(source);
     mainJson['elements'][name] = {'name': name, 'type': 'DC', 'value_dc': 1.0, 'amplitude1_pulse': 0, 'amplitude2_pulse': 1, 'delay_pulse': 0, 'tRise_pulse': 0, 'tFall_pulse': 0, 'tOn_pulse': 0.5, 'period_pulse': 1, 'nCycles_pulse': 10, 'dc_sin': 0, 'amplitude_sin': 1, 'freq_sin': 10, 'delay_sin': 0, 'atenuation_sin': 0, 'angle_sin': 0, 'nCycles_sin': 10};
@@ -942,7 +942,7 @@
   function addDiode() {
     window.Dcount += 1;
     var name = "D"+window.Dcount;
-    dio = makeDiodeGroup(name, 5, 5, 0);
+    dio = makeDiodeGroup(name, canvas.width/2, canvas.height/2, 0);
     dio.rotate = rotateDiode;
     canvas.add(dio);
     mainJson.elements[name] = {'name': name, 'Is': 3.7751345e-14, 'Vt': 25e-3};
@@ -951,7 +951,7 @@
   function addTransistor() {
     window.Qcount += 1;
     var name = "Q"+window.Qcount;
-    tra = makeTransistorGroup(name, 5, 5, 0);
+    tra = makeTransistorGroup(name, canvas.width/2, canvas.height/2, 0);
     tra.rotate = rotateTransistor;
     canvas.add(tra);
     mainJson.elements[name] = {'name': name, 'alpha': 0.99, 'alphaRev': 0.5, 'type': 'npn', 'IsBE': 3.7751345e-14, 'VtBE': 25e-3, 'IsBC': 3.7751345e-14, 'VtBC': 25e-3};
@@ -960,7 +960,7 @@
   function addCapacitor() {
     window.Ccount += 1;
     var name = "C"+window.Ccount;
-    cap = makeCapacitorGroup(name, 5, 5, 0);
+    cap = makeCapacitorGroup(name, canvas.width/2, canvas.height/2, 0);
     cap.rotate = rotateCapacitor;
     canvas.add(cap);
     mainJson.elements[name] = {'name': name, 'value': 1.0};
@@ -969,7 +969,7 @@
   function addInductor() {
     window.Lcount += 1;
     var name = "L"+window.Lcount;
-    ind = makeInductorGroup(name, 5, 5, 0);
+    ind = makeInductorGroup(name, canvas.width/2, canvas.height/2, 0);
     ind.rotate = rotateInductor;
     canvas.add(ind);
     mainJson.elements[name] = {'name': name, 'value': 1.0};
@@ -978,7 +978,7 @@
   function addGnd() {
     window.GNDcount += 1;
     var name = "GND"+window.GNDcount;
-    gnd = makeGndGroup(name, 5, 5, 0);
+    gnd = makeGndGroup(name, canvas.width/2, canvas.height/2, 0);
     gnd.rotate = rotateGnd;
     canvas.add(gnd);
     mainJson.elements[name] = {'name': name};
@@ -1094,6 +1094,7 @@
   }
 
 
+  var canvasWrapper = $('#canvasWrapper');
   var canvas = this.__canvas = new fabric.Canvas('c');
   var DCVBtnCanvas = new fabric.Canvas("DCVBtnCanvas");
   var ResistorBtnCanvas = new fabric.Canvas("ResistorBtnCanvas");
@@ -1847,6 +1848,32 @@
       }
     });
   }
+
+  function cancelMenu() {
+    $(window).off('contextmenu', cancelMenu);
+    return false;
+  }
+  function startPan(e) {
+    if (!window.addConnectionMode && e.button == 2) { // if we are not in add wire mode
+      var x0 = e.screenX,
+          y0 = e.screenY;
+      function continuePan(event) {
+        var x = event.screenX,
+            y = event.screenY;
+        canvas.relativePan({ x: x - x0, y: y - y0 });
+        x0 = x;
+        y0 = y;
+      }
+      function stopPan(event) {
+        $(window).off('mousemove', continuePan);
+        $(window).off('mouseup', stopPan);
+      };
+      $(window).mousemove(continuePan);
+      $(window).mouseup(stopPan);
+      $(window).contextmenu(cancelMenu);
+    }
+  }
+  canvasWrapper.mousedown(startPan);
 
   canvas.on('mouse:down', function(o){
     if (window.addConnectionMode) { // if we are in add wire mode
