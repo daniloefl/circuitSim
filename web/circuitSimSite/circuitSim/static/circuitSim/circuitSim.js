@@ -1219,7 +1219,7 @@
   function loadExampleRectifier() {
     loadExample('rectifier');
   }
-  function loadExampleRectifier() {
+  function loadExampleBridgeRectifier() {
     loadExample('bridge_rectifier');
   }
 
