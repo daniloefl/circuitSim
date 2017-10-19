@@ -1153,6 +1153,16 @@
   $("#example_amp")[0].onclick = loadExampleAmp;
   $("#example_rectifier")[0].onclick = loadExampleRectifier;
   $("#example_bridge_rectifier")[0].onclick = loadExampleBridgeRectifier;
+
+  $("#panUpLeft")[0].onclick = panUpLeft;
+  $("#panUpRight")[0].onclick = panUpRight;
+  $("#panDownLeft")[0].onclick = panDownLeft;
+  $("#panDownRight")[0].onclick = panDownRight;
+  $("#panUp")[0].onclick = panUp;
+  $("#panDown")[0].onclick = panDown;
+  $("#panLeft")[0].onclick = panLeft;
+  $("#panRight")[0].onclick = panRight;
+  $("#panReset")[0].onclick = panReset;
   
   function save() {
     var canvas_json = canvas.toJSON(['name']);
@@ -1843,6 +1853,33 @@
   function cancelMenu() {
     $(window).off('contextmenu', cancelMenu);
     return false;
+  }
+  function panUpLeft() {
+    canvas.relativePan({ x: 50, y: 50 });
+  }
+  function panUpRight() {
+    canvas.relativePan({ x: -50, y: 50 });
+  }
+  function panDownLeft() {
+    canvas.relativePan({ x: 50, y: -50 });
+  }
+  function panDownRight() {
+    canvas.relativePan({ x: -50, y: -50 });
+  }
+  function panUp() {
+    canvas.relativePan({ x: 0, y: 50 });
+  }
+  function panDown() {
+    canvas.relativePan({ x: 0, y: -50 });
+  }
+  function panLeft() {
+    canvas.relativePan({ x: 50, y: 0 });
+  }
+  function panRight() {
+    canvas.relativePan({ x: -50, y: 0 });
+  }
+  function panReset() {
+    canvas.absolutePan({ x: 0, y: 0 });
   }
   function startPan(e) {
     if (e.button == 2) { // if we are not in add wire mode

@@ -85,27 +85,50 @@
     </nav>
     <div class="container">
     <div class="row table-row">
-      <div class="d-none d-md-block col-md-2">
+      <div class="col-2">
         <center>
           <br>
-          <div class="card card-default" style="padding-left: 0px; padding-right: 0px;">
-            <div class="card-header">Add</div>
+          <div class="card card-default">
             <div class="card-body">
-              <!--<button id="addConnectionBtn" class="btn btn-default" data-toggle="button" aria-pressed="false" autocomplete="off"></button><br>-->
-              Add connection mode: <input type="checkbox" id="addConnectionBtn"><br>
+              <div style="display:inline-block;">
+                <div class="row">
+                  <div class="btn-group">
+                    <button type="button" id="panUpLeft" class="btn btn-default col-md-4">&#x2196;</button>
+                    <button type="button" id="panUp" class="btn btn-default col-md-4">&uarr;</button>
+                    <button type="button" id="panUpRight" class="btn btn-default col-md-4">&#x2197;</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class=" btn-group">
+                    <button type="button" id="panLeft" class="btn btn-default col-md-4">&larr;</button>
+                    <button type="button" id="panReset" class="btn btn-default col-md-4">0</button>
+                    <button type="button" id="panRight" class="btn btn-default col-md-4">&rarr;</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class=" btn-group">
+                    <button type="button" id="panDownLeft" class="btn btn-default col-md-4">&#x2199;</button>
+                    <button type="button" id="panDown" class="btn btn-default col-md-4">&darr;</button>
+                    <button type="button" id="panDownRight" class="btn btn-default col-md-4">&#x2198;</button>
+                  </div>
+                </div>
+              </div>
+              &nbsp;&nbsp;
+              <div style="display:inline-block;">Add<br>connection<br><input type="checkbox" id="addConnectionBtn"></div>
               <script>$("#addConnectionBtn").bootstrapSwitch();</script>
-              <button id="addDCVoltageSourceBtn" class="btn btn-default"><canvas id="DCVBtnCanvas" width="60" height="50"></canvas></button><br>
-              <button id="addResistorBtn" class="btn btn-default"><canvas id="ResistorBtnCanvas" width="60" height="50"></canvas></button><br>
-              <button id="addCapacitorBtn" class="btn btn-default"><canvas id="CapacitorBtnCanvas" width="60" height="50"></canvas></button><br>
-              <button id="addInductorBtn" class="btn btn-default"><canvas id="InductorBtnCanvas" width="60" height="50"></canvas></button><br>
-              <button id="addGndBtn" class="btn btn-default"><canvas id="GndBtnCanvas" width="60" height="50"></canvas></button><br>
-              <button id="addDiodeBtn" class="btn btn-default"><canvas id="DiodeBtnCanvas" width="60" height="50"></canvas></button><br>
-              <button id="addTransistorBtn" class="btn btn-default"><canvas id="TransistorBtnCanvas" width="60" height="50"></canvas></button><br>
+              &nbsp;&nbsp;
+              <button id="addDCVoltageSourceBtn" class="btn btn-default"><canvas id="DCVBtnCanvas" width="60" height="50"></canvas></button>
+              <button id="addResistorBtn" class="btn btn-default"><canvas id="ResistorBtnCanvas" width="60" height="50"></canvas></button>
+              <button id="addCapacitorBtn" class="btn btn-default"><canvas id="CapacitorBtnCanvas" width="60" height="50"></canvas></button>
+              <button id="addInductorBtn" class="btn btn-default"><canvas id="InductorBtnCanvas" width="60" height="50"></canvas></button>
+              <button id="addGndBtn" class="btn btn-default"><canvas id="GndBtnCanvas" width="60" height="50"></canvas></button>
+              <button id="addDiodeBtn" class="btn btn-default"><canvas id="DiodeBtnCanvas" width="60" height="50"></canvas></button>
+              <button id="addTransistorBtn" class="btn btn-default"><canvas id="TransistorBtnCanvas" width="60" height="50"></canvas></button>
             </div>
           </div>
         </center>
       </div>
-      <div class="col-md-10 col-ms-12">
+      <div class="col-10">
         <br>
         <div class="card card-default" style="padding-left: 0px; padding-right: 0px;">
           <div class="card-header">
@@ -114,6 +137,7 @@
           <div class="card-body">
             <div id="canvasWrapper" style="border-width: 1px; border-style: dotted;">
               <canvas id="c" width="800" height="600"></canvas>
+              <br>
             </div>
           </div>
         </div>
