@@ -1845,7 +1845,24 @@
     return false;
   }
   function startPan(e) {
-    if (!window.addConnectionMode && e.button == 2) { // if we are not in add wire mode
+    if (e.button == 2) { // if we are not in add wire mode
+      if (window.addConnectionMode) { // if we are in add wire mode
+        canvas.remove(window.line);
+        window.line = null;
+        window.isDown = false;
+        window.addConnectionMode = false;
+        canvas.forEachObject(function(o) {
+          o.selectable = true;
+          o.lockRotation = true;
+          o.lockScalingX = true;
+          o.lockScalingY = true;
+          if (o.name.includes("Conn")) {
+            o.lockMovementX = true;
+            o.lockMovementY = true;
+          }
+        });
+        $('#addConnectionBtn').bootstrapSwitch('state', false, false);
+      }
       var x0 = e.screenX,
           y0 = e.screenY;
       function continuePan(event) {

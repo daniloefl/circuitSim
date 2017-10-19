@@ -88,7 +88,7 @@
       <div class="d-none d-md-block col-md-2">
         <center>
           <br>
-          <div class="card card-default">
+          <div class="card card-default" style="padding-left: 0px; padding-right: 0px;">
             <div class="card-header">Add</div>
             <div class="card-body">
               <!--<button id="addConnectionBtn" class="btn btn-default" data-toggle="button" aria-pressed="false" autocomplete="off"></button><br>-->
@@ -106,8 +106,16 @@
         </center>
       </div>
       <div class="col-md-10 col-ms-12">
-        <div id="canvasWrapper">
-          <canvas id="c" width="800" height="600"></canvas>
+        <br>
+        <div class="card card-default" style="padding-left: 0px; padding-right: 0px;">
+          <div class="card-header">
+          Use the right-hand mouse button in the canvas to pan around and use more space.
+          </div>
+          <div class="card-body">
+            <div id="canvasWrapper" style="border-width: 1px; border-style: dotted;">
+              <canvas id="c" width="800" height="600"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </div>
