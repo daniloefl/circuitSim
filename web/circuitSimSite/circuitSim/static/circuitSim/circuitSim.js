@@ -195,6 +195,7 @@
       for (var i = 0 ; i < toDeleteConn.length; ++i)
         delete mainJson.connections[toDeleteConn[i]];
     }
+    o.rotated = o.get("angle")/90;
     o.rotate();
   }
 
@@ -660,7 +661,7 @@
     source.lockRotation = true;
     source.lockScalingX = true;
     source.lockScalingY = true;
-    source.rotated = false;
+    source.rotated = r;
     return source;
   }
 
@@ -1187,6 +1188,16 @@
       mainJson = result.mainJson;
       prepareSimulOpt();
       canvas.loadFromJSON(result.canvasJson, function() {
+        for (var k = 0; k < canvas.getObjects().length; ++k) {
+          if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
+          else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
+          else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
+          else if (canvas.getObjects()[k].name.includes("L")) canvas.getObjects()[k].rotate = rotateInductor;
+          else if (canvas.getObjects()[k].name.includes("V")) canvas.getObjects()[k].rotate = rotateDCV;
+          else if (canvas.getObjects()[k].name.includes("Q")) canvas.getObjects()[k].rotate = rotateTransistor;
+          else if (canvas.getObjects()[k].name.includes("R")) canvas.getObjects()[k].rotate = rotateResistor;
+          canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
+        }
         canvas.renderAll(); 
       },function(o,object){
       });
@@ -1202,6 +1213,16 @@
       mainJson = result.mainJson;
       prepareSimulOpt();
       canvas.loadFromJSON(result.canvasJson, function() {
+        for (var k = 0; k < canvas.getObjects().length; ++k) {
+          if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
+          else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
+          else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
+          else if (canvas.getObjects()[k].name.includes("L")) canvas.getObjects()[k].rotate = rotateInductor;
+          else if (canvas.getObjects()[k].name.includes("V")) canvas.getObjects()[k].rotate = rotateDCV;
+          else if (canvas.getObjects()[k].name.includes("Q")) canvas.getObjects()[k].rotate = rotateTransistor;
+          else if (canvas.getObjects()[k].name.includes("R")) canvas.getObjects()[k].rotate = rotateResistor;
+          canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
+        }
         canvas.renderAll(); 
       },function(o,object){
       });
