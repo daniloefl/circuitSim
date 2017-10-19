@@ -1333,7 +1333,6 @@
       nline.lockMovementY = true;
       nline.lockScalingX = true;
       nline.lockScalingY = true;
-      canvas.bringToFront(en);
       nline.name = "Conn"+window.connectionCount;
       nline.fresh = true;
       canvas.add(nline);
@@ -1350,7 +1349,6 @@
       var en = makeNodeGroup(nodeName, x-8, y-8, 2);
       en.fresh = true;
       canvas.add(en);
-      canvas.bringToFront(en);
 
       for (var key in mainJson.connections) {
         if (!key.includes("Conn")) continue;
@@ -1550,7 +1548,6 @@
     l.name = "Conn"+window.connectionCount;
     canvas.add(l);
     window.line = l;
-    canvas.bringToFront(en);
 
     window.isDown = true;
     window.connectionPoint1 = "E"+window.extraCount;
@@ -1648,7 +1645,6 @@
     l.name = origname;
     canvas.add(l);
 
-    canvas.bringToFront(en);
     window.isDown = false;
     window.line = {};
   }
@@ -1672,7 +1668,6 @@
     window.connectionCount += 1;
     window.line.name = "Conn"+window.connectionCount;
     canvas.add(window.line);
-    canvas.bringToFront(elObj);
     window.connectionPoint1 = elObj.name;
     canvas.renderAll();
   }
@@ -1702,7 +1697,6 @@
     window.connectionCount += 1;
     window.line.name = "Conn"+window.connectionCount;
     canvas.add(window.line);
-    canvas.bringToFront(nObj);
     window.connectionPoint1 = o.name;
     canvas.renderAll();
   }
@@ -1743,7 +1737,6 @@
               });
     l.name = lastItem.name;
     canvas.add(l);
-    canvas.bringToFront(nObj);
 
     window.isDown = false;
     window.line = {};
@@ -1781,7 +1774,6 @@
               });
     l.name = lastItem.name;
     canvas.add(l);
-    canvas.bringToFront(nObj);
 
     window.isDown = false;
     window.line = {};
@@ -1836,7 +1828,6 @@
     l.name = "Conn"+window.connectionCount;
     canvas.add(l);
     window.line = l;
-    canvas.bringToFront(en);
     canvas.forEachObject(function(o) {
       o.selectable = true;
       o.lockRotation = true;
