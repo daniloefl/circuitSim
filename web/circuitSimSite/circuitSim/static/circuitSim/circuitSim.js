@@ -1171,7 +1171,7 @@
   $("#panResetLink")[0].onclick = panReset;
   
   function save() {
-    var canvas_json = canvas.toJSON(['name']);
+    var canvas_json = canvas.toJSON(['name', 'rotated', 'x1', 'y1', 'x2', 'y2']);
     full_json = {};
     full_json.mainJson = mainJson;
     full_json.canvasJson = canvas_json;
@@ -1207,6 +1207,7 @@
       canvas.loadFromJSON(result.canvasJson, function() {
         for (var k = 0; k < canvas.getObjects().length; ++k) {
           if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
+          else if (canvas.getObjects()[k].name.includes("Conn")) canvas.getObjects()[k].rotate = null;
           else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
           else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
           else if (canvas.getObjects()[k].name.includes("L")) canvas.getObjects()[k].rotate = rotateInductor;
@@ -1232,6 +1233,7 @@
       canvas.loadFromJSON(result.canvasJson, function() {
         for (var k = 0; k < canvas.getObjects().length; ++k) {
           if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
+          else if (canvas.getObjects()[k].name.includes("Conn")) canvas.getObjects()[k].rotate = null;
           else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
           else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
           else if (canvas.getObjects()[k].name.includes("L")) canvas.getObjects()[k].rotate = rotateInductor;
