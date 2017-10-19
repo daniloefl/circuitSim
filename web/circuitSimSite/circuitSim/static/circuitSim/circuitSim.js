@@ -676,6 +676,7 @@
 
   function rotateDiode() {
     canvas.remove(this);
+    var name = this.name;
     var r = (this.rotated + 1) % 4;
     theNew = makeDiodeGroup(name, this.left, this.top, r);
     theNew.rotated = r;
