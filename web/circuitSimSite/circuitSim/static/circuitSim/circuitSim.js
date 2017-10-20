@@ -727,6 +727,10 @@
   function run() {
     // make net list
     $('#results_content').html('');
+    var loading = document.createElement("div");
+    loading.setAttribute("class", "loading_element");
+    $('#results_content')[0].appendChild(loading);
+
     var c = document.createElement("center");
     c.setAttribute("id", "content");
 
@@ -759,6 +763,8 @@
         }
       }
     });
+    $(document).ajaxStart(function() { $('#results_content').addClass("loading"); } );
+    $(document).ajaxStop(function() { $('#results_content').removeClass("loading"); } );
     $.ajax({
         type: 'GET',
         url: base_url+'run',

@@ -1,4 +1,27 @@
 
+.loading_element {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('loading.gif')
+                50% 50% 
+                no-repeat;
+}
+
+.loading {
+  overflow: hidden; 
+}
+
+.loading .loading_element {
+  display: block;
+}
+
+
 .element {
 }
 
