@@ -211,18 +211,18 @@ def run(request):
       if node == "0":
         continue
       if np.max(n[nname]) > maxVal:
-        maxVal = np.max(n[nname])
+        maxVal = np.max(n[nname][:-2])
       if np.min(n[nname]) < minVal:
-        minVal = np.min(n[nname])
+        minVal = np.min(n[nname][:-2])
       if (sim['fft']):
         if np.max(fnAbs[nname]) > maxValF:
-          maxValF = np.max(fnAbs[nname])
+          maxValF = np.max(fnAbs[nname][:-2])
         if np.min(fnAbs[nname]) < minValF:
-          minValF = np.min(fnAbs[nname])
+          minValF = np.min(fnAbs[nname][:-2])
         if np.max(fnAng[nname]) > maxValFA:
-          maxValFA = np.max(fnAng[nname])
+          maxValFA = np.max(fnAng[nname][:-2])
         if np.min(fnAng[nname]) < minValFA:
-          minValFA = np.min(fnAng[nname])
+          minValFA = np.min(fnAng[nname][:-2])
     maxVal += 0.2*maxVal
     maxValF += 0.2*maxValF
     maxValFA += 0.2*maxValFA
@@ -235,7 +235,7 @@ def run(request):
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     if (not sim['fft']):
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, t[-1]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, t[-2]])
       for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
@@ -251,7 +251,7 @@ def run(request):
       final_img += script
       final_img += div
     else:
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log", x_range = [0, freq[-1]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log", x_range = [0, freq[-2]])
       count = 0
       for nname in n:
         l = 'black'
@@ -267,7 +267,7 @@ def run(request):
       final_img += div
 
       count = 0
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, freq[-1]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, freq[-2]])
       for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
