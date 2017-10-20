@@ -199,6 +199,12 @@ def run(request):
         fnAbs[nname] = np.absolute(fn[nname])
         fnAng[nname] = np.angle(fn[nname])
 
+    t = t[:-internalStep]
+    for nname in nodeListHuman:
+      node = nodeListHuman[nname]
+      if node == "0":
+        continue
+      n[nname] = n[nname][:-internalStep]
 
     maxVal = -9999
     minVal = 9999
@@ -211,18 +217,18 @@ def run(request):
       if node == "0":
         continue
       if np.max(n[nname]) > maxVal:
-        maxVal = np.max(n[nname][:-2])
+        maxVal = np.max(n[nname])
       if np.min(n[nname]) < minVal:
-        minVal = np.min(n[nname][:-2])
+        minVal = np.min(n[nname])
       if (sim['fft']):
         if np.max(fnAbs[nname]) > maxValF:
-          maxValF = np.max(fnAbs[nname][:-2])
+          maxValF = np.max(fnAbs[nname])
         if np.min(fnAbs[nname]) < minValF:
-          minValF = np.min(fnAbs[nname][:-2])
+          minValF = np.min(fnAbs[nname])
         if np.max(fnAng[nname]) > maxValFA:
-          maxValFA = np.max(fnAng[nname][:-2])
+          maxValFA = np.max(fnAng[nname])
         if np.min(fnAng[nname]) < minValFA:
-          minValFA = np.min(fnAng[nname][:-2])
+          minValFA = np.min(fnAng[nname])
     maxVal += 0.2*maxVal
     maxValF += 0.2*maxValF
     maxValFA += 0.2*maxValFA
@@ -235,7 +241,7 @@ def run(request):
     count = 0
     lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     if (not sim['fft']):
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, t[-2]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
       for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
@@ -251,7 +257,7 @@ def run(request):
       final_img += script
       final_img += div
     else:
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log", x_range = [0, freq[-2]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log")
       count = 0
       for nname in n:
         l = 'black'
@@ -267,7 +273,7 @@ def run(request):
       final_img += div
 
       count = 0
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", x_range = [0, freq[-2]])
+      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
       for nname in n:
         l = 'black'
         l = lc[count % len(lc)]
