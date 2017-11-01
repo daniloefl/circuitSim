@@ -1223,6 +1223,7 @@
           canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
         }
         canvas.renderAll(); 
+        canvas.calcOffset();
       },function(o,object){
       });
     }
@@ -1249,6 +1250,7 @@
           canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
         }
         canvas.renderAll(); 
+        canvas.calcOffset();
       },function(o,object){
       });
     });
