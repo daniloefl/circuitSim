@@ -1181,6 +1181,13 @@
     full_json = {};
     full_json.mainJson = mainJson;
     full_json.canvasJson = canvas_json;
+    full_json.lines = {};
+    for (var k = 0; k < canvas.getObjects().length; ++k) {
+      if (canvas.getObjects()[k].name.includes("Conn")) {
+        var o = canvas.getObjects()[k];
+        full_json.lines[o.name] = {'x1' : o.get('x1'), 'x2': o.get('x2'), 'y1': o.get('y1'), 'y2': o.get('y2') };
+      }
+    }
     var str_json = JSON.stringify(full_json);
     var blob = new Blob([str_json], {type: "application/json"});
     var url  = URL.createObjectURL(blob);
@@ -1226,6 +1233,30 @@
         canvas.calcOffset();
       },function(o,object){
       });
+      var toRemove = [];
+      var toAdd = [];
+      for (var k = 0; k < canvas.getObjects().length; ++k) {
+        if (canvas.getObjects()[k].name.includes("Conn") && 'lines' in result) {
+          var n = canvas.getObjects()[k].name;
+          var nline = new fabric.Line([result.lines[n].x1, result.lines[n].y1, result.lines[n].x2, result.lines[n].y2],
+                                      {
+                                        stroke: 'black',
+                                        fill: "",
+                                        strokeWidth: 3,
+                                      });
+          nline.name = n;
+          nline.rotate = null;
+          toAdd.push(nline);
+          toRemove.push(canvas.getObjects()[k]);
+        }
+      }
+      for (var k = 0; k < toRemove.length; ++k) {
+        canvas.remove(toRemove[k]);
+        delete toRemove[k];
+      }
+      for (var k = 0; k < toAdd.length; ++k) {
+        canvas.add(toAdd[k]);
+      }
     }
 
     fr.readAsText(files.item(0));
@@ -1249,10 +1280,32 @@
           else if (canvas.getObjects()[k].name.includes("R")) canvas.getObjects()[k].rotate = rotateResistor;
           canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
         }
-        canvas.renderAll(); 
-        canvas.calcOffset();
       },function(o,object){
       });
+      var toRemove = [];
+      var toAdd = [];
+      for (var k = 0; k < canvas.getObjects().length; ++k) {
+        if (canvas.getObjects()[k].name.includes("Conn") && 'lines' in result) {
+          var n = canvas.getObjects()[k].name;
+          var nline = new fabric.Line([result.lines[n].x1, result.lines[n].y1, result.lines[n].x2, result.lines[n].y2],
+                                      {
+                                        stroke: 'black',
+                                        fill: "",
+                                        strokeWidth: 3,
+                                      });
+          nline.name = n;
+          nline.rotate = null;
+          toAdd.push(nline);
+          toRemove.push(canvas.getObjects()[k]);
+        }
+      }
+      for (var k = 0; k < toRemove.length; ++k) {
+        canvas.remove(toRemove[k]);
+        delete toRemove[k];
+      }
+      for (var k = 0; k < toAdd.length; ++k) {
+        canvas.add(toAdd[k]);
+      }
     });
   }
   function loadExampleRC() {
@@ -1871,28 +1924,28 @@
     return false;
   }
   function panUpLeft() {
-    canvas.relativePan({ x: 50, y: 50 });
-  }
-  function panUpRight() {
-    canvas.relativePan({ x: -50, y: 50 });
-  }
-  function panDownLeft() {
-    canvas.relativePan({ x: 50, y: -50 });
-  }
-  function panDownRight() {
     canvas.relativePan({ x: -50, y: -50 });
   }
-  function panUp() {
-    canvas.relativePan({ x: 0, y: 50 });
+  function panUpRight() {
+    canvas.relativePan({ x: 50, y: -50 });
   }
-  function panDown() {
+  function panDownLeft() {
+    canvas.relativePan({ x: -50, y: 50 });
+  }
+  function panDownRight() {
+    canvas.relativePan({ x: 50, y: 50 });
+  }
+  function panUp() {
     canvas.relativePan({ x: 0, y: -50 });
   }
+  function panDown() {
+    canvas.relativePan({ x: 0, y: 50 });
+  }
   function panLeft() {
-    canvas.relativePan({ x: 50, y: 0 });
+    canvas.relativePan({ x: -50, y: 0 });
   }
   function panRight() {
-    canvas.relativePan({ x: -50, y: 0 });
+    canvas.relativePan({ x: 50, y: 0 });
   }
   function panReset() {
     canvas.absolutePan({ x: 0, y: 0 });
