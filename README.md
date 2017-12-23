@@ -66,6 +66,49 @@ python manage.py runserver
 
 You can now access the Web interface in `localhost:8000`, in your browser.
 
+To install it with Nginx, add this in /etc/nginx/sites-enabled:
+
+```
+# nginx.conf
+upstream circuitSim {
+    # connect to this socket
+    server unix:/tmp/uwsgi_circuitSim.sock;    # for a file socket
+}
+
+server {
+    # the port your site will be served on
+    listen      80;
+    # the domain name it will serve for
+    server_name circuitSim.daniloefl.eu;   # substitute your machine's IP address or FQDN
+    charset     utf-8;
+
+    #Max upload size
+    client_max_body_size 75M;   # adjust to taste
+
+    # Django media
+    location /static {
+        alias /home/daniloefl/workspace/circuitSim/web/circuitSim/static;
+    }
+
+    # Finally, send all non-media requests to the Django server.
+    location / {
+        uwsgi_pass  circuitSim;
+        include     /etc/nginx/uwsgi_params; # or the uwsgi_params you installed manually
+    }
+}
+```
+
+
+To run uwsgi:
+
+```
+sudo apt install uwsgi uwsgi-plugin-python
+ln -s `pwd`/web/circuitSim/uwsgi_circuitSim.ini /etc/uwsgi/apps-available/
+ln -s `pwd`/web/circuitSim/uwsgi_circuitSim.ini /etc/uwsgi/apps-enabled/
+sudo service uwsgi restart
+```
+
+
 # Python interface
 
 The Python interface requires Boost with the BoostPython libraries.

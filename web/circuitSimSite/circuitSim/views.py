@@ -134,6 +134,8 @@ def run(request):
 <script type="text/javascript" src="%s"></script>
 ''' % (static("circuitSim/bokeh.min.css"), static("circuitSim/bokeh.min.js"))
   nl = ""
+  #data = {'img': final_img, 'node_description': node_desc, 'extra_text': extra_text, 'netlist': nl};
+  #return JsonResponse(data);
 
   e = {}
   conn = {}
@@ -148,6 +150,7 @@ def run(request):
     e = data['elements']
     conn = data['connections']
     sim = data['simulation']
+
 
     circ = circuitPy.Circuit()
     nodeName, nl = setupCircuit(circ, e, conn)

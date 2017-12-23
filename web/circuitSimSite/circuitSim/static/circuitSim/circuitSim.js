@@ -767,9 +767,9 @@
     $(document).ajaxStop(function() { $('#results_content').removeClass("loading"); } );
     $.ajax({
         type: 'GET',
+        dataType: 'json',
         url: base_url+'run',
         data: { data: JSON.stringify(mainJson)},
-        dataType: 'json',
         success: function (rawImageData) {
           $("#result_img").html(rawImageData.img);
           $("#text1").html(rawImageData.node_description);
