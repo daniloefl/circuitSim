@@ -1220,6 +1220,7 @@
       canvas.loadFromJSON(result.canvasJson, function() {
         for (var k = 0; k < canvas.getObjects().length; ++k) {
           if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
+          else if (canvas.getObjects()[k].name.includes("E")) canvas.getObjects()[k].rotate = null;
           else if (canvas.getObjects()[k].name.includes("Conn")) canvas.getObjects()[k].rotate = null;
           else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
           else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
@@ -1228,6 +1229,10 @@
           else if (canvas.getObjects()[k].name.includes("Q")) canvas.getObjects()[k].rotate = rotateTransistor;
           else if (canvas.getObjects()[k].name.includes("R")) canvas.getObjects()[k].rotate = rotateResistor;
           canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
+          canvas.getObjects()[k].fresh = false;
+          if (canvas.getObjects()[k].name.includes("E")) {
+            canvas.getObjects()[k]._objects[0].name = canvas.getObjects()[k].name+"#N1";
+          }
         }
         canvas.renderAll(); 
         canvas.calcOffset();
@@ -1246,6 +1251,7 @@
                                       });
           nline.name = n;
           nline.rotate = null;
+          nline.fresh = false;
           toAdd.push(nline);
           toRemove.push(canvas.getObjects()[k]);
         }
@@ -1272,6 +1278,7 @@
         for (var k = 0; k < canvas.getObjects().length; ++k) {
           if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
           else if (canvas.getObjects()[k].name.includes("Conn")) canvas.getObjects()[k].rotate = null;
+          else if (canvas.getObjects()[k].name.includes("E")) canvas.getObjects()[k].rotate = null;
           else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
           else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
           else if (canvas.getObjects()[k].name.includes("L")) canvas.getObjects()[k].rotate = rotateInductor;
@@ -1279,6 +1286,10 @@
           else if (canvas.getObjects()[k].name.includes("Q")) canvas.getObjects()[k].rotate = rotateTransistor;
           else if (canvas.getObjects()[k].name.includes("R")) canvas.getObjects()[k].rotate = rotateResistor;
           canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
+          canvas.getObjects()[k].fresh = false;
+          if (canvas.getObjects()[k].name.includes("E")) {
+            canvas.getObjects()[k]._objects[0].name = canvas.getObjects()[k].name+"#N1";
+          }
         }
       },function(o,object){
       });
@@ -1368,6 +1379,7 @@
   }
 
   function moveNode(nodeName, x, y, lineName) {
+    canvas.calcOffset();
     var idx = -1;
     for (var k = 0; k < canvas.getObjects().length; ++k) {
       if (canvas.getObjects()[k].name == nodeName) {
@@ -1466,6 +1478,7 @@
   });
 
   function moveLine(lineName, nodeName, first) {
+    canvas.calcOffset();
     var elName = nodeName.split("#")[0];
     var nName = "";
     if (!nodeName.includes("E")) nName = nodeName.split('#')[1];
@@ -1488,7 +1501,6 @@
 
       }
     }
-    
     lineObj = canvas.getObjects()[idx];
     if (lineObj.fresh) return;
 
