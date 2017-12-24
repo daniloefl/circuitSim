@@ -6,6 +6,8 @@ from django.template import RequestContext
 
 from django.templatetags.static import static
 
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 # add the library to the Python PATH
 import sys
 import os
@@ -21,6 +23,7 @@ import bokeh.plotting
 import bokeh.models
 import bokeh.embed
 
+@ensure_csrf_cookie
 def index(request):
     c = RequestContext(request);
     template = loader.get_template('circuitSim/index.html')
