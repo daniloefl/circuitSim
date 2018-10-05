@@ -25,7 +25,7 @@ import bokeh.embed
 
 @ensure_csrf_cookie
 def index(request):
-    c = RequestContext(request);
+    c = RequestContext(request).flatten()
     template = loader.get_template('circuitSim/index.html')
     return HttpResponse(template.render(c))
 

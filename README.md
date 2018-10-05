@@ -87,7 +87,7 @@ server {
 
     # Django media
     location /static {
-        alias /home/daniloefl/workspace/circuitSim/web/circuitSim/static;
+        alias /home/daniloefl/workspace/circuitSim/web/circuitSimSite/static;
     }
 
     # Finally, send all non-media requests to the Django server.
