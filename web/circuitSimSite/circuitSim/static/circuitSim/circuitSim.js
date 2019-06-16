@@ -11,19 +11,25 @@
 
   window.addConnectionMode = false;
   window.connectionStarted = false;
+  window.currentConnection = null;
+
   window.isDown = false;
+
+  // TODO
   window.connectionPoint1 = '';
   window.connectionPoint2 = '';
-
   window.line = {};
 
-  var mainJson = {'elements' : {}, 'connections': {}, 'simulation': {}};
-  mainJson['simulation']['tFinal'] = 1;
-  mainJson['simulation']['dt'] = 0.001;
-  mainJson['simulation']['method'] = "BE";
-  mainJson['simulation']['internalStep'] = 1;
-  mainJson['simulation']['nodes'] = [];
-  mainJson['simulation']['fft'] = false;
+  var elementList = [];
+  var connectionList = [];
+
+  var simulation = {};
+  simulation['tFinal'] = 1;
+  simulation['dt'] = 0.001;
+  simulation['method'] = "BE";
+  simulation['internalStep'] = 1;
+  simulation['nodes'] = [];
+  simulation['fft'] = false;
 
   // using jQuery
   function getCookie(name) {
@@ -47,683 +53,1061 @@
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
   }
 
-  function makeNodeGroup (name, left, top, scale = 2) {
-    var n1 = new fabric.Circle({
+  function findConnection(name) {
+    for (var k in connectionList) {
+      if (connectionList[k].name == name) {
+        return connectionList[k];
+      }
+    }
+  };
+
+  // find element and return a triplet with the element, the name of the subnode (or false) and the drawn subnode (or false)
+  function findElement(name) {
+    for (var k in elementList) {
+      if (elementList[k].name == name) {
+        return [elementList[k], false, false];
+      }
+      for (var l in elementList[k].nodes) {
+        if (name == (elementList[k].name+"#"+elementList[k].nodes[l])) {
+          if (name == elementList[k].drawn.name) {
+            return [elementList[k], elementList[k].nodes[l], elementList[k].drawn];
+          }
+          if (elementList[k].drawn != null) {
+            for (var n in elementList[k].drawn._objects) {
+              if (name == elementList[k].drawn._objects[n].name) {
+                return [elementList[k], elementList[k].nodes[l], elementList[k].drawn._objects[n]];
+              }
+            }
+          }
+          return [elementList[k], elementList[k].nodes[l], false];
+        }
+      }
+    }
+    return false;
+  };
+
+  function startConnectionInNode(firstNodeName, x, y) {
+    window.connectionCount = window.connectionCount + 1;
+    var connectionName = "Conn"+window.connectionCount;
+    addNode("ETMP", x, y);
+    var n = new Connection(connectionName);
+    n.nodeList.push(firstNodeName);
+    n.nodeList.push("ETMP#N1");
+    connectionList.push(n);
+    connectionList[connectionList.length-1].draw();
+    window.currentConnection = connectionList[connectionList.length-1];
+    canvas.renderAll();
+  };
+
+  function moveNode(nodeName, x, y) {
+    n = findElement(nodeName);
+    n[0].left = x;
+    n[0].top = y;
+    n[0].draw();
+    window.currentConnection.draw();
+    canvas.renderAll();
+  };
+
+  // adjust all connections to this node
+  function adjustConnectionsTo(aNode) {
+    // get the main element fo this (it could be a node of a larger element ... move only the full element)
+    node = findElement(aNode);
+    // loop over all connections to find the ones connected to this node
+    for (var k in connectionList) {
+      c = connectionList[k];
+
+      // find connections that are connected to node or to that sub-element
+      var foundIdx = -1;
+      for (var m in c.nodeList) {
+        n = c.nodeList[m];
+        if (aNode == n) {
+          // found connection that includes this node
+          foundIdx = m;
+          break;
+        }
+      }
+
+      // move all other nodes in the connection
+      if (foundIdx >= 0) {
+        //console.log("Found connection ", c);
+        // this is the original connection
+        n1 = findElement(c.nodeList[foundIdx]);
+        n1[0].adjusted = true;
+
+        var matrix1 = n1[2].calcTransformMatrix();
+        var x1 = matrix1[4];
+        var y1 = matrix1[5];
+
+        // for each other connection ...
+        for (var m in c.nodeList) {
+          if (m == foundIdx) continue; // except the original one
+          n2 = findElement(c.nodeList[m]);
+          if (n2[0].adjusted) continue; // and the ones already adjusted (avoid infinite loop)
+
+          var matrix2 = n2[2].calcTransformMatrix();
+          var x2 = matrix2[4];
+          var y2 = matrix2[5];
+
+          // find out if the they are mostly horizontal or mostly vertical
+          var dx = Math.abs(x2 - x1);
+          var dy = Math.abs(y2 - y1);
+          // and move the object so that it becomes purely only horizontal or only vertical
+          if (dx > dy) {
+            var d = y1 - n1[0].top;
+            n2[0].top = n1[0].top + d;
+          } else {
+            var d = x1 - n1[0].left;
+            n2[0].left = n1[0].left + d;
+          }
+          // mark it as adjusted so we do not do this again
+          n2[0].adjusted = true;
+          // now we have changed n2, keeping n1 still
+          // marked both such that they should no longer be looked at
+          // iterate on all other connections to n2 now
+
+          // find all connections in n2 that are *not* the one in this connection
+          var otherList = [];
+          for (var n in n2[0].nodes) {
+            if ((n2[0].name+"#"+n2[0].nodes[n]) == c.nodeList[m]) continue;
+            otherList.push(n2[0].name+"#"+n2[0].nodes[n])
+          }
+          for (var other in otherList) {
+            adjustConnectionsTo(otherList[other].name);
+          }
+        }
+      }
+    }
+  };
+
+  // adjust connections such that each wire is only vertical or only horizontal, due to a change in seedNode
+  function adjustNodesConnectedTo(seedNode) {
+    // keep a boolean value in each element to know which ones we have visited and stop infinite loops
+    for (var k in elementList) {
+      elementList[k].adjusted = false;
+    }
+    // adjust connections to the seedNode
+    adjustConnectionsTo(seedNode);
+  };
+
+  function endConnectionInNode(lastNodeName) {
+    n = findElement("ETMP");
+    n[0].remove();
+    n[0] = null;
+    window.currentConnection.nodeList[window.currentConnection.nodeList.length-1] = lastNodeName
+    window.currentConnection = false;
+    adjustNodesConnectedTo(lastNodeName);
+    canvas.renderAll();
+  };
+
+  function makeStepInConnection(x, y) {
+    n = findElement("ETMP");
+    n[0].remove();
+    n[0] = null;
+    window.extraCount = window.extraCount + 1;
+    var lastNodeName = "E"+window.extraCount;
+    addNode(lastNodeName, x, y);
+    window.currentConnection.nodeList[window.currentConnection.nodeList.length-1] = lastNodeName+"#N1";
+    window.currentConnection.draw();
+    window.currentConnection = false;
+    startConnectionInNode(lastNodeName+"#N1", x, y);
+
+    adjustNodesConnectedTo(lastNodeName+"#N1");
+  };
+
+  function bifurcateAndStartConnection(conn, x, y) {
+    window.extraCount = window.extraCount + 1;
+    var lastNodeName = "E"+window.extraCount;
+    addNode(lastNodeName, x, y);
+
+    // now bifurcate conn
+    window.connectionCount = window.connectionCount + 1;
+    var connectionName1 = "Conn"+window.connectionCount;
+    var n = new Connection(connectionName1);
+    n.nodeList.push(conn.nodeList[0]);
+    n.nodeList.push(lastNodeName+"#N1");
+    connectionList.push(n);
+    connectionList[connectionList.length-1].draw();
+
+    window.connectionCount = window.connectionCount + 1;
+    var connectionName2 = "Conn"+window.connectionCount;
+    var n = new Connection(connectionName2);
+    n.nodeList.push(lastNodeName+"#N1");
+    n.nodeList.push(conn.nodeList[1]);
+    connectionList.push(n);
+    connectionList[connectionList.length-1].draw();
+
+    // remove conn
+    conn.remove();
+    conn = null;
+
+    // and create new connection
+    window.connectionCount = window.connectionCount + 1;
+    var connectionName = "Conn"+window.connectionCount;
+    addNode("ETMP", x, y);
+    var n = new Connection(connectionName);
+    n.nodeList.push(lastNodeName);
+    n.nodeList.push("ETMP#N1");
+    connectionList.push(n);
+    connectionList[connectionList.length-1].draw();
+    window.currentConnection = connectionList[connectionList.length-1];
+  };
+
+  function bifurcateAndEndConnection(conn, x, y) {
+    n = findElement("ETMP");
+    n[0].remove();
+    n[0] = null;
+    window.extraCount = window.extraCount + 1;
+    var lastNodeName = "E"+window.extraCount;
+    addNode(lastNodeName, x, y);
+    window.currentConnection.nodeList[window.currentConnection.nodeList.length-1] = lastNodeName+"#N1";
+    window.currentConnection.draw();
+    window.currentConnection = false;
+
+    // now bifurcate conn
+    window.connectionCount = window.connectionCount + 1;
+    var connectionName1 = "Conn"+window.connectionCount;
+    var n = new Connection(connectionName1);
+    n.nodeList.push(conn.nodeList[0]);
+    n.nodeList.push(lastNodeName+"#N1");
+    connectionList.push(n);
+    connectionList[connectionList.length-1].draw();
+
+    window.connectionCount = window.connectionCount + 1;
+    var connectionName2 = "Conn"+window.connectionCount;
+    var n = new Connection(connectionName2);
+    n.nodeList.push(lastNodeName+"#N1");
+    n.nodeList.push(conn.nodeList[1]);
+    connectionList.push(n);
+    connectionList[connectionList.length-1].draw();
+
+    // and remove conn
+    conn.remove();
+    conn = null;
+
+    adjustNodesConnectedTo(lastNodeName+"#N1");
+
+  };
+
+  function dropConnection() {
+    n = findElement("ETMP");
+    n[0].remove();
+    n[0] = null;
+    window.currentConnection.remove();
+    window.currentConnection = null;
+    canvas.renderAll();
+  };
+
+  class Connection {
+    constructor(name) {
+      this.name = name;
+      this.hasBeenAddedInCanvas = false;
+      this.nodeList = [];
+    }
+    makeSVG() {
+      this.drawn = [];
+      for (var k = 0; k < this.nodeList.length-1; ++k) {
+        var n1 = findElement(this.nodeList[k]);
+        var obj1 = n1[2];
+        var matrix1 = obj1.calcTransformMatrix();
+        var x1 = matrix1[4];
+        var y1 = matrix1[5];
+
+        var n2 = findElement(this.nodeList[k+1]);
+        var obj2 = n2[2];
+        var matrix2 = obj2.calcTransformMatrix();
+        var x2 = matrix2[4];
+        var y2 = matrix2[5];
+
+        var l = new fabric.Line([x1,y1,x2,y2],
+                    {
+                    stroke: 'black',
+                    fill: "",
+                    strokeWidth: 3,
+                    });
+        l.lockRotation = true;
+        l.lockScalingX = true;
+        l.lockScalingY = true;
+        l.father = this;
+        l.itemInNodeList = k;
+        this.drawn.push(l);
+      }
+    }
+    draw() {
+      if (this.hasBeenAddedInCanvas) {
+        for (var k in this.drawn) {
+          canvas.remove(this.drawn[k]);
+          k = null;
+        }
+      }
+      this.makeSVG();
+      for (var k in this.drawn) {
+        this.drawn[k].selectable = false;
+        this.drawn[k].lockRotation = true;
+        this.drawn[k].lockMovementX = true;
+        this.drawn[k].lockMovementY = true;
+        this.drawn[k].lockScalingX = true;
+        this.drawn[k].lockScalingY = true;
+        canvas.add(this.drawn[k]);
+      }
+      this.hasBeenAddedInCanvas = true;
+    }
+    remove() {
+      for (var k in this.drawn) {
+        if (this.hasBeenAddedInCanvas) {
+          canvas.remove(this.drawn[k]);
+        }
+        k = null;
+      }
+      this.drawn = [];
+      this.hasBeenAddedInCanvas = false;
+      connectionList.splice(connectionList.indexOf(this), 1);
+    }
+
+  }
+
+  class Element {
+    constructor(name, left, top, scale = 2) {
+      this.name = name;
+      this.left = left;
+      this.top = top;
+      this.scale = scale;
+      this.hasBeenAddedInCanvas = false;
+      this.r = 0;
+      this.nodes = [];
+      this.lock = false;
+    }
+    rotate() {
+    }
+    makeSVG() {
+      throw new Error("This method must be implemented in an inherited class to define this.drawn");
+    }
+    draw() {
+      if (this.hasBeenAddedInCanvas) {
+        canvas.remove(this.drawn);
+        this.drawn = null;
+      }
+      this.makeSVG();
+      if (this.lock) {
+        this.drawn.selectable = false;
+        this.drawn.lockMovementX = false;
+        this.drawn.lockMovementY = false;
+        this.drawn.lockRotation = true;
+      } else {
+        this.drawn.selectable = true;
+        this.drawn.lockMovementX = false;
+        this.drawn.lockMovementY = false;
+        this.drawn.lockRotation = true;
+      }
+      this.drawn.lockScalingX = true;
+      this.drawn.lockScalingY = true;
+      canvas.add(this.drawn);
+      this.hasBeenAddedInCanvas = true;
+      canvas.renderAll();
+    }
+    remove() {
+      if (this.hasBeenAddedInCanvas) {
+        canvas.remove(this.drawn);
+      }
+      this.drawn = null;
+      this.hasBeenAddedInCanvas = false;
+      elementList.splice(elementList.indexOf(this), 1);
+      canvas.renderAll();
+    }
+  }
+
+  class Node extends Element {
+    constructor(name, left, top, scale = 2) {
+      super(name, left, top, scale);
+      this.nodes = ['N1'];
+    }
+    makeSVG() {
+      var n1 = new fabric.Circle({
+                          radius: 4,
+                          fill: '#000',
+                          left: 0-4,
+                          top: 5-4
+                          });
+      n1.name = this.name+"#N1";
+      var singleNode = new fabric.Group([n1], {
+          left: this.left,
+          top: this.top,
+          scaleX: this.scale,
+          scaleY: this.scale,
+          subTargetCheck: true
+      });
+      singleNode.lockRotation = true;
+      singleNode.lockScalingX = true;
+      singleNode.lockScalingY = true;
+      singleNode.father = this;
+      this.drawn = singleNode;
+    }
+  }
+
+  class Resistor extends Element {
+    constructor(name, left, top, r, scale = 2) {
+      super(name, left, top, scale);
+      this.r = r;
+      this.param = {'value': 1.0};
+      this.nodes = ['N1', 'N2'];
+    }
+    rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    makeSVG() {
+      var angle = (this.r%4)*90;
+      var angleText = -(this.r%4)*90;
+      var textTop = 0;
+      var textLeft = 0;
+      if (this.r % 4 == 1) textTop = 10;
+      if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
+      if (this.r % 4 == 3) textLeft = 10;
+      var poly = new fabric.Path('M0,5L5,5L7.5,0L10,10L12.5,0L15,10L17.5,0L20,10L22.5,0L25,10L27.5,5L32.5,5',
+                        {
+                        stroke: 'black',
+                        fill: "",
+                        left: 0,
+                        top: 0,
+                        });
+      var text = new fabric.Text(this.name, {
+                        fontSize: 12,
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                        });
+      var n1 = new fabric.Circle({
                         radius: 4,
                         fill: '#000',
                         left: 0-4,
-                        top: 5-4
+                        top: 5-4,
                         });
-    n1.name = name+"#N1";
-    var singleNode = new fabric.Group([n1], {
-        left: left,
-        top: top,
-        scaleX: scale,
-        scaleY: scale,
-        subTargetCheck: true
-    });
-    singleNode.name = name;
-    singleNode.lockRotation = true;
-    singleNode.lockScalingX = true;
-    singleNode.lockScalingY = true;
-    singleNode.rotated = 0;
-    return singleNode;
+      n1.name = this.name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 32.5-4,
+                        top: 5-4,
+                        });
+      n2.name = this.name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4+textLeft,
+                        top: 5-4+8+textTop,
+                        angle: angleText
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 32.5-4+textLeft,
+                        top: 5-4+8+textTop,
+                        angle: angleText
+                        });
+      var resistor = new fabric.Group([poly, n1, n2, t1, t2, text], {
+        left: this.left,
+        top: this.top,
+        scaleX: this.scale,
+        scaleY: this.scale,
+        subTargetCheck: true,
+        angle: angle
+      });
+      resistor.father = this;
+      this.drawn = resistor;
+    }
   }
 
-  function makeResistorGroup (name, left, top, r, scale = 2) {
-    var angle = (r%4)*90;
-    var angleText = -(r%4)*90;
-    var textTop = 0;
-    var textLeft = 0;
-    if (r % 4 == 1) textTop = 10;
-    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
-    if (r % 4 == 3) textLeft = 10;
-    var poly = new fabric.Path('M0,5L5,5L7.5,0L10,10L12.5,0L15,10L17.5,0L20,10L22.5,0L25,10L27.5,5L32.5,5',
-                      {
-                      stroke: 'black',
-                      fill: "",
-                      left: 0,
-                      top: 0,
-                      });
-    var text = new fabric.Text(name, {
-                      fontSize: 12,
-                      left: 10+textLeft,
-                      top: 20+textTop,
-                      angle: angleText
-                      });
-    var n1 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 0-4,
-                      top: 5-4,
-                      });
-    n1.name = name+"#N1";
-    var n2 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 32.5-4,
-                      top: 5-4,
-                      });
-    n2.name = name+"#N2";
-    var t1 = new fabric.Text("1", {
-                      fontSize: 9,
-                      left: 0-4+textLeft,
-                      top: 5-4+8+textTop,
-                      angle: angleText
-                      });
-    var t2 = new fabric.Text("2", {
-                      fontSize: 9,
-                      left: 32.5-4+textLeft,
-                      top: 5-4+8+textTop,
-                      angle: angleText
-                      });
-    var resistor = new fabric.Group([poly, n1, n2, t1, t2, text], {
-      left: left,
-      top: top,
-      scaleX: scale,
-      scaleY: scale,
-      subTargetCheck: true,
-      angle: angle
-    });
-    resistor.name = name;
-    resistor.lockRotation = true;
-    resistor.lockScalingX = true;
-    resistor.lockScalingY = true;
-    resistor.rotated = r;
-    return resistor;
+  class Ground extends Element {
+    constructor(name, left, top, r, scale = 2) {
+      super(name, left, top, scale);
+      this.r = r;
+      this.param = {};
+      this.nodes = ['N1'];
+    }
+    rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    makeSVG() {
+      var angle = (this.r%4)*90;
+      var angleText = -(this.r%4)*90;
+      var textTop = 0;
+      var textLeft = 0;
+      if (this.r % 4 == 1) textTop = 15;
+      if (this.r % 4 == 2) textTop = -10;
+      if (this.r % 4 == 3) textLeft = 10;
+      var p1 = new fabric.Line([17, 0, 17, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p2 = new fabric.Line([20, 4, 20, 16], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p3 = new fabric.Line([23, 8, 23, 12], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([0, 10, 17, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = this.name+"#N1";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var gnd = new fabric.Group([p1, p2, p3, l1, n1, t1], {
+        left: this.left,
+        top: this.top,
+        scaleX: this.scale,
+        scaleY: this.scale,
+        subTargetCheck: true,
+        angle: angle
+      });
+      gnd.father = this;
+      this.drawn = gnd;
+    }
   }
 
-  function rotateResistor() {
-    canvas.remove(this);
-    var name = this.name;
-    var r = (this.rotated + 1) % 4;
-    theNew = makeResistorGroup(name, this.left, this.top, r);
-    theNew.rotated = r;
-    theNew.rotate = rotateResistor;
-    canvas.add(theNew);
-  };
+  class Inductor extends Element {
+    constructor(name, left, top, r, scale = 2) {
+      super(name, left, top, scale);
+      this.r = r;
+      this.param = {'value': 1.0};
+      this.nodes = ['N1', 'N2'];
+    }
+    rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    makeSVG() {
+      var angle = (this.r%4)*90;
+      var angleText = -(this.r%4)*90;
+      var textTop = 0;
+      var textLeft = 0;
+      if (this.r % 4 == 1) textTop = 15;
+      if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
+      if (this.r % 4 == 3) textLeft = 10;
+      var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black'});
+      var l1 = new fabric.Line([4, 10, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([32, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(this.name, {
+                        fontSize: 12,
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = this.name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = this.name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var inductor = new fabric.Group([a1, l1, l2, n1, n2, t1, t2, text], {
+        left: this.left,
+        top: this.top,
+        scaleX: this.scale,
+        scaleY: this.scale,
+        subTargetCheck: true,
+        angle: angle
+      });
+      inductor.father = this;
+      this.drawn = inductor;
+    }
+  }
+
+  class Capacitor extends Element {
+    constructor(name, left, top, r, scale = 2) {
+      super(name, left, top, scale);
+      this.r = r;
+      this.param = {'value': 1.0};
+      this.nodes = ['N1', 'N2'];
+    }
+    rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    makeSVG() {
+      var angle = (this.r%4)*90;
+      var angleText = -(this.r%4)*90;
+      var textTop = 0;
+      var textLeft = 0;
+      if (this.r % 4 == 1) textTop = 15;
+      if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
+      if (this.r % 4 == 3) textLeft = 10;
+      var p1 = new fabric.Line([17, 0, 17, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var p2 = new fabric.Line([23, 0, 23, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([0, 10, 17, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([23, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(this.name, {
+                        fontSize: 12,
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = this.name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = this.name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var source = new fabric.Group([p1, p2, l1, l2, n1, n2, t1, t2, text], {
+        left: this.left,
+        top: this.top,
+        scaleX: this.scale,
+        scaleY: this.scale,
+        subTargetCheck: true,
+        angle: angle
+      });
+      source.father = this;
+      this.drawn = source;
+    }
+  }
+
+  class Transistor extends Element {
+    constructor(name, left, top, r, scale = 2) {
+      super(name, left, top, scale);
+      this.r = r;
+      this.param = {'alpha': 0.99, 'alphaRev': 0.5, 'type': 'npn', 'IsBE': 3.7751345e-14, 'VtBE': 25e-3, 'IsBC': 3.7751345e-14, 'VtBC': 25e-3};
+      this.nodes = ['N1', 'N2', 'N3'];
+    }
+    rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    makeSVG() {
+      var angle = (this.r%4)*90;
+      var angleText = -(this.r%4)*90;
+      var textTop = 0;
+      var textLeft = 0;
+      if (this.r % 4 == 1) { textTop = 7; }
+      if (this.r % 4 == 2) { textTop = 10; textLeft = 20; }
+      if (this.r % 4 == 3) { textLeft = 10; textTop = -10; }
+      var tr1 = new fabric.Line([30, 10, 20, 20],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var tr2 = new fabric.Line([20, 20, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var tr3 = new fabric.Triangle(
+                        {
+                        height: 4,
+                        width: 4,
+                        left: 10-2,
+                        top: 10+2,
+                        angle: -45,
+                        stroke: 'black',
+                        fill: "black"}
+                        );
+      var lp1 = new fabric.Line([10, 20, 30, 20],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l1 = new fabric.Line([0, 10, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([30, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l3 = new fabric.Line([20, 20, 20, 30],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(this.name, {
+                        fontSize: 12,
+                        left: 0+textLeft,
+                        top: 30+textTop,
+                        angle: angleText
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = this.name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = this.name+"#N2";
+      var n3 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 20-4,
+                        top: 30-4
+                        });
+      n3.name = this.name+"#N3";
+      var t1 = new fabric.Text("1 (E)", {
+                        fontSize: 9,
+                        left: 0-4+textLeft,
+                        top: 10-4-8+textTop,
+                        angle: angleText
+                        });
+      var t2 = new fabric.Text("2 (C)", {
+                        fontSize: 9,
+                        left: 40-4+textLeft,
+                        top: 10-4-8+textTop,
+                        angle: angleText
+                        });
+      var t3 = new fabric.Text("3 (B)", {
+                        fontSize: 9,
+                        left: 20-4+8+textLeft,
+                        top: 30-4+textTop,
+                        angle: angleText
+                        });
+      var source = new fabric.Group([lp1, tr1, tr2, tr3, l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
+        left: this.left,
+        top: this.top,
+        scaleX: this.scale,
+        scaleY: this.scale,
+        subTargetCheck: true,
+        angle: angle
+      });
+      source.father = this;
+      this.drawn = source;
+    }
+  }
+
+  class Diode extends Element {
+    constructor(name, left, top, r, scale = 2) {
+      super(name, left, top, scale);
+      this.r = r;
+      this.param = {'Is': 3.7751345e-14, 'Vt': 25e-3};
+      this.nodes = ['N1', 'N2'];
+    }
+    rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    makeSVG() {
+      var angle = (this.r%4)*90;
+      var angleText = -(this.r%4)*90;
+      var textTop = 0;
+      var textLeft = 0;
+      if (this.r % 4 == 1) textTop = 15;
+      if (this.r % 4 == 2) textTop = -10;
+      if (this.r % 4 == 3) textLeft = 10;
+      var tr1 = new fabric.Triangle({
+                        stroke: 'black',
+                        fill: '',
+                        top: 0,
+                        left: 30,
+                        width: 20,
+                        height: 20,
+                        angle: 90,
+                        });
+      var p1 = new fabric.Line([30, 0, 30, 20], {
+                        stroke: 'black',
+                        fill: ''
+                        });
+      var l1 = new fabric.Line([0, 10, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([30, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(this.name, {
+                        fontSize: 12,
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = this.name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = this.name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var source = new fabric.Group([tr1, p1, l1, l2, n1, n2, t1, t2, text], {
+        left: this.left,
+        top: this.top,
+        scaleX: this.scale,
+        scaleY: this.scale,
+        subTargetCheck: true,
+        angle: angle
+      });
+      source.father = this;
+      this.drawn = source;
+    }
+  }
+
+  class DCV extends Element {
+    constructor(name, left, top, r, scale = 2) {
+      super(name, left, top, scale);
+      this.r = r;
+      this.param = {'type': 'DC', 'value_dc': 1.0, 'amplitude1_pulse': 0, 'amplitude2_pulse': 1, 'delay_pulse': 0, 'tRise_pulse': 0, 'tFall_pulse': 0, 'tOn_pulse': 0.5, 'period_pulse': 1, 'nCycles_pulse': 10, 'dc_sin': 0, 'amplitude_sin': 1, 'freq_sin': 10, 'delay_sin': 0, 'atenuation_sin': 0, 'angle_sin': 0, 'nCycles_sin': 10};
+      this.nodes = ['N1', 'N2'];
+    }
+    rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    makeSVG() {
+      var angle = (this.r%4)*90;
+      var angleText = -(this.r%4)*90;
+      var textTop = 0;
+      var textLeft = 0;
+      if (this.r % 4 == 1) textTop = 15;
+      if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
+      if (this.r % 4 == 3) textLeft = 10;
+      var c = new fabric.Circle({
+                        radius: 10,
+                        fill: '',
+                        stroke: 'black',
+                        left: 10,
+                        top: 0 }
+                        );
+      var tp = new fabric.Text("+", {
+                        fontSize: 10,
+                        left: 15,
+                        top: 5,
+                        });
+      var tm = new fabric.Text("-", {
+                        fontSize: 10,
+                        left: 22,
+                        top: 5
+                        });
+      var l1 = new fabric.Line([0, 10, 10, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var l2 = new fabric.Line([30, 10, 40, 10],
+                        {
+                        stroke: 'black',
+                        fill: ""}
+                        );
+      var text = new fabric.Text(this.name, {
+                        fontSize: 12,
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                        });
+      var n1 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 0-4,
+                        top: 10-4
+                         });
+      n1.name = this.name+"#N1";
+      var n2 = new fabric.Circle({
+                        radius: 4,
+                        fill: '#000',
+                        left: 40-4,
+                        top: 10-4
+                        });
+      n2.name = this.name+"#N2";
+      var t1 = new fabric.Text("1", {
+                        fontSize: 9,
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var t2 = new fabric.Text("2", {
+                        fontSize: 9,
+                        left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+      var source = new fabric.Group([c, tp, tm, l1, l2, n1, n2, t1, t2, text], {
+        left: this.left,
+        top: this.top,
+        scaleX: this.scale,
+        scaleY: this.scale,
+        subTargetCheck: true,
+        angle: angle
+      });
+      source.father = this;
+      this.drawn = source;
+    }
+  }
+
+  // End of class definitions
+  // Utility functions
+
+  function addNode(nodeName, x, y) {
+    var n = new Node(nodeName, x, y, 2);
+    n.draw();
+    elementList.push(n);
+    canvas.renderAll();
+  }
 
   function addResistor() {
     window.Rcount += 1;
     var name = "R"+window.Rcount;
-    resistor = makeResistorGroup(name, canvas.width/2, canvas.height/2, 0);
-    resistor.rotate = rotateResistor;
-    canvas.add(resistor);
-    mainJson['elements'][name] = {'name': name, 'value': 1.0};
+    var resistor = new Resistor(name, canvas.width/2, canvas.height/2, 0);
+    resistor.draw();
+    elementList.push(resistor);
   }
+
+  function addDCVoltageSource() {
+    window.Vcount += 1;
+    var name = "V"+window.Vcount;
+    var source = new DCV(name, canvas.width/2, canvas.height/2, 0);
+    source.draw();
+    elementList.push(source);
+  }
+
+  function addDiode() {
+    window.Dcount += 1;
+    var name = "D"+window.Dcount;
+    var source = new Diode(name, canvas.width/2, canvas.height/2, 0);
+    source.draw();
+    elementList.push(source);
+  }
+
+  function addTransistor() {
+    window.Qcount += 1;
+    var name = "Q"+window.Qcount;
+    var source = new Transistor(name, canvas.width/2, canvas.height/2, 0);
+    source.draw();
+    elementList.push(source);
+  }
+
+  function addCapacitor() {
+    window.Ccount += 1;
+    var name = "C"+window.Ccount;
+    var source = new Capacitor(name, canvas.width/2, canvas.height/2, 0);
+    source.draw();
+    elementList.push(source);
+  }
+
+  function addInductor() {
+    window.Lcount += 1;
+    var name = "L"+window.Lcount;
+    var source = new Inductor(name, canvas.width/2, canvas.height/2, 0);
+    source.draw();
+    elementList.push(source);
+  }
+
+  function addGnd() {
+    window.GNDcount += 1;
+    var name = "GND"+window.GNDcount;
+    var source = new Ground(name, canvas.width/2, canvas.height/2, 0);
+    source.draw();
+    elementList.push(source);
+  }
+
+  // functions that handle SVG objects directly due to user interactions
 
   function rotateElement() {
     o = canvas.getActiveObject();
-
-    // delete lines connected to it
-    var element = o;
-    if (!element.name.includes("E")) {
-      var toDeleteConn = [];
-      for (var i = 0; i < element._objects.length; ++i) {
-        if (("name" in element._objects[i]) && element._objects[i].name.includes("#N")) {
-          // found node
-          for (var key in mainJson.connections) {
-            if (mainJson.connections[key].from == element._objects[i].name) {
-              // remove this connection
-              deleteLine(key);
-              toDeleteConn.push(key);
-            }
-            if (mainJson.connections[key].to == element._objects[i].name) {
-              // remove this connection
-              deleteLine(key);
-              toDeleteConn.push(key);
-            }
-          }
-        }
-      }
-      for (var i = 0 ; i < toDeleteConn.length; ++i)
-        delete mainJson.connections[toDeleteConn[i]];
-    } else {
-      var toDeleteConn = [];
-      for (var key in mainJson.connections) {
-        if (mainJson.connections[key].from == element.name) {
-          // remove this connection
-          deleteLine(key);
-          toDeleteConn.push(key);
-        }
-        if (mainJson.connections[key].to == element.name) {
-          // remove this connection
-          deleteLine(key);
-          toDeleteConn.push(key);
-        }
-      }
-      for (var i = 0 ; i < toDeleteConn.length; ++i)
-        delete mainJson.connections[toDeleteConn[i]];
+    if (o == null) return;
+    father = o.father;
+    father.rotate();
+    for (var k in connectionList) {
+      connectionList[k].draw();
     }
-    o.rotated = o.get("angle")/90;
-    o.rotate();
+    canvas.renderAll();
   }
 
-  function makeGndGroup (name, left, top, r, scale = 2) {
-    var angle = (r%4)*90;
-    var angleText = -(r%4)*90;
-    var textTop = 0;
-    var textLeft = 0;
-    if (r % 4 == 1) textTop = 15;
-    if (r % 4 == 2) textTop = -10;
-    if (r % 4 == 3) textLeft = 10;
-    var p1 = new fabric.Line([17, 0, 17, 20], {
-                      stroke: 'black',
-                      fill: ''
-                      });
-    var p2 = new fabric.Line([20, 4, 20, 16], {
-                      stroke: 'black',
-                      fill: ''
-                      });
-    var p3 = new fabric.Line([23, 8, 23, 12], {
-                      stroke: 'black',
-                      fill: ''
-                      });
-    var l1 = new fabric.Line([0, 10, 17, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var n1 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 0-4,
-                      top: 10-4
-                       });
-    n1.name = name+"#N1";
-    var t1 = new fabric.Text("1", {
-                      fontSize: 9,
-                      left: 0-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var gnd = new fabric.Group([p1, p2, p3, l1, n1, t1], {
-      left: left,
-      top: top,
-      scaleX: scale,
-      scaleY: scale,
-      subTargetCheck: true,
-      angle: angle
-    });
-    gnd.name = name;
-    gnd.lockRotation = true;
-    gnd.lockScalingX = true;
-    gnd.lockScalingY = true;
-    gnd.rotated = r;
-    return gnd;
-  }
-
-  function makeInductorGroup (name, left, top, r, scale = 2) {
-    var angle = (r%4)*90;
-    var angleText = -(r%4)*90;
-    var textTop = 0;
-    var textLeft = 0;
-    if (r % 4 == 1) textTop = 15;
-    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
-    if (r % 4 == 3) textLeft = 10;
-    var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black'});
-    var l1 = new fabric.Line([4, 10, 10, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var l2 = new fabric.Line([32, 10, 40, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var text = new fabric.Text(name, {
-                      fontSize: 12,
-                      left: 10+textLeft,
-                      top: 20+textTop,
-                      angle: angleText
-                      });
-    var n1 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 0-4,
-                      top: 10-4
-                       });
-    n1.name = name+"#N1";
-    var n2 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 40-4,
-                      top: 10-4
-                      });
-    n2.name = name+"#N2";
-    var t1 = new fabric.Text("1", {
-                      fontSize: 9,
-                      left: 0-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var t2 = new fabric.Text("2", {
-                      fontSize: 9,
-                      left: 40-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var inductor = new fabric.Group([a1, l1, l2, n1, n2, t1, t2, text], {
-      left: left,
-      top: top,
-      scaleX: scale,
-      scaleY: scale,
-      subTargetCheck: true,
-      angle: angle
-    });
-    inductor.name = name;
-    inductor.lockRotation = true;
-    inductor.lockScalingX = true;
-    inductor.lockScalingY = true;
-    inductor.rotated = r;
-    return inductor;
-  }
-
-  function makeTransistorGroup (name, left, top, r, scale = 2) {
-    var angle = (r%4)*90;
-    var angleText = -(r%4)*90;
-    var textTop = 0;
-    var textLeft = 0;
-    if (r % 4 == 1) { textTop = 7; }
-    if (r % 4 == 2) { textTop = 10; textLeft = 20; }
-    if (r % 4 == 3) { textLeft = 10; textTop = -10; }
-    var tr1 = new fabric.Line([30, 10, 20, 20],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var tr2 = new fabric.Line([20, 20, 10, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var tr3 = new fabric.Triangle(
-                      {
-                      height: 4,
-                      width: 4,
-                      left: 10-2,
-                      top: 10+2,
-                      angle: -45,
-                      stroke: 'black',
-                      fill: "black"}
-                      );
-    var lp1 = new fabric.Line([10, 20, 30, 20],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var l1 = new fabric.Line([0, 10, 10, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var l2 = new fabric.Line([30, 10, 40, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var l3 = new fabric.Line([20, 20, 20, 30],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var text = new fabric.Text(name, {
-                      fontSize: 12,
-                      left: 0+textLeft,
-                      top: 30+textTop,
-                      angle: angleText
-                      });
-    var n1 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 0-4,
-                      top: 10-4
-                       });
-    n1.name = name+"#N1";
-    var n2 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 40-4,
-                      top: 10-4
-                      });
-    n2.name = name+"#N2";
-    var n3 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 20-4,
-                      top: 30-4
-                      });
-    n3.name = name+"#N3";
-    var t1 = new fabric.Text("1 (E)", {
-                      fontSize: 9,
-                      left: 0-4+textLeft,
-                      top: 10-4-8+textTop,
-                      angle: angleText
-                      });
-    var t2 = new fabric.Text("2 (C)", {
-                      fontSize: 9,
-                      left: 40-4+textLeft,
-                      top: 10-4-8+textTop,
-                      angle: angleText
-                      });
-    var t3 = new fabric.Text("3 (B)", {
-                      fontSize: 9,
-                      left: 20-4+8+textLeft,
-                      top: 30-4+textTop,
-                      angle: angleText
-                      });
-    var source = new fabric.Group([lp1, tr1, tr2, tr3, l1, l2, l3, n1, n2, n3, t1, t2, t3, text], {
-      left: left,
-      top: top,
-      scaleX: scale,
-      scaleY: scale,
-      subTargetCheck: true,
-      angle: angle
-    });
-    source.name = name;
-    source.lockRotation = true;
-    source.lockScalingX = true;
-    source.lockScalingY = true;
-    source.rotated = false;
-    return source;
-  }
-
-  function makeDiodeGroup (name, left, top, r, scale = 2) {
-    var angle = (r%4)*90;
-    var angleText = -(r%4)*90;
-    var textTop = 0;
-    var textLeft = 0;
-    if (r % 4 == 1) textTop = 15;
-    if (r % 4 == 2) textTop = -10;
-    if (r % 4 == 3) textLeft = 10;
-    var tr1 = new fabric.Triangle({
-                      stroke: 'black',
-                      fill: '',
-                      top: 0,
-                      left: 30,
-                      width: 20,
-                      height: 20,
-                      angle: 90,
-                      });
-    var p1 = new fabric.Line([30, 0, 30, 20], {
-                      stroke: 'black',
-                      fill: ''
-                      });
-    var l1 = new fabric.Line([0, 10, 10, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var l2 = new fabric.Line([30, 10, 40, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var text = new fabric.Text(name, {
-                      fontSize: 12,
-                      left: 10+textLeft,
-                      top: 20+textTop,
-                      angle: angleText
-                      });
-    var n1 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 0-4,
-                      top: 10-4
-                       });
-    n1.name = name+"#N1";
-    var n2 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 40-4,
-                      top: 10-4
-                      });
-    n2.name = name+"#N2";
-    var t1 = new fabric.Text("1", {
-                      fontSize: 9,
-                      left: 0-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var t2 = new fabric.Text("2", {
-                      fontSize: 9,
-                      left: 40-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var source = new fabric.Group([tr1, p1, l1, l2, n1, n2, t1, t2, text], {
-      left: left,
-      top: top,
-      scaleX: scale,
-      scaleY: scale,
-      subTargetCheck: true,
-      angle: angle
-    });
-    source.name = name;
-    source.lockRotation = true;
-    source.lockScalingX = true;
-    source.lockScalingY = true;
-    source.rotated = r;
-    return source;
-  }
-
-  function makeCapacitorGroup (name, left, top, r, scale = 2) {
-    var angle = (r%4)*90;
-    var angleText = -(r%4)*90;
-    var textTop = 0;
-    var textLeft = 0;
-    if (r % 4 == 1) textTop = 15;
-    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
-    if (r % 4 == 3) textLeft = 10;
-    var p1 = new fabric.Line([17, 0, 17, 20], {
-                      stroke: 'black',
-                      fill: ''
-                      });
-    var p2 = new fabric.Line([23, 0, 23, 20], {
-                      stroke: 'black',
-                      fill: ''
-                      });
-    var l1 = new fabric.Line([0, 10, 17, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var l2 = new fabric.Line([23, 10, 40, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var text = new fabric.Text(name, {
-                      fontSize: 12,
-                      left: 10+textLeft,
-                      top: 20+textTop,
-                      angle: angleText
-                      });
-    var n1 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 0-4,
-                      top: 10-4
-                       });
-    n1.name = name+"#N1";
-    var n2 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 40-4,
-                      top: 10-4
-                      });
-    n2.name = name+"#N2";
-    var t1 = new fabric.Text("1", {
-                      fontSize: 9,
-                      left: 0-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var t2 = new fabric.Text("2", {
-                      fontSize: 9,
-                      left: 40-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var source = new fabric.Group([p1, p2, l1, l2, n1, n2, t1, t2, text], {
-      left: left,
-      top: top,
-      scaleX: scale,
-      scaleY: scale,
-      subTargetCheck: true,
-      angle: angle
-    });
-    source.name = name;
-    source.lockRotation = true;
-    source.lockScalingX = true;
-    source.lockScalingY = true;
-    source.rotated = r;
-    return source;
-  }
-
-  function makeDCVGroup (name, left, top, r, scale = 2) {
-    var angle = (r%4)*90;
-    var angleText = -(r%4)*90;
-    var textTop = 0;
-    var textLeft = 0;
-    if (r % 4 == 1) textTop = 15;
-    if (r % 4 == 2) { textTop = 10; textLeft = 5; }
-    if (r % 4 == 3) textLeft = 10;
-    var c = new fabric.Circle({
-                      radius: 10,
-                      fill: '',
-                      stroke: 'black',
-                      left: 10,
-                      top: 0 }
-                      );
-    var tp = new fabric.Text("+", {
-                      fontSize: 10,
-                      left: 15,
-                      top: 5,
-                      });
-    var tm = new fabric.Text("-", {
-                      fontSize: 10,
-                      left: 22,
-                      top: 5
-                      });
-    var l1 = new fabric.Line([0, 10, 10, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var l2 = new fabric.Line([30, 10, 40, 10],
-                      {
-                      stroke: 'black',
-                      fill: ""}
-                      );
-    var text = new fabric.Text(name, {
-                      fontSize: 12,
-                      left: 10+textLeft,
-                      top: 20+textTop,
-                      angle: angleText
-                      });
-    var n1 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 0-4,
-                      top: 10-4
-                       });
-    n1.name = name+"#N1";
-    var n2 = new fabric.Circle({
-                      radius: 4,
-                      fill: '#000',
-                      left: 40-4,
-                      top: 10-4
-                      });
-    n2.name = name+"#N2";
-    var t1 = new fabric.Text("1", {
-                      fontSize: 9,
-                      left: 0-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var t2 = new fabric.Text("2", {
-                      fontSize: 9,
-                      left: 40-4+textLeft,
-                      top: 10-4+8+textTop,
-                      angle: angleText
-                      });
-    var source = new fabric.Group([c, tp, tm, l1, l2, n1, n2, t1, t2, text], {
-      left: left,
-      top: top,
-      scaleX: scale,
-      scaleY: scale,
-      subTargetCheck: true,
-      angle: angle
-    });
-    source.name = name;
-    source.lockRotation = true;
-    source.lockScalingX = true;
-    source.lockScalingY = true;
-    source.rotated = r;
-    return source;
-  }
-
-  function rotateDCV() {
-    canvas.remove(this);
-    var name = this.name;
-    var r = (this.rotated + 1) % 4;
-    theNew = makeDCVGroup(name, this.left, this.top, r);
-    theNew.rotated = r;
-    theNew.rotate = rotateDCV;
-    canvas.add(theNew);
-  };
-
-  function rotateDiode() {
-    canvas.remove(this);
-    var name = this.name;
-    var r = (this.rotated + 1) % 4;
-    theNew = makeDiodeGroup(name, this.left, this.top, r);
-    theNew.rotated = r;
-    theNew.rotate = rotateDiode;
-    canvas.add(theNew);
-  };
-
-  function rotateTransistor() {
-    canvas.remove(this);
-    var name = this.name;
-    var r = (this.rotated + 1) % 4;
-    theNew = makeTransistorGroup(name, this.left, this.top, r);
-    theNew.rotated = r;
-    theNew.rotate = rotateTransistor;
-    canvas.add(theNew);
-  };
-
-  function rotateCapacitor() {
-    canvas.remove(this);
-    var name = this.name;
-    var r = (this.rotated + 1) % 4;
-    theNew = makeCapacitorGroup(name, this.left, this.top, r);
-    theNew.rotated = r;
-    theNew.rotate = rotateCapacitor;
-    canvas.add(theNew);
-  };
-  function rotateInductor() {
-    canvas.remove(this);
-    var name = this.name;
-    var r = (this.rotated + 1) % 4;
-    theNew = makeInductorGroup(name, this.left, this.top, r);
-    theNew.rotated = r;
-    theNew.rotate = rotateInductor;
-    canvas.add(theNew);
-  };
-
-  function rotateGnd() {
-    canvas.remove(this);
-    var name = this.name;
-    var r = (this.rotated + 1) % 4;
-    theNew = makeGndGroup(name, this.left, this.top, r);
-    theNew.rotated = r;
-    theNew.rotate = rotateGnd;
-    canvas.add(theNew);
-  };
-
+  // run simulation
   function run() {
     // make net list
     $('#results_content').html('');
@@ -731,8 +1115,8 @@
     loading.setAttribute("class", "loading_element");
     $('#results_content')[0].appendChild(loading);
 
-    var c = document.createElement("center");
-    c.setAttribute("id", "content");
+    var resObj = document.createElement("center");
+    resObj.setAttribute("id", "content");
 
     var img_div = document.createElement("div");
     img_div.setAttribute("class", "row");
@@ -740,8 +1124,8 @@
     img_div1.setAttribute("class", "col-ms-12 col-md-12");
     img_div1.setAttribute("id", "result_img");
     img_div.appendChild(img_div1)
-    c.appendChild(img_div);
-    c.appendChild(document.createElement("br"));
+    resObj.appendChild(img_div);
+    resObj.appendChild(document.createElement("br"));
 
     var text_div = document.createElement("div");
     text_div.setAttribute("class", "row");
@@ -753,7 +1137,32 @@
     text_div2.setAttribute("id", "text2");
     text_div.appendChild(text_div1)
     text_div.appendChild(text_div2)
-    c.appendChild(text_div);
+    resObj.appendChild(text_div);
+
+    // build JSON
+    var mainJson = {'elements' : {}, 'connections': {}, 'simulation': {}};
+    mainJson['connections'] = {};
+    mainJson['elements'] = {};
+    mainJson['simulation'] = simulation;
+    for (var e in elementList) {
+      mainJson['elements'][elementList[e].name] = elementList[e].param;
+    }
+    for (var c in connectionList) {
+      mainJson['connections'][connectionList[c].name] = {};
+      from = findElement(connectionList[c].nodeList[0]);
+      fromName = from[0].name;
+      if (from[2]) {
+        fromName = fromName + "#" + from[1];
+      }
+      to = findElement(connectionList[c].nodeList[connectionList[c].nodeList.length-1]);
+      toName = to[0].name;
+      if (to[2]) {
+        toName = toName + "#" + to[1];
+      }
+      mainJson['connections'][connectionList[c].name]['from'] = fromName;
+      mainJson['connections'][connectionList[c].name]['to'] = toName;
+    }
+    console.log(JSON.stringify(mainJson));
 
     // run! (AJAX)
     $.ajaxSetup({
@@ -777,21 +1186,24 @@
         }
       });
     // show results
-    $('#results_content')[0].appendChild(c);
+    $('#results_content')[0].appendChild(resObj);
   }
 
+  // edit object parameters
   function edit() {
-    element = canvas.getActiveObject();
-    if (!element || !("name" in element)) {
+    element_svg = canvas.getActiveObject();
+    if (!element_svg || !("father" in element_svg)) {
       window.alert("Please select an element to edit.");
       return;
     }
+    element = element_svg.father;
     if (element.name.includes("GND")) {
       window.alert("Nothing to edit in the ground element.");
       return;
     }
     if (element.name.includes("Conn")) return;
-    e = mainJson['elements'][element.name];
+    e = element.param;
+
     var c = document.createElement("div");
     c.setAttribute("id", "content");
     $('#edit_content')[0].appendChild(c);
@@ -883,11 +1295,17 @@
   }
   function endEdit() {
     var objName = $('#edit_content #objName')[0].value;
+    for (var k in elementList) {
+      if (elementList[k].name == objName) {
+        element = elementList[k];
+        break;
+      }
+    }
     if (objName.includes("V")) {
       var props = ['value_dc', 'amplitude1_pulse', 'amplitude2_pulse', 'delay_pulse', 'tRise_pulse', 'tFall_pulse', 'tOn_pulse', 'period_pulse', 'nCycles_pulse', 'dc_sin', 'amplitude_sin', 'freq_sin', 'delay_sin', 'atenuation_sin', 'angle_sin', 'nCycles_sin'];
       for (var i = 0; i < props.length; ++i) {
         var k = props[i];
-        mainJson['elements'][objName][k] = $('#edit_content #'+k)[0].value;
+        element.param[k] = $('#edit_content #'+k)[0].value;
       }
       mainJson['elements'][objName]['type'] = 'DC';
       if ($('#edit_content #type_pulse').prop('checked')) mainJson['elements'][objName]['type'] = 'PULSE';
@@ -896,17 +1314,16 @@
       var props = ['Is', 'Vt'];
       for (var i = 0; i < props.length; ++i) {
         var k = props[i];
-        mainJson['elements'][objName][k] = $('#edit_content #'+k)[0].value;
+        element.param[k] = $('#edit_content #'+k)[0].value;
       }
     } else if (objName.includes("Q")) {
       var props = ['IsBE', 'VtBE', 'IsBC', 'VtBC'];
       for (var i = 0; i < props.length; ++i) {
         var k = props[i];
-        mainJson['elements'][objName][k] = $('#edit_content #'+k)[0].value;
+        element.param[k] = $('#edit_content #'+k)[0].value;
       }
     } else {
-      var value = $('#edit_content #value')[0].value;
-      mainJson['elements'][objName].value = value;
+      element.param['value'] = $('#edit_content #'+'value')[0].value;
     }
     $('#edit_content').html('');
   }
@@ -922,72 +1339,18 @@
     var internalStep = $('#simulopt_content #internalStep')[0].value;
     var fft = $('#simulopt_content #fft')[0].value;
     var nodes = $('#simulopt_content #nodes')[0].value;
-    mainJson['simulation']['tFinal'] = tFinal;
-    mainJson['simulation']['dt'] = dt;
-    mainJson['simulation']['method'] = method;
-    mainJson['simulation']['internalStep'] = internalStep;
+    simulation['tFinal'] = tFinal;
+    simulation['dt'] = dt;
+    simulation['method'] = method;
+    simulation['internalStep'] = internalStep;
     if (fft == "true")
-      mainJson['simulation']['fft'] = true;
+      simulation['fft'] = true;
     else
-      mainJson['simulation']['fft'] = false;
-    mainJson['simulation']['nodes'] = $("#simulopt_content #nodes").val();
+      simulation['fft'] = false;
+    simulation['nodes'] = $("#simulopt_content #nodes").val();
     $('#simulopt_window').modal('hide');
     run();
     $('#results_window').modal('show');
-  }
-
-  function addDCVoltageSource() {
-    window.Vcount += 1;
-    var name = "V"+window.Vcount;
-    source = makeDCVGroup(name, canvas.width/2, canvas.height/2, 0);
-    source.rotate = rotateDCV;
-    canvas.add(source);
-    mainJson['elements'][name] = {'name': name, 'type': 'DC', 'value_dc': 1.0, 'amplitude1_pulse': 0, 'amplitude2_pulse': 1, 'delay_pulse': 0, 'tRise_pulse': 0, 'tFall_pulse': 0, 'tOn_pulse': 0.5, 'period_pulse': 1, 'nCycles_pulse': 10, 'dc_sin': 0, 'amplitude_sin': 1, 'freq_sin': 10, 'delay_sin': 0, 'atenuation_sin': 0, 'angle_sin': 0, 'nCycles_sin': 10};
-  }
-
-  function addDiode() {
-    window.Dcount += 1;
-    var name = "D"+window.Dcount;
-    dio = makeDiodeGroup(name, canvas.width/2, canvas.height/2, 0);
-    dio.rotate = rotateDiode;
-    canvas.add(dio);
-    mainJson.elements[name] = {'name': name, 'Is': 3.7751345e-14, 'Vt': 25e-3};
-  }
-
-  function addTransistor() {
-    window.Qcount += 1;
-    var name = "Q"+window.Qcount;
-    tra = makeTransistorGroup(name, canvas.width/2, canvas.height/2, 0);
-    tra.rotate = rotateTransistor;
-    canvas.add(tra);
-    mainJson.elements[name] = {'name': name, 'alpha': 0.99, 'alphaRev': 0.5, 'type': 'npn', 'IsBE': 3.7751345e-14, 'VtBE': 25e-3, 'IsBC': 3.7751345e-14, 'VtBC': 25e-3};
-  }
-
-  function addCapacitor() {
-    window.Ccount += 1;
-    var name = "C"+window.Ccount;
-    cap = makeCapacitorGroup(name, canvas.width/2, canvas.height/2, 0);
-    cap.rotate = rotateCapacitor;
-    canvas.add(cap);
-    mainJson.elements[name] = {'name': name, 'value': 1.0};
-  }
-
-  function addInductor() {
-    window.Lcount += 1;
-    var name = "L"+window.Lcount;
-    ind = makeInductorGroup(name, canvas.width/2, canvas.height/2, 0);
-    ind.rotate = rotateInductor;
-    canvas.add(ind);
-    mainJson.elements[name] = {'name': name, 'value': 1.0};
-  }
-
-  function addGnd() {
-    window.GNDcount += 1;
-    var name = "GND"+window.GNDcount;
-    gnd = makeGndGroup(name, canvas.width/2, canvas.height/2, 0);
-    gnd.rotate = rotateGnd;
-    canvas.add(gnd);
-    mainJson.elements[name] = {'name': name};
   }
 
   function addConnection(e, state) {
@@ -995,19 +1358,19 @@
       window.addConnectionMode = true;
       canvas.selection = false;
       canvas.forEachObject(function(o) {
-        o.selectable = false;
+        o.father.lock = true;
       });
     } else {
       window.addConnectionMode = false;
       canvas.selection = true;
       canvas.forEachObject(function(o) {
-        o.selectable = true;
+        o.father.lock = false;
       });
     }
   }
 
   function deleteObj() {
-    element = canvas.getActiveObject();
+    element = canvas.getActiveObject().father;
     if (element.name.includes("Conn")) {
       deleteConnection(element);
     } else if (element.name.includes("R") || element.name.includes("V") || element.name.includes("C") || element.name.includes("E") || element.name.includes("D") || element.name.includes("Q") || element.name.includes("L")) {
@@ -1015,77 +1378,37 @@
     }
   }
   function deleteConnection(element) {
-    delete mainJson.connections[element.name];
-    canvas.remove(element);
+    element.remove();
+    element = null;
   }
 
   function deleteElement(element) {
-    element = canvas.getActiveObject();
-
-    if (!element.name.includes("E")) {
-      var toDeleteConn = [];
-      for (var i = 0; i < element._objects.length; ++i) {
-        if (("name" in element._objects[i]) && element._objects[i].name.includes("#N")) {
-          // found node
-          for (var key in mainJson.connections) {
-            if (mainJson.connections[key].from == element._objects[i].name) {
-              // remove this connection
-              deleteLine(key);
-              toDeleteConn.push(key);
-            }
-            if (mainJson.connections[key].to == element._objects[i].name) {
-              // remove this connection
-              deleteLine(key);
-              toDeleteConn.push(key);
-            }
-          }
-        }
-      }
-      for (var i = 0 ; i < toDeleteConn.length; ++i)
-        delete mainJson.connections[toDeleteConn[i]];
-    } else {
-      var toDeleteConn = [];
-      for (var key in mainJson.connections) {
-        if (mainJson.connections[key].from == element.name) {
-          // remove this connection
-          deleteLine(key);
-          toDeleteConn.push(key);
-        }
-        if (mainJson.connections[key].to == element.name) {
-          // remove this connection
-          deleteLine(key);
-          toDeleteConn.push(key);
-        }
-      }
-      for (var i = 0 ; i < toDeleteConn.length; ++i)
-        delete mainJson.connections[toDeleteConn[i]];
-    }
-    delete mainJson.elements[element.name];
-    canvas.remove(element);
+    element.remove();
+    element = null;
   }
 
   function prepareSimulOpt() {
-    $("#simulopt_content #tFinal")[0].value = mainJson.simulation.tFinal;
-    $("#simulopt_content #dt")[0].value = mainJson.simulation.dt;
-    $("#simulopt_content #internalStep")[0].value = mainJson.simulation.internalStep;
-    $("#simulopt_content #method")[0].value = mainJson.simulation.method;
-    if (mainJson.simulation.fft) {
+    $("#simulopt_content #tFinal")[0].value = simulation.tFinal;
+    $("#simulopt_content #dt")[0].value = simulation.dt;
+    $("#simulopt_content #internalStep")[0].value = simulation.internalStep;
+    $("#simulopt_content #method")[0].value = simulation.method;
+    if (simulation.fft) {
       $("#simulopt_content #fft").val("true");
     } else {
       $("#simulopt_content #fft").val("false");
     }
     $("#simulopt_content #nodes").html("");
-    for (var k in mainJson.elements) {
-      if (k.includes("Conn")) continue;
-      if (k.includes("E")) continue;
-      if (k.includes("GND")) continue;
+    for (var k in elementList) {
+      if (elementList[k].name.includes("Conn")) continue;
+      if (elementList[k].name.includes("E")) continue;
+      if (elementList[k].name.includes("GND")) continue;
       var number_nodes = 2;
-      if (k.includes("Q")) number_nodes = 3;
+      if (elementList[k].name.includes("Q")) number_nodes = 3;
       for (var n = 1; n <= number_nodes; ++n) {
-        var nname = k + "#N" + n;
+        var nname = elementList[k].name + "#N" + n;
         var sel = false;
-        for (var j = 0; j < mainJson.simulation.nodes.length; ++j) {
-          if (mainJson.simulation.nodes[j] == nname) {
+        for (var j = 0; j < simulation.nodes.length; ++j) {
+          if (simulation.nodes[j] == nname) {
             sel = true;
             break;
           }
@@ -1109,27 +1432,51 @@
   var GndBtnCanvas = new fabric.Canvas("GndBtnCanvas");
   var DiodeBtnCanvas = new fabric.Canvas("DiodeBtnCanvas");
   var TransistorBtnCanvas = new fabric.Canvas("TransistorBtnCanvas");
-  var btn = makeDCVGroup("V", 0, 5, 0, 1);
+
+  var btnList = [];
+
+  btnList.push(new DCV("V", 0, 5, 0, 1));
+  btnList[0].makeSVG();
+  var btn = btnList[0].drawn;
   btn.selectable = false;
   DCVBtnCanvas.add(btn);
-  btn = makeResistorGroup("R", 0, 5, 0, 1)
+
+  btnList.push(new Resistor("R", 0, 5, 0, 1));
+  btnList[1].makeSVG();
+  var btn = btnList[1].drawn;
   btn.selectable = false;
   ResistorBtnCanvas.add(btn);
-  var btn = makeCapacitorGroup("C", 0, 5, 0, 1);
+
+  btnList.push(new Capacitor("C", 0, 5, 0, 1));
+  btnList[2].makeSVG();
+  var btn = btnList[2].drawn;
   btn.selectable = false;
   CapacitorBtnCanvas.add(btn);
-  var btn = makeInductorGroup("L", 0, 5, 0, 1);
+
+  btnList.push(new Inductor("L", 0, 5, 0, 1));
+  btnList[3].makeSVG();
+  var btn = btnList[3].drawn;
   btn.selectable = false;
   InductorBtnCanvas.add(btn);
-  var btn = makeGndGroup("Gnd", 0, 5, 0, 1);
+
+  btnList.push(new Ground("Gnd", 0, 5, 0, 1));
+  btnList[4].makeSVG();
+  var btn = btnList[4].drawn;
   btn.selectable = false;
   GndBtnCanvas.add(btn);
-  var btn = makeDiodeGroup("D", 0, 5, 0, 1);
+
+  btnList.push(new Diode("D", 0, 5, 0, 1));
+  btnList[5].makeSVG();
+  var btn = btnList[5].drawn;
   btn.selectable = false;
   DiodeBtnCanvas.add(btn);
-  var btn = makeTransistorGroup("Q", 0, 5, 0, 1);
+
+  btnList.push(new Transistor("Q", 0, 5, 0, 1));
+  btnList[6].makeSVG();
+  var btn = btnList[6].drawn;
   btn.selectable = false;
   TransistorBtnCanvas.add(btn);
+
   fabric.Object.prototype.transparentCorners = false;
   $("#addDCVoltageSourceBtn")[0].onclick = addDCVoltageSource;
   $("#addDCVoltageSourceLink")[0].onclick = addDCVoltageSource;
@@ -1177,18 +1524,23 @@
   $("#panResetLink")[0].onclick = panReset;
   
   function save() {
-    var canvas_json = canvas.toJSON(['name', 'rotated', 'x1', 'y1', 'x2', 'y2']);
-    full_json = {};
-    full_json.mainJson = mainJson;
-    full_json.canvasJson = canvas_json;
-    full_json.lines = {};
-    for (var k = 0; k < canvas.getObjects().length; ++k) {
-      if (canvas.getObjects()[k].name.includes("Conn")) {
-        var o = canvas.getObjects()[k];
-        full_json.lines[o.name] = {'x1' : o.get('x1'), 'x2': o.get('x2'), 'y1': o.get('y1'), 'y2': o.get('y2') };
-      }
+    saveItElement = {}
+    saveItConnection = {}
+    for (var k in elementList) {
+      saveItElement[k] = elementList[k].drawn;
+      elementList[k].drawn = null;
     }
-    var str_json = JSON.stringify(full_json);
+    for (var k in connectionList) {
+      saveItConnection[k] = connectionList[k].drawn;
+      connectionList[k].drawn = null;
+    }
+    var str_json = JSON.stringify({'elementList': elementList, 'simulation' : simulation , 'connectionList': connectionList});
+    for (var k in elementList) {
+      elementList[k].drawn = saveItElement[k];
+    }
+    for (var k in connectionList) {
+      connectionList[k].drawn = saveItConnection[k];
+    }
     var blob = new Blob([str_json], {type: "application/json"});
     var url  = URL.createObjectURL(blob);
     $('#save_content').html('<div class="form-group row"><label for="download_fname" class="col-2 col-form-label">File name</label><div class="col-10"><input class="form-control" type="text" value="circuit.json" id="download_fname"></div></div>');
@@ -1215,54 +1567,48 @@
 
     fr.onload = function(e) { 
       var result = JSON.parse(e.target.result);
-      mainJson = result.mainJson;
+      elementListF = result.elementList;
+      connectionListF = result.connectionList;
+      simulation = result.simulation;
+      for (var k in elementListF) {
+        if (elementListF[k].name.includes("GND")){
+          var o = new Ground(elementListF[k].name, 0, 0, 0);
+        } else if (elementListF[k].name.includes("R")){
+          var o = new Resistor(elementListF[k].name, 0, 0, 0);
+        } else if (elementListF[k].name.includes("C")){
+          var o = new Capacitor(elementListF[k].name, 0, 0, 0);
+        } else if (elementListF[k].name.includes("L")){
+          var o = new Inductor(elementListF[k].name, 0, 0, 0);
+        } else if (elementListF[k].name.includes("Q")){
+          var o = new Transistor(elementListF[k].name, 0, 0, 0);
+        } else if (elementListF[k].name.includes("D")){
+          var o = new Diode(elementListF[k].name, 0, 0, 0);
+        } else if (elementListF[k].name.includes("V")){
+          var o = new DCV(elementListF[k].name, 0, 0, 0);
+        } else if (elementListF[k].name.includes("E")){
+          var o = new Node(elementListF[k].name, 0, 0, 0);
+        }
+        o.left = elementListF[k].left;
+        o.top = elementListF[k].top;
+        o.scale = elementListF[k].scale;
+        o.r = elementListF[k].r;
+        o.scale = elementListF[k].scale;
+        o.nodes = elementListF[k].nodes;
+        o.param = elementListF[k].param;
+        o.draw();
+        elementList.push(o);
+        elementList[elementList.length-1].draw();
+      }
+      for (var k in connectionListF) {
+        var o = new Connection(connectionListF[k].name);
+        o.nodeList = connectionListF[k].nodeList;
+        o.draw();
+        connectionList.push(o);
+        connectionList[connectionList.length-1].draw();
+        connectionList[k].draw();
+      }
+      // TODO check highest integer suffix and adjust window.**count
       prepareSimulOpt();
-      canvas.loadFromJSON(result.canvasJson, function() {
-        for (var k = 0; k < canvas.getObjects().length; ++k) {
-          if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
-          else if (canvas.getObjects()[k].name.includes("E")) canvas.getObjects()[k].rotate = null;
-          else if (canvas.getObjects()[k].name.includes("Conn")) canvas.getObjects()[k].rotate = null;
-          else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
-          else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
-          else if (canvas.getObjects()[k].name.includes("L")) canvas.getObjects()[k].rotate = rotateInductor;
-          else if (canvas.getObjects()[k].name.includes("V")) canvas.getObjects()[k].rotate = rotateDCV;
-          else if (canvas.getObjects()[k].name.includes("Q")) canvas.getObjects()[k].rotate = rotateTransistor;
-          else if (canvas.getObjects()[k].name.includes("R")) canvas.getObjects()[k].rotate = rotateResistor;
-          canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
-          canvas.getObjects()[k].fresh = false;
-          if (canvas.getObjects()[k].name.includes("E")) {
-            canvas.getObjects()[k]._objects[0].name = canvas.getObjects()[k].name+"#N1";
-          }
-        }
-        canvas.renderAll(); 
-        canvas.calcOffset();
-      },function(o,object){
-      });
-      var toRemove = [];
-      var toAdd = [];
-      for (var k = 0; k < canvas.getObjects().length; ++k) {
-        if (canvas.getObjects()[k].name.includes("Conn") && 'lines' in result) {
-          var n = canvas.getObjects()[k].name;
-          var nline = new fabric.Line([result.lines[n].x1, result.lines[n].y1, result.lines[n].x2, result.lines[n].y2],
-                                      {
-                                        stroke: 'black',
-                                        fill: "",
-                                        strokeWidth: 3,
-                                      });
-          nline.name = n;
-          nline.rotate = null;
-          nline.fresh = false;
-          toAdd.push(nline);
-          toRemove.push(canvas.getObjects()[k]);
-        }
-      }
-      for (var k = 0; k < toRemove.length; ++k) {
-        canvas.remove(toRemove[k]);
-        delete toRemove[k];
-      }
-      for (var k = 0; k < toAdd.length; ++k) {
-        canvas.add(toAdd[k]);
-      }
     }
 
     fr.readAsText(files.item(0));
@@ -1275,48 +1621,49 @@
       mainJson = result.mainJson;
       prepareSimulOpt();
       canvas.loadFromJSON(result.canvasJson, function() {
-        for (var k = 0; k < canvas.getObjects().length; ++k) {
-          if (canvas.getObjects()[k].name.includes("GND")) canvas.getObjects()[k].rotate = rotateGnd;
-          else if (canvas.getObjects()[k].name.includes("Conn")) canvas.getObjects()[k].rotate = null;
-          else if (canvas.getObjects()[k].name.includes("E")) canvas.getObjects()[k].rotate = null;
-          else if (canvas.getObjects()[k].name.includes("D")) canvas.getObjects()[k].rotate = rotateDiode;
-          else if (canvas.getObjects()[k].name.includes("C")) canvas.getObjects()[k].rotate = rotateCapacitor;
-          else if (canvas.getObjects()[k].name.includes("L")) canvas.getObjects()[k].rotate = rotateInductor;
-          else if (canvas.getObjects()[k].name.includes("V")) canvas.getObjects()[k].rotate = rotateDCV;
-          else if (canvas.getObjects()[k].name.includes("Q")) canvas.getObjects()[k].rotate = rotateTransistor;
-          else if (canvas.getObjects()[k].name.includes("R")) canvas.getObjects()[k].rotate = rotateResistor;
-          canvas.getObjects()[k].rotated = canvas.getObjects()[k].get("angle")/90;
-          canvas.getObjects()[k].fresh = false;
-          if (canvas.getObjects()[k].name.includes("E")) {
-            canvas.getObjects()[k]._objects[0].name = canvas.getObjects()[k].name+"#N1";
+        var result = JSON.parse(e.target.result);
+        elementListF = result.elementList;
+        connectionListF = result.connectionList;
+        simulation = result.simulation;
+        for (var k in elementListF) {
+          if (elementListF[k].name.includes("GND")){
+            var o = new Ground(elementListF[k].name, 0, 0, 0);
+          } else if (elementListF[k].name.includes("R")){
+            var o = new Resistor(elementListF[k].name, 0, 0, 0);
+          } else if (elementListF[k].name.includes("C")){
+            var o = new Capacitor(elementListF[k].name, 0, 0, 0);
+          } else if (elementListF[k].name.includes("L")){
+            var o = new Inductor(elementListF[k].name, 0, 0, 0);
+          } else if (elementListF[k].name.includes("Q")){
+            var o = new Transistor(elementListF[k].name, 0, 0, 0);
+          } else if (elementListF[k].name.includes("D")){
+            var o = new Diode(elementListF[k].name, 0, 0, 0);
+          } else if (elementListF[k].name.includes("V")){
+            var o = new DCV(elementListF[k].name, 0, 0, 0);
+          } else if (elementListF[k].name.includes("E")){
+            var o = new Node(elementListF[k].name, 0, 0, 0);
           }
+          o.left = elementListF[k].left;
+          o.top = elementListF[k].top;
+          o.scale = elementListF[k].scale;
+          o.r = elementListF[k].r;
+          o.scale = elementListF[k].scale;
+          o.nodes = elementListF[k].nodes;
+          o.param = elementListF[k].param;
+          o.draw();
+          elementList.push(o);
+          elementList[elementList.length-1].draw();
         }
-      },function(o,object){
+        for (var k in connectionListF) {
+          var o = new Connection(connectionListF[k].name);
+          o.nodeList = connectionListF[k].nodeList;
+          o.draw();
+          connectionList.push(o);
+          connectionList[connectionList.length-1].draw();
+          connectionList[k].draw();
+        }
+        prepareSimulOpt();
       });
-      var toRemove = [];
-      var toAdd = [];
-      for (var k = 0; k < canvas.getObjects().length; ++k) {
-        if (canvas.getObjects()[k].name.includes("Conn") && 'lines' in result) {
-          var n = canvas.getObjects()[k].name;
-          var nline = new fabric.Line([result.lines[n].x1, result.lines[n].y1, result.lines[n].x2, result.lines[n].y2],
-                                      {
-                                        stroke: 'black',
-                                        fill: "",
-                                        strokeWidth: 3,
-                                      });
-          nline.name = n;
-          nline.rotate = null;
-          toAdd.push(nline);
-          toRemove.push(canvas.getObjects()[k]);
-        }
-      }
-      for (var k = 0; k < toRemove.length; ++k) {
-        canvas.remove(toRemove[k]);
-        delete toRemove[k];
-      }
-      for (var k = 0; k < toAdd.length; ++k) {
-        canvas.add(toAdd[k]);
-      }
     });
   }
   function loadExampleRC() {
@@ -1343,20 +1690,12 @@
     if (($("#open_window").data('bs.modal') || {})._isShown) return;
     if (e.keyCode == 27) { // escape key maps to keycode `27`
       if (window.addConnectionMode) {
-        canvas.remove(window.line);
-        window.line = null;
+        dropConnection();
         window.isDown = false;
       }
       window.addConnectionMode = false;
       canvas.forEachObject(function(o) {
-        o.selectable = true;
-        o.lockRotation = true;
-        o.lockScalingX = true;
-        o.lockScalingY = true;
-        if (o.name.includes("Conn")) {
-          o.lockMovementX = true;
-          o.lockMovementY = true;
-        }
+        o.father.lock = false;
       });
       $('#addConnectionBtn').bootstrapSwitch('state', false, false);
     } else if (e.keyCode == 46) { // delete
@@ -1368,567 +1707,36 @@
     }
   });
 
-  function deleteLine(lineName) {
-    var idx = -1;
-    for (var i = 0; i < canvas.getObjects().length; ++i) {
-      if (canvas.getObjects()[i].name == lineName) {
-        idx = i;
-      }
-    }
-    canvas.remove(canvas.getObjects()[idx]);
-  }
-
-  function moveNode(nodeName, x, y, lineName) {
-    canvas.calcOffset();
-    var idx = -1;
-    for (var k = 0; k < canvas.getObjects().length; ++k) {
-      if (canvas.getObjects()[k].name == nodeName) {
-        idx = k;
-        break;
-      }
-    }
-    if (canvas.getObjects()[idx].fresh) return;
-    var dx = Math.abs(canvas.getObjects()[idx].left + 8 - x);
-    var dy = Math.abs(canvas.getObjects()[idx].top + 8 - y);
-    var verticalConnections = 0;
-    var horizontalConnections = 0;
-    for (var k in mainJson.connections) {
-      if (mainJson.connections[k].to == nodeName || mainJson.connections[k].from == nodeName) {
-        var lin = findLine(k);
-        if (Math.abs(lin.get('x2') - lin.get('x1')) > Math.abs(lin.get('y2') - lin.get('y1'))) horizontalConnections += 1;
-        else if (Math.abs(lin.get('x2') - lin.get('x1')) < Math.abs(lin.get('y2') - lin.get('y1'))) verticalConnections += 1;
-      }
-    }
-    if ((dy > dx && horizontalConnections > 1) || (dx > dy && verticalConnections > 1)) {
-      var xo = x;
-      var yo = y;
-      var nx_orig = canvas.getObjects()[idx].left;
-      var ny_orig = canvas.getObjects()[idx].top;
-      window.extraCount += 1;
-      mainJson.elements['E'+window.extraCount] = {'name': 'E'+window.extraCount}
-      var en = makeNodeGroup("E"+window.extraCount, xo-8, yo-8, 2);
-      en.name = 'E'+window.extraCount;
-      en.fresh = true;
-      canvas.add(en);
-
-      window.connectionCount += 1;
-      var nline = new fabric.Line([xo, yo, nx_orig+8, ny_orig+8],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-      nline.selectable = true;
-      nline.lockRotation = true;
-      nline.lockMovementX = true;
-      nline.lockMovementY = true;
-      nline.lockScalingX = true;
-      nline.lockScalingY = true;
-      nline.name = "Conn"+window.connectionCount;
-      nline.fresh = true;
-      canvas.add(nline);
-      if (mainJson.connections[lineName].to == nodeName) {
-        mainJson.connections[lineName].to = 'E'+window.extraCount;
-      }
-      if (mainJson.connections[lineName].from == nodeName) {
-        mainJson.connections[lineName].from = 'E'+window.extraCount;
-      }
-      mainJson.connections['Conn'+window.connectionCount] = {'from': 'E'+window.extraCount, 'to': nodeName}
-      canvas.renderAll();
-    } else {
-      canvas.remove(canvas.getObjects()[idx]);
-      var en = makeNodeGroup(nodeName, x-8, y-8, 2);
-      en.fresh = true;
-      canvas.add(en);
-
-      for (var key in mainJson.connections) {
-        if (!key.includes("Conn")) continue;
-        if (mainJson.connections[key].from == nodeName) {
-          moveLine(key, nodeName, true);
-        }
-        if (mainJson.connections[key].to == nodeName) {
-          moveLine(key, nodeName, false);
-        }
-      }
-      canvas.renderAll();
-    }
-  }
-
   canvas.on('object:moving', function(o) {
-    for (var k = 0; k < canvas.getObjects().length; ++k) {
-      canvas.getObjects()[k].fresh = false;
-    }
     o = o.target;
-    for (var i = 0; i < o._objects.length; ++i) {
-      if (("name" in o._objects[i]) && o._objects[i].name.includes("#N")) {
-        // found node
-        for (var key in mainJson.connections) {
-          if (mainJson.connections[key].from == o._objects[i].name) {
-            // move this connection
-            moveLine(key, o._objects[i].name, true);
-
-          }
-          if (mainJson.connections[key].to == o._objects[i].name) {
-            // move this connection
-            moveLine(key, o._objects[i].name, false);
-          }
-        }
-      }
+    o.father.left = o.left;
+    o.father.top = o.top;
+    for (var node in o.father.nodes) {
+      adjustNodesConnectedTo(o.father.name+"#"+o.father.nodes[node]);
     }
   });
 
-  function moveLine(lineName, nodeName, first) {
-    canvas.calcOffset();
-    var elName = nodeName.split("#")[0];
-    var nName = "";
-    if (!nodeName.includes("E")) nName = nodeName.split('#')[1];
-    var idx = -1;
-    var elObj = -1;
-    var nObj = -1;
-    for (var i = 0; i < canvas.getObjects().length; ++i) {
-      if (canvas.getObjects()[i].name == lineName) {
-        idx = i;
-      }
-      if (canvas.getObjects()[i].name == elName) {
-        elObj = canvas.getObjects()[i];
-        if (nName != "") {
-          for (var k = 0; k < canvas.getObjects()[i]._objects.length; ++k) {
-            if ("name" in canvas.getObjects()[i]._objects[k] && canvas.getObjects()[i]._objects[k].name == nodeName) {
-              nObj = canvas.getObjects()[i]._objects[k];
-            }
-          }
-        }
-
-      }
+  canvas.on('object:modified', function(o) {
+    for (var node in o.target.father.nodes) {
+      adjustNodesConnectedTo(o.target.father.name+"#"+o.target.father.nodes[node]);
     }
-    lineObj = canvas.getObjects()[idx];
-    if (lineObj.fresh) return;
-
-    // update path
-    var nx = elObj.left;
-    var ny = elObj.top;
-    if (nName != "") {
-      var matrix = nObj.calcTransformMatrix();
-      nx = matrix[4];
-      ny = matrix[5];
-    } else {
-      nx += 8;
-      ny += 8;
+    for (var k in elementList) {
+      elementList[k].draw();
     }
-
-    var x1 = lineObj.get('x1');
-    var y1 = lineObj.get('y1');
-    var x2 = lineObj.get('x2');
-    var y2 = lineObj.get('y2');
-    var dx = Math.abs(x1 - x2);
-    var dy = Math.abs(y1 - y2);
-    if (first) {
-      x1 = nx;
-      y1 = ny;
-      if (dx > dy) {
-        y2 = ny;
-      } else if (dy > dx) {
-        x2 = nx;
-      }
-    } else {
-      x2 = nx;
-      y2 = ny;
-      if (dx > dy) {
-        y1 = ny;
-      } else if (dy > dx) {
-        x1 = nx;
-      }
+    for (var k in connectionList) {
+      connectionList[k].draw();
     }
-
-    var nline = new fabric.Line([x1, y1, x2, y2],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    nline.selectable = true;
-    nline.lockRotation = true;
-    nline.lockMovementX = true;
-    nline.lockMovementY = true;
-    nline.lockScalingX = true;
-    nline.lockScalingY = true;
-    canvas.remove(canvas.getObjects()[idx]);
-    nline.name=lineName;
-    nline.fresh = true;
-    canvas.add(nline);
-
-    // look for all connected to this line
-    var toMove = mainJson.connections[lineName].to;
-    if (toMove.includes("E") && toMove != nodeName) {
-      moveNode(toMove, x2, y2, lineName);
-    }
-    var toMove = mainJson.connections[lineName].from;
-    if (toMove.includes("E") && toMove != nodeName) {
-      moveNode(toMove, x1, y1, lineName);
-    }
-  }
+    canvas.renderAll();
+  });
 
   function findLine(name) {
     for (var i = 0; i < canvas.getObjects().length; ++i) {
       var l = canvas.getObjects()[i];
-      if (l.name == name) {
-        return l;
+      if (l.father.name == name) {
+        return l.father;
       }
     }
     return false;
-  }
-
-  function bifurcateFrom(o) {
-    // split line
-    // add information in JSON
-    bifurcate_name = o.target.name;
-    bifurcate = mainJson.connections[bifurcate_name];
-    window.extraCount += 1;
-    mainJson.elements['E'+window.extraCount] = {'name': 'E'+window.extraCount}
-
-    // bifurcate removing old line and making 2
-    // o is the node where the bifurcation happens
-    var e = o;
-    var o = o.target;
-
-    // get x and y of the node where we clicked
-    var pointer = canvas.getPointer(e.e);
-    var nx = pointer.x;
-    var ny = pointer.y;
-
-    // remove old one
-    var lastItem = findLine(bifurcate_name);
-
-    window.connectionCount += 1;
-    var l = new fabric.Line( [lastItem.get('x1'), lastItem.get('y1'), nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = "Conn"+window.connectionCount;
-    canvas.remove(lastItem)
-    canvas.add(l);
-    mainJson.connections['Conn'+window.connectionCount] = {'from': bifurcate.from, 'to': 'E'+window.extraCount}
-
-    var en = makeNodeGroup("E"+window.extraCount, nx-8, ny-8, 2);
-    canvas.add(en);
-
-    window.connectionCount += 1;
-    var l = new fabric.Line( [nx, ny, lastItem.get('x2'), lastItem.get('y2')],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = "Conn"+window.connectionCount;
-    canvas.add(l);
-    mainJson.connections['Conn'+window.connectionCount] = {'from': 'E'+window.extraCount, 'to': bifurcate.to}
-
-    // remove the old connection from the JSON
-    delete mainJson.connections[bifurcate_name];
-
-    window.connectionCount += 1;
-    // and draw the new connection
-    var l = new fabric.Line( [nx, ny, nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = "Conn"+window.connectionCount;
-    canvas.add(l);
-    window.line = l;
-
-    window.isDown = true;
-    window.connectionPoint1 = "E"+window.extraCount;
-  }
-
-  function bifurcateTo(o) {
-    // split line
-    // add information in JSON
-    bifurcate_name = o.target.name;
-    bifurcate = mainJson.connections[bifurcate_name];
-    window.extraCount += 1;
-    mainJson.elements['E'+window.extraCount] = {'name': 'E'+window.extraCount}
-
-    // bifurcate removing old line and making 2
-    // o is the node where the bifurcation happens
-    var e = o;
-    var o = o.target;
-
-    // get old line
-    var lastItem = findLine(bifurcate_name);
-
-    // get x and y of the node where we clicked
-    var pointer = canvas.getPointer(e.e);
-    var nx = pointer.x;
-    var ny = pointer.y;
-    // find nearest position in the line
-    var x1 = lastItem.get('x1');
-    var x2 = lastItem.get('x2');
-    var y1 = lastItem.get('y1');
-    var y2 = lastItem.get('y2');
-    // get distance between (nx, ny) and line
-    var d = Math.abs((y2 - y1)*nx - (x2 - x1)*ny + x2*y1 - y2*x1)/Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
-    // get distance between (x1, y1) and (nx, ny)
-    var hypoth = Math.sqrt(Math.pow(y1 - ny, 2) + Math.pow(x1 - nx, 2));
-    // project it to line to find how much to advance in line from (x1, y1) to get to closest point
-    var dl = hypoth*Math.cos(Math.asin(d/hypoth));
-    // advance from (x1,y1) to point of closest approach
-    if (Math.abs(x2 - x1) > Math.abs(y2 - y1)) {
-      var theta = Math.atan((y2 - y1)/(x2 - x1));
-      if (x2 < x1) dl = -dl;
-      nx = x1 + dl*Math.cos(theta);
-      ny = y1 + dl*Math.sin(theta);
-    } else {
-      var theta = Math.atan((x2 - x1)/(y2 - y1));
-      if (y2 < y1) dl = -dl;
-      nx = x1 + dl*Math.sin(theta);
-      ny = y1 + dl*Math.cos(theta);
-    }
-
-    // remove old one
-
-    window.connectionCount += 1;
-    var l = new fabric.Line( [lastItem.get('x1'), lastItem.get('y1'), nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = "Conn"+window.connectionCount;
-    canvas.remove(lastItem)
-    canvas.add(l);
-    mainJson.connections['Conn'+window.connectionCount] = {'from': bifurcate.from, 'to': 'E'+window.extraCount}
-
-    var en = makeNodeGroup("E"+window.extraCount, nx-8, ny-8, 2);
-    canvas.add(en);
-
-    window.connectionCount += 1;
-    var l = new fabric.Line( [nx, ny, lastItem.get('x2'), lastItem.get('y2')],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = "Conn"+window.connectionCount;
-    canvas.add(l);
-    mainJson.connections['Conn'+window.connectionCount] = {'from': 'E'+window.extraCount, 'to': bifurcate.to}
-
-    // remove the old connection from the JSON
-    delete mainJson.connections[bifurcate_name];
-
-    // add new connection point in JSON
-    var origname = window.line.name;
-    mainJson.connections[origname] = {'from': window.connectionPoint1, 'to': 'E'+window.extraCount};
-
-    // and draw the new connection
-    var lastItem = window.line;
-    canvas.remove(lastItem)
-
-    var l = new fabric.Line( [lastItem.get('x1'), lastItem.get('y1'), nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = origname;
-    canvas.add(l);
-
-    window.isDown = false;
-    window.line = {};
-  }
-
-  function startConnectionInE(o) {
-    window.isDown = true; // set state so we know that we now started drawing a wire
-
-    // get x and y of the node where we clicked
-    var elObj = o.target;
-    var x0 = elObj.left + 8;
-    var y0 = elObj.top + 8;
-    // draw connection and save each line to be drawn in line
-    
-    var l = new fabric.Line([x0,y0,x0,y0],
-                  {
-                  stroke: 'black',
-                  fill: "",
-                  strokeWidth: 3,
-                  });
-    window.line = l;
-    window.connectionCount += 1;
-    window.line.name = "Conn"+window.connectionCount;
-    canvas.add(window.line);
-    window.connectionPoint1 = elObj.name;
-    canvas.renderAll();
-  }
-
-  function startConnection(o) {
-    // father is the element
-    var father = o.target;
-    o = o.subTargets[0]; // o is the node itself
-
-    window.isDown = true; // set state so we know that we now started drawing a wire
-
-    // get x and y of the node where we clicked
-    var elObj = father;
-    var nObj = o;
-    var matrix = nObj.calcTransformMatrix();
-    var x0 = matrix[4];
-    var y0 = matrix[5];
-    // draw connection and save each line to be drawn in line
-    
-    var l = new fabric.Line([x0,y0,x0,y0],
-                  {
-                  stroke: 'black',
-                  fill: "",
-                  strokeWidth: 3,
-                  });
-    window.line = l;
-    window.connectionCount += 1;
-    window.line.name = "Conn"+window.connectionCount;
-    canvas.add(window.line);
-    window.connectionPoint1 = o.name;
-    canvas.renderAll();
-  }
-
-  function endSelectionInNode(o) {
-    // father is the element
-    var father = o.target;
-    o = o.subTargets[0]; // o is the node itself
-
-    // get x and y of the node where we clicked
-    var elObj = father;
-    var nObj = o;
-    var matrix = nObj.calcTransformMatrix();
-    var nx = matrix[4];
-    var ny = matrix[5];
-
-    var lastItem = window.line;
-
-    var lastX = lastItem.get('x1');
-    var lastY = lastItem.get('y1');
-    var dx = Math.abs(lastX - nx);
-    var dy = Math.abs(lastY - ny);
-    if (dx > dy) {
-      lastY = ny;
-    } else {
-      lastX = nx;
-    }
-
-    canvas.remove(lastItem)
-    // add information in JSON
-    mainJson.connections[lastItem.name] = {'from': window.connectionPoint1, 'to': o.name};
-
-    var l = new fabric.Line( [lastX, lastY, nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = lastItem.name;
-    canvas.add(l);
-
-    window.isDown = false;
-    window.line = {};
-  }
-
-  function endSelectionInENode(o) {
-    o = o.target;
-
-    // get x and y of the node where we clicked
-    var nObj = o;
-    var nx = nObj.left+8;
-    var ny = nObj.top+8;
-
-    var lastItem = window.line;
-
-    var lastX = lastItem.get('x1');
-    var lastY = lastItem.get('y1');
-    var dx = Math.abs(lastX - nx);
-    var dy = Math.abs(lastY - ny);
-    if (dx > dy) {
-      lastY = ny;
-    } else {
-      lastX = nx;
-    }
-
-    canvas.remove(lastItem)
-    // add information in JSON
-    mainJson.connections[lastItem.name] = {'from': window.connectionPoint1, 'to': o.name};
-
-    var l = new fabric.Line( [lastX, lastY, nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = lastItem.name;
-    canvas.add(l);
-
-    window.isDown = false;
-    window.line = {};
-  }
-
-  function makeNodeAndNewLine(o) {
-    // add new connection point in JSON
-    window.extraCount += 1;
-    var origname = window.line.name;
-    mainJson.elements["E"+window.extraCount] = {'name': "E"+window.extraCount}
-    mainJson.connections[origname] = {'from': window.connectionPoint1, 'to': 'E'+window.extraCount};
-
-    // and draw the new connection
-    var lastItem = window.line;
-    canvas.remove(lastItem)
-
-    var pointer = canvas.getPointer(o.e);
-    var lastX = lastItem.get('x1');
-    var lastY = lastItem.get('y1');
-    var dx = Math.abs(lastX - pointer.x);
-    var dy = Math.abs(lastY - pointer.y);
-    if (dx > dy) {
-      var nx = pointer.x;
-      var ny = lastY;
-    } else {
-      var nx = lastX;
-      var ny = pointer.y;
-    }
-
-    var en = makeNodeGroup("E"+window.extraCount, nx-8, ny-8, 2);
-    canvas.add(en);
-
-    var l = new fabric.Line( [lastItem.get('x1'), lastItem.get('y1'), nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    l.name = origname;
-    canvas.add(l);
-
-    window.isDown = true;
-    window.addConnectionMode = true;
-    window.connectionPoint1 = "E"+window.extraCount;
-    var l = new fabric.Line( [nx, ny, nx, ny],
-              {
-              stroke: 'black',
-              fill: "",
-              strokeWidth: 3,
-              });
-    window.connectionCount += 1;
-    l.name = "Conn"+window.connectionCount;
-    canvas.add(l);
-    window.line = l;
-    canvas.forEachObject(function(o) {
-      o.selectable = true;
-      o.lockRotation = true;
-      o.lockScalingX = true;
-      o.lockScalingY = true;
-      if (o.name.includes("Conn")) {
-        o.lockMovementX = true;
-        o.lockMovementY = true;
-      }
-    });
   }
 
   function cancelMenu() {
@@ -1965,19 +1773,11 @@
   function startPan(e) {
     if (e.button == 2) { // if we are not in add wire mode
       if (window.addConnectionMode) { // if we are in add wire mode
-        canvas.remove(window.line);
-        window.line = null;
+        dropConnection();
         window.isDown = false;
         window.addConnectionMode = false;
         canvas.forEachObject(function(o) {
-          o.selectable = true;
-          o.lockRotation = true;
-          o.lockScalingX = true;
-          o.lockScalingY = true;
-          if (o.name.includes("Conn")) {
-            o.lockMovementX = true;
-            o.lockMovementY = true;
-          }
+          o.father.lock = false;
         });
         $('#addConnectionBtn').bootstrapSwitch('state', false, false);
       }
@@ -2006,36 +1806,40 @@
       var pointer = canvas.getPointer(o.e); // mouse pointer
       if (!window.isDown) { // did not start drawing a wire yet
         // check if we clicked in an element
-        if ("target" in o && o.target && "name" in o.target && o.target.name.includes("E")) {
-          startConnectionInE(o);
+        if ("target" in o && o.target && "name" in o.target.father && o.target.father.name.includes("E")) {
+          startConnectionInNode(o.target.father.name, o.target.left, o.target.top);
         } else if (o.subTargets && o.subTargets.length > 0 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
-          startConnection(o);
-        } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
-          bifurcateFrom(o);
+          startConnectionInNode(o.subTargets[0].name, o.target.left, o.target.top);
+        } else if ('target' in o && o.target && 'name' in o.target.father && o.target.father.name.includes("Conn")) {
+          var pointer = canvas.getPointer(o.e);
+          bifurcateAndStartConnection(o.target.father, pointer.x, pointer.y);
         } else { // nothing selected yet and we did not select an element
           // just stop
           canvas.forEachObject(function(o) {
-            o.selectable = true;
-            o.lockRotation = true;
-            o.lockScalingX = true;
-            o.lockScalingY = true;
-            if (o.name.includes("Conn")) {
-              o.lockMovementX = true;
-              o.lockMovementY = true;
-            }
+            o.father.lock = false;
           });
           $('#addConnectionBtn').bootstrapSwitch('state', false, false);
         }
+        window.isDown = true;
       } else { // already selected first node
         // if it is a node, end selection
-        if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("E")) {
-          endSelectionInENode(o);
+        if ('target' in o && o.target && 'name' in o.target.father && o.target.father.name.includes("E")) {
+          endConnectionInNode(o.target.father.name);
+          window.isDown = false;
         } else if ("subTargets" in o && o.subTargets.length == 1 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
-          endSelectionInNode(o);
-        } else if ('target' in o && o.target && 'name' in o.target && o.target.name.includes("Conn")) {
-          bifurcateTo(o);
+          endConnectionInNode(o.subTargets[0].name);
+          window.isDown = false;
+        } else if ('target' in o && o.target && 'name' in o.target.father && o.target.father.name.includes("Conn")) {
+          var pointer = canvas.getPointer(o.e);
+          bifurcateAndEndConnection(o.target.father, pointer.x, pointer.y);
+          window.isDown = false;
         } else { // it is not a node, nor another line, so make a line and keep going
-          makeNodeAndNewLine(o);
+          var pointer = canvas.getPointer(o.e);
+          makeStepInConnection(pointer.x, pointer.y);
+          window.isDown = true;
+        }
+        for (var k in connectionList) {
+          connectionList[k].draw();
         }
         canvas.renderAll();
       }
@@ -2043,10 +1847,14 @@
   });
   canvas.on('mouse:move', function(o){
     if (window.addConnectionMode) {
-    if (!window.isDown) return;
+      if (!window.isDown) return;
       var pointer = canvas.getPointer(o.e);
-      var lastX = window.line.get('x1');
-      var lastY = window.line.get('y1');
+      firstNode = findElement(window.currentConnection.nodeList[0]);
+      var obj = firstNode[2];
+      var matrix = obj.calcTransformMatrix();
+      var lastX = matrix[4];
+      var lastY = matrix[5];
+
       var dx = Math.abs(lastX - pointer.x);
       var dy = Math.abs(lastY - pointer.y);
       var ex = 0;
@@ -2063,16 +1871,8 @@
         var ny = pointer.y+ey;
       }
 
-      nline = new fabric.Line([lastX, lastY, nx, ny],
-                    {
-                    stroke: 'black',
-                    fill: "",
-                    strokeWidth: 3,
-                    });
-      nline.name=window.line.name;
-      canvas.remove(window.line);
-      window.line = nline;
-      canvas.add(nline);
+      moveNode("ETMP", nx, ny);
+      window.currentConnection.draw();
       canvas.renderAll();
     }
   });
