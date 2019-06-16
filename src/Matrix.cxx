@@ -51,6 +51,7 @@ Matrix &Matrix::operator =(const Matrix &b) {
   m_c = b.m_c;
   m_e = new double[m_r*m_c];
   for (unsigned i = 0; i < m_r*m_c; ++i) m_e[i] = b.m_e[i];
+  return *this;
 }
 
 bool Matrix::operator ==(const Matrix &b) const {
