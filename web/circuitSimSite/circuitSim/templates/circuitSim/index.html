@@ -25,7 +25,7 @@
     </script>
   </head>
   <body>
-    <nav class="navbar navbar-expand-md navbar-light bg-faded navbar-toggleable-md" style="background-color: #e3f2fd;">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark navbar-toggleable-md">
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#containerNavbar" aria-controls="containerNavbar" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -37,6 +37,7 @@
             <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">File
             </a>
             <div class="dropdown-menu">
+              <a class="dropdown-item" href="#" id="newCircuit">Drop all changes and start new circuit</a>
               <a class="dropdown-item" href="#" id="openLink" data-toggle="modal" data-target="#open_window">Open circuit from local file</a>
               <a class="dropdown-item" href="#" id="saveLink" data-toggle="modal" data-target="#save_window">Save circuit in a local file</a>
             </div>
@@ -89,7 +90,7 @@
       </div>
     </nav>
     <div class="container">
-    <div class="row table-row">
+    <div class="row table-row bg-light flex-fill d-flex justify-content-start">
       <div class="d-none d-md-block col-md-2">
         <center>
           <br>
@@ -133,19 +134,18 @@
           </div>
         </center>
       </div>
-      <div class="col-md-10 col-ms-12">
+      <div class="col-md-10 col-ms-12 portlet-container portlet-dropzone">
         <br>
-        <div class="card card-default" style="padding-left: 0px; padding-right: 0px;">
+        <div class="card card-default" style="padding-left: 0px; padding-right: 0px; min-height: 100%; height: 100%;">
+          <br>
           <div class="card-header">
           Use the right-hand mouse button in the canvas to pan around and use more space.
           </div>
-          <div class="card-body">
-            <div id="canvasWrapper" style="border-width: 1px; border-style: dotted;">
-              <canvas id="c" width="800" height="600"></canvas>
-              <br>
-            </div>
+          <div class="card-body" id="canvasWrapper">
+            <canvas id="c" style="border: 1px solid;"></canvas>
           </div>
         </div>
+        <br>
       </div>
     </div>
     <div id="results_window" class="modal fade" role="dialog">

@@ -1411,6 +1411,7 @@
   }
 
   function deleteObj() {
+    if (canvas.getActiveObject() == null) return;
     element = canvas.getActiveObject().father;
     if (element.name.includes("Conn")) {
       deleteConnection(element);
@@ -1474,6 +1475,7 @@
 
   var canvasWrapper = $('#canvasWrapper');
   var canvas = this.__canvas = new fabric.Canvas('c');
+
   var DCVBtnCanvas = new fabric.Canvas("DCVBtnCanvas");
   var ResistorBtnCanvas = new fabric.Canvas("ResistorBtnCanvas");
   var CapacitorBtnCanvas = new fabric.Canvas("CapacitorBtnCanvas");
@@ -1527,6 +1529,10 @@
   TransistorBtnCanvas.add(btn);
 
   fabric.Object.prototype.transparentCorners = false;
+  function newCircuit() {
+    clearAll();
+  }
+  $("#newCircuit")[0].onclick = newCircuit;
   $("#addDCVoltageSourceBtn")[0].onclick = addDCVoltageSource;
   $("#addDCVoltageSourceLink")[0].onclick = addDCVoltageSource;
   $("#addResistorBtn")[0].onclick = addResistor;
@@ -2018,5 +2024,18 @@
     }
   });
 
+  window.addEventListener("resize", resizeCanvas, false);
+ 
+  function resizeCanvas(e) {
+    var myCanvas = document.getElementById("c");
+    w = $("#canvasWrapper").innerWidth();
+    h = $("#canvasWrapper").innerHeight();
+    myCanvas.width = w;
+    myCanvas.height = h;
+    canvas.setWidth(w);
+    canvas.setHeight(h);
+    canvas.calcOffset();
+  }
+  resizeCanvas(null);
 
 
