@@ -21,7 +21,7 @@ import numpy as np
 
 import plotly.plotly as py
 import plotly.graph_objs as go
-import plotly.offline as pyo
+import plotly.offline.offline as pyo
 
 #import bokeh.plotting
 #import bokeh.models

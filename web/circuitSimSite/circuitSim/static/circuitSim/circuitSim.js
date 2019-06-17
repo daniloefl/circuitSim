@@ -1286,6 +1286,9 @@
           $("#result_img").html(rawImageData.img);
           $("#text1").html(rawImageData.node_description);
           $("#text2")[0].appendChild(document.createTextNode(rawImageData.extra_text));
+        },
+        error: function(jqxhr, status, exception) {
+             alert('Exception:', exception);
         }
       });
     // show results
