@@ -1416,8 +1416,16 @@
   }
 
   function deleteElement(element) {
+    var elementName = element.name;
     element.remove();
     element = null;
+    for (var k in connectionList) {
+      if (connectionList[k].nodeList[0] == elementName || connectionList[k].nodeList[1] == elementName) {
+        c = connectionList[k];
+        c.remove();
+        c = null;
+      }
+    }
   }
 
   function prepareSimulOpt() {
@@ -1608,6 +1616,8 @@
       window.connectionCount = 0;
       window.extraCount = 0;
       window.GNDcount = 0;
+      elementList = []
+      connectionList = []
 
       var result = JSON.parse(e.target.result);
       elementListF = result.elementList;
@@ -1709,6 +1719,8 @@
         window.connectionCount = 0;
         window.extraCount = 0;
         window.GNDcount = 0;
+        elementList = []
+        connectionList = []
 
         var result = JSON.parse(e.target.result);
         elementListF = result.elementList;
