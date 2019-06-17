@@ -192,7 +192,7 @@
           // find all connections in n2
           var otherList = [];
           for (var n in n2[0].nodes) {
-            //if ((n2[0].name+"#"+n2[0].nodes[n]) == c.nodeList[m]) continue;
+            if ((n2[0].name+"#"+n2[0].nodes[n]) == c.nodeList[m]) continue;
             otherList.push(n2[0].name+"#"+n2[0].nodes[n])
           }
           //console.log("Other nodes to adjust:", otherList)
@@ -1591,6 +1591,9 @@
   TransistorBtnCanvas.add(btn);
 
   fabric.Object.prototype.transparentCorners = false;
+  $("#toggleTools")[0].onclick = function() {
+    $('#toolbar').toggle();
+  };
   function newCircuit() {
     clearAll();
   }
@@ -1914,12 +1917,6 @@
   canvas.on('object:modified', function(o) {
     for (var node in o.target.father.nodes) {
       adjustNodesConnectedTo(o.target.father.name+"#"+o.target.father.nodes[node]);
-    }
-    for (var k in elementList) {
-      elementList[k].draw();
-    }
-    for (var k in connectionList) {
-      connectionList[k].draw();
     }
     canvas.renderAll();
   });
