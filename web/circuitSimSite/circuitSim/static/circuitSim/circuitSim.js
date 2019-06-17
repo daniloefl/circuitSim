@@ -15,11 +15,6 @@
 
   window.isDown = false;
 
-  // TODO
-  window.connectionPoint1 = '';
-  window.connectionPoint2 = '';
-  window.line = {};
-
   var elementList = [];
   var connectionList = [];
 
@@ -144,20 +139,24 @@
           n2 = findElement(c.nodeList[m]);
           if (n2[0].adjusted) continue; // and the ones already adjusted (avoid infinite loop)
 
+          //console.log("Found node to be adjusted ", n2[0]);
+
           var matrix2 = n2[2].calcTransformMatrix();
           var x2 = matrix2[4];
           var y2 = matrix2[5];
+
+          //console.log("Node diff to subelement ", n2[0].left - x2, n2[0].top - y2);
 
           // find out if the they are mostly horizontal or mostly vertical
           var dx = Math.abs(x2 - x1);
           var dy = Math.abs(y2 - y1);
           // and move the object so that it becomes purely only horizontal or only vertical
           if (dx > dy) {
-            var d = y1 - n1[0].top;
-            n2[0].top = n1[0].top + d;
+            var d = -(y2 - n2[0].top);
+            n2[0].top = y1 + d;
           } else {
-            var d = x1 - n1[0].left;
-            n2[0].left = n1[0].left + d;
+            var d = -(x2 - n2[0].left);
+            n2[0].left = x1 + d;
           }
           // mark it as adjusted so we do not do this again
           n2[0].adjusted = true;
@@ -165,14 +164,17 @@
           // marked both such that they should no longer be looked at
           // iterate on all other connections to n2 now
 
-          // find all connections in n2 that are *not* the one in this connection
+          //console.log("Adjusted node: ", n2[0]);
+
+          // find all connections in n2
           var otherList = [];
           for (var n in n2[0].nodes) {
-            if ((n2[0].name+"#"+n2[0].nodes[n]) == c.nodeList[m]) continue;
+            //if ((n2[0].name+"#"+n2[0].nodes[n]) == c.nodeList[m]) continue;
             otherList.push(n2[0].name+"#"+n2[0].nodes[n])
           }
+          //console.log("Other nodes to adjust:", otherList)
           for (var other in otherList) {
-            adjustConnectionsTo(otherList[other].name);
+            adjustConnectionsTo(otherList[other]);
           }
         }
       }
@@ -181,15 +183,25 @@
 
   // adjust connections such that each wire is only vertical or only horizontal, due to a change in seedNode
   function adjustNodesConnectedTo(seedNode) {
+    //console.log("Adjusting nodes relative to seed ", seedNode);
     // keep a boolean value in each element to know which ones we have visited and stop infinite loops
     for (var k in elementList) {
       elementList[k].adjusted = false;
     }
     // adjust connections to the seedNode
     adjustConnectionsTo(seedNode);
+    for (var k in elementList) {
+      if (elementList[k].adjusted) {
+        elementList[k].draw();
+      }
+    }
+    for (var k in connectionList) {
+      connectionList[k].draw();
+    }
   };
 
   function endConnectionInNode(lastNodeName) {
+    console.log("Ending connection in node", lastNodeName);
     n = findElement("ETMP");
     n[0].remove();
     n[0] = null;
@@ -203,9 +215,26 @@
     n = findElement("ETMP");
     n[0].remove();
     n[0] = null;
+
+    // keep it straight
+    firstNode = findElement(window.currentConnection.nodeList[0]);
+    var obj = firstNode[2];
+    var matrix = obj.calcTransformMatrix();
+    var lastX = matrix[4];
+    var lastY = matrix[5];
+
+    var dx = Math.abs(lastX - x);
+    var dy = Math.abs(lastY - y);
+    if (dx > dy) {
+      var nx = x;
+      var ny = lastY-9;
+    } else {
+      var nx = lastX-9;
+      var ny = y;
+    }
     window.extraCount = window.extraCount + 1;
     var lastNodeName = "E"+window.extraCount;
-    addNode(lastNodeName, x, y);
+    addNode(lastNodeName, nx, ny);
     window.currentConnection.nodeList[window.currentConnection.nodeList.length-1] = lastNodeName+"#N1";
     window.currentConnection.draw();
     window.currentConnection = false;
@@ -1145,7 +1174,11 @@
     mainJson['elements'] = {};
     mainJson['simulation'] = simulation;
     for (var e in elementList) {
-      mainJson['elements'][elementList[e].name] = elementList[e].param;
+      mainJson['elements'][elementList[e].name] = {};
+      for (var p in elementList[e].param) {
+        mainJson['elements'][elementList[e].name][p] = elementList[e].param[p];
+      }
+      mainJson['elements'][elementList[e].name]['nodes'] = elementList[e].nodes;
     }
     for (var c in connectionList) {
       mainJson['connections'][connectionList[c].name] = {};
@@ -1357,15 +1390,15 @@
     if (state) {
       window.addConnectionMode = true;
       canvas.selection = false;
-      canvas.forEachObject(function(o) {
-        o.father.lock = true;
-      });
+      for (var k in elementList) {
+        elementList[k].lock = false;
+      }
     } else {
       window.addConnectionMode = false;
       canvas.selection = true;
-      canvas.forEachObject(function(o) {
-        o.father.lock = false;
-      });
+      for (var k in elementList) {
+        elementList[k].lock = false;
+      }
     }
   }
 
@@ -1815,16 +1848,13 @@
           bifurcateAndStartConnection(o.target.father, pointer.x, pointer.y);
         } else { // nothing selected yet and we did not select an element
           // just stop
-          canvas.forEachObject(function(o) {
-            o.father.lock = false;
-          });
           $('#addConnectionBtn').bootstrapSwitch('state', false, false);
         }
         window.isDown = true;
       } else { // already selected first node
         // if it is a node, end selection
         if ('target' in o && o.target && 'name' in o.target.father && o.target.father.name.includes("E")) {
-          endConnectionInNode(o.target.father.name);
+          endConnectionInNode(o.target.father.name+"#N1");
           window.isDown = false;
         } else if ("subTargets" in o && o.subTargets.length == 1 && "name" in o.subTargets[0] && o.subTargets[0].name.includes("#N")) {
           endConnectionInNode(o.subTargets[0].name);
@@ -1833,10 +1863,14 @@
           var pointer = canvas.getPointer(o.e);
           bifurcateAndEndConnection(o.target.father, pointer.x, pointer.y);
           window.isDown = false;
-        } else { // it is not a node, nor another line, so make a line and keep going
+        } else if (!('target' in o && o.target && 'father' in o.target)) { // it is not a node, nor another line, so make a line and keep going
           var pointer = canvas.getPointer(o.e);
           makeStepInConnection(pointer.x, pointer.y);
           window.isDown = true;
+        } else { // it is something else
+          // just stop
+          $('#addConnectionBtn').bootstrapSwitch('state', false, false);
+          window.isDown = false;
         }
         for (var k in connectionList) {
           connectionList[k].draw();
@@ -1859,15 +1893,15 @@
       var dy = Math.abs(lastY - pointer.y);
       var ex = 0;
       var ey = 0;
-      if (pointer.x > lastX) ex = -15;
-      if (pointer.x <= lastX) ex =  15;
-      if (pointer.y > lastY) ey = -15;
-      if (pointer.y <= lastY) ey =  15;
+      if (pointer.x > lastX) ex = -25;
+      if (pointer.x <= lastX) ex =  25;
+      if (pointer.y > lastY) ey = -25;
+      if (pointer.y <= lastY) ey =  25;
       if (dx > dy) {
         var nx = pointer.x+ex;
-        var ny = lastY;
+        var ny = lastY-9;
       } else {
-        var nx = lastX;
+        var nx = lastX-9;
         var ny = pointer.y+ey;
       }
 

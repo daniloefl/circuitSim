@@ -70,6 +70,7 @@ def findNodeId(nname, nodeName):
   return str(nid)
 
 def setupCircuit(circ, e, conn):
+  nl = ""
   nodeName = {}
   lastNodeNumber = 0
   # first find the ground
@@ -83,18 +84,16 @@ def setupCircuit(circ, e, conn):
     raise NoGndException
 
 
-  # find empty nodes
+  # connect nodes
   for ekey in e:
-    if not 'E' in ekey:
-      continue
-    nname = ekey
-    nid = findNodeId(nname, nodeName)
-    cname = nid
-    if nid == "":
-      lastNodeNumber += 1
-      cname = str(lastNodeNumber)
-    connectNodes(nname, cname, nodeName, conn)
-  nl = ""
+    for n in e[ekey]['nodes']:
+      nname = ekey+"#"+str(n)
+      nid = findNodeId(nname, nodeName)
+      cname = nid
+      if nid == "":
+        lastNodeNumber += 1
+        cname = str(lastNodeNumber)
+      connectNodes(nname, cname, nodeName, conn)
   for ekey in e:
     name = ekey
     if "GND" in name:
