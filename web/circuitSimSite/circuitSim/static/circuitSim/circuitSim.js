@@ -221,7 +221,6 @@
     n[0] = null;
     window.currentConnection.nodeList[window.currentConnection.nodeList.length-1] = lastNodeName
     window.currentConnection = false;
-    adjustNodesConnectedTo(lastNodeName);
     canvas.renderAll();
   };
 
@@ -253,8 +252,6 @@
     window.currentConnection.draw();
     window.currentConnection = false;
     startConnectionInNode(lastNodeName+"#N1", x, y);
-
-    adjustNodesConnectedTo(lastNodeName+"#N1");
   };
 
   function bifurcateAndStartConnection(conn, x, y) {
@@ -326,9 +323,6 @@
     // and remove conn
     conn.remove();
     conn = null;
-
-    adjustNodesConnectedTo(lastNodeName+"#N1");
-
   };
 
   function dropConnection() {
@@ -1860,9 +1854,6 @@
     o = o.target;
     o.father.left = o.left;
     o.father.top = o.top;
-    for (var node in o.father.nodes) {
-      adjustNodesConnectedTo(o.father.name+"#"+o.father.nodes[node]);
-    }
   });
 
   canvas.on('object:modified', function(o) {
