@@ -48,6 +48,20 @@
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
   }
 
+  function clearAll() {
+    for (var k = elementList.length-1; k >= 0; k--) {
+      c = elementList[k];
+      c.remove();
+      c = null;
+    }
+    for (var k = connectionList.length-1; k >= 0; k--) {
+      c = connectionList[k];
+      c.remove();
+      c = null;
+    }
+    canvas.renderAll();
+  };
+
   function findConnection(name) {
     for (var k in connectionList) {
       if (connectionList[k].name == name) {
@@ -1616,6 +1630,7 @@
       window.connectionCount = 0;
       window.extraCount = 0;
       window.GNDcount = 0;
+      clearAll();
       elementList = [];
       connectionList = [];
 
@@ -1715,6 +1730,7 @@
       window.connectionCount = 0;
       window.extraCount = 0;
       window.GNDcount = 0;
+      clearAll();
       elementList = [];
       connectionList = [];
 
