@@ -60,6 +60,15 @@
       c = null;
     }
     canvas.renderAll();
+    window.Rcount = 0;
+    window.Vcount = 0;
+    window.Ccount = 0;
+    window.Lcount = 0;
+    window.Dcount = 0;
+    window.Qcount = 0;
+    window.connectionCount = 0;
+    window.extraCount = 0;
+    window.GNDcount = 0;
   };
 
   function findConnection(name) {
@@ -1629,15 +1638,6 @@
     var fr = new FileReader();
 
     fr.onload = function(e) { 
-      window.Rcount = 0;
-      window.Vcount = 0;
-      window.Ccount = 0;
-      window.Lcount = 0;
-      window.Dcount = 0;
-      window.Qcount = 0;
-      window.connectionCount = 0;
-      window.extraCount = 0;
-      window.GNDcount = 0;
       clearAll();
       elementList = [];
       connectionList = [];
@@ -1730,15 +1730,6 @@
 
   function loadExample(fname) {
     $.getJSON(static_path+"/"+fname+".json", function( data ) {
-      window.Rcount = 0;
-      window.Vcount = 0;
-      window.Ccount = 0;
-      window.Lcount = 0;
-      window.Dcount = 0;
-      window.Qcount = 0;
-      window.connectionCount = 0;
-      window.extraCount = 0;
-      window.GNDcount = 0;
       clearAll();
       elementList = [];
       connectionList = [];
