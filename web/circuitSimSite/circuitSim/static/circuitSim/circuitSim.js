@@ -224,7 +224,7 @@
   };
 
   function endConnectionInNode(lastNodeName) {
-    console.log("Ending connection in node", lastNodeName);
+    //console.log("Ending connection in node", lastNodeName);
     n = findElement("ETMP");
     n[0].remove();
     n[0] = null;
@@ -266,7 +266,29 @@
   function bifurcateAndStartConnection(conn, x, y) {
     window.extraCount = window.extraCount + 1;
     var lastNodeName = "E"+window.extraCount;
-    addNode(lastNodeName, x, y);
+
+    // project x and y in the line
+    var e1 = findElement(conn.nodeList[0]);
+    var e2 = findElement(conn.nodeList[1]);
+    var matrix1 = e1[2].calcTransformMatrix();
+    var x1 = matrix1[4];
+    var y1 = matrix1[5];
+    var matrix2 = e2[2].calcTransformMatrix();
+    var x2 = matrix2[4];
+    var y2 = matrix2[5];
+    var lx = (x2 - x1);
+    var ly = (y2 - y1);
+    var x0 = (x - x1);
+    var y0 = (y - y1);
+    // normal to the line
+    var nx = ((-ly)/Math.sqrt(lx*lx + ly*ly));
+    var ny = ((lx)/Math.sqrt(lx*lx + ly*ly));
+    var xp = (-ny*x0 + nx*y0)*(-ny);
+    var yp = (-ny*x0 + nx*y0)*nx;
+    xp += x1;
+    yp += y1;
+
+    addNode(lastNodeName, xp-9, yp-9);
 
     // now bifurcate conn
     window.connectionCount = window.connectionCount + 1;
@@ -294,20 +316,43 @@
     var connectionName = "Conn"+window.connectionCount;
     addNode("ETMP", x, y);
     var n = new Connection(connectionName);
-    n.nodeList.push(lastNodeName);
+    n.nodeList.push(lastNodeName+"#N1");
     n.nodeList.push("ETMP#N1");
     connectionList.push(n);
     connectionList[connectionList.length-1].draw();
     window.currentConnection = connectionList[connectionList.length-1];
   };
 
-  function bifurcateAndEndConnection(conn) {
+  function bifurcateAndEndConnection(conn, x, y) {
     n = findElement("ETMP");
     n[0].remove();
     n[0] = null;
     window.extraCount = window.extraCount + 1;
     var lastNodeName = "E"+window.extraCount;
-    addNode(lastNodeName, x, y);
+
+    // project x and y in the line
+    var e1 = findElement(conn.nodeList[0]);
+    var e2 = findElement(conn.nodeList[1]);
+    var matrix1 = e1[2].calcTransformMatrix();
+    var x1 = matrix1[4];
+    var y1 = matrix1[5];
+    var matrix2 = e2[2].calcTransformMatrix();
+    var x2 = matrix2[4];
+    var y2 = matrix2[5];
+    var lx = (x2 - x1);
+    var ly = (y2 - y1);
+    var x0 = (x - x1);
+    var y0 = (y - y1);
+    // normal to the line
+    var nx = ((-ly)/Math.sqrt(lx*lx + ly*ly));
+    var ny = ((lx)/Math.sqrt(lx*lx + ly*ly));
+    var xp = (-ny*x0 + nx*y0)*(-ny);
+    var yp = (-ny*x0 + nx*y0)*nx;
+    xp += x1;
+    yp += y1;
+
+
+    addNode(lastNodeName, xp-9, yp-9);
     window.currentConnection.nodeList[window.currentConnection.nodeList.length-1] = lastNodeName+"#N1";
     window.currentConnection.draw();
     window.currentConnection = false;
@@ -1445,7 +1490,7 @@
     element.remove();
     element = null;
     for (var k in connectionList) {
-      if (connectionList[k].nodeList[0] == elementName || connectionList[k].nodeList[1] == elementName) {
+      if ((connectionList[k].nodeList[0].includes(elementName+"#N")) || (connectionList[k].nodeList[1].includes(elementName+"#N"))) {
         c = connectionList[k];
         c.remove();
         c = null;
@@ -1977,7 +2022,7 @@
           window.isDown = false;
         } else if ('target' in o && o.target && 'name' in o.target.father && o.target.father.name.includes("Conn")) {
           var pointer = canvas.getPointer(o.e);
-          bifurcateAndEndConnection(o.target.father);
+          bifurcateAndEndConnection(o.target.father, pointer.x, pointer.y);
           window.isDown = false;
         } else if (!('target' in o && o.target && 'father' in o.target)) { // it is not a node, nor another line, so make a line and keep going
           var pointer = canvas.getPointer(o.e);
@@ -1998,6 +2043,11 @@
   canvas.on('mouse:move', function(o){
     if (window.addConnectionMode) {
       if (!window.isDown) return;
+      if (window.currentConnection == false) {
+        window.isDown = false;
+        $('#addConnectionBtn').bootstrapSwitch('toggleState');
+        return;
+      }
       var pointer = canvas.getPointer(o.e);
       firstNode = findElement(window.currentConnection.nodeList[0]);
       var obj = firstNode[2];
