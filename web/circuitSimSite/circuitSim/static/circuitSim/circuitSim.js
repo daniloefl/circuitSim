@@ -292,7 +292,7 @@
     window.currentConnection = connectionList[connectionList.length-1];
   };
 
-  function bifurcateAndEndConnection(conn, x, y) {
+  function bifurcateAndEndConnection(conn) {
     n = findElement("ETMP");
     n[0].remove();
     n[0] = null;
@@ -410,10 +410,17 @@
       this.scale = scale;
       this.hasBeenAddedInCanvas = false;
       this.r = 0;
+      this.f = false;
       this.nodes = [];
       this.lock = false;
     }
     rotate() {
+      this.r = (this.r + 1) % 4;
+      this.draw();
+    }
+    flip() {
+      this.f = !this.f;
+      this.draw();
     }
     makeSVG() {
       throw new Error("This method must be implemented in an inherited class to define this.drawn");
@@ -487,10 +494,6 @@
       this.param = {'value': 1.0};
       this.nodes = ['N1', 'N2'];
     }
-    rotate() {
-      this.r = (this.r + 1) % 4;
-      this.draw();
-    }
     makeSVG() {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
@@ -558,10 +561,6 @@
       this.param = {};
       this.nodes = ['N1'];
     }
-    rotate() {
-      this.r = (this.r + 1) % 4;
-      this.draw();
-    }
     makeSVG() {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
@@ -619,10 +618,6 @@
       this.r = r;
       this.param = {'value': 1.0};
       this.nodes = ['N1', 'N2'];
-    }
-    rotate() {
-      this.r = (this.r + 1) % 4;
-      this.draw();
     }
     makeSVG() {
       var angle = (this.r%4)*90;
@@ -694,10 +689,6 @@
       this.r = r;
       this.param = {'value': 1.0};
       this.nodes = ['N1', 'N2'];
-    }
-    rotate() {
-      this.r = (this.r + 1) % 4;
-      this.draw();
     }
     makeSVG() {
       var angle = (this.r%4)*90;
@@ -777,10 +768,6 @@
       this.param = {'alpha': 0.99, 'alphaRev': 0.5, 'type': 'npn', 'IsBE': 3.7751345e-14, 'VtBE': 25e-3, 'IsBC': 3.7751345e-14, 'VtBC': 25e-3};
       this.nodes = ['N1', 'N2', 'N3'];
     }
-    rotate() {
-      this.r = (this.r + 1) % 4;
-      this.draw();
-    }
     makeSVG() {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
@@ -809,6 +796,11 @@
                         stroke: 'black',
                         fill: "black"}
                         );
+      if (this.f) {
+        tr3.left = 30-2;
+        tr3.top = 7+2;
+        tr3.angle = 45;
+      }
       var lp1 = new fabric.Line([10, 20, 30, 20],
                         {
                         stroke: 'black',
@@ -849,6 +841,12 @@
                         top: 10-4
                         });
       n2.name = this.name+"#N2";
+      if (this.f) {
+        n1.left = 40-4;
+        n1.top = 10-4;
+        n2.left = 0-4;
+        n2.top = 10-4;
+      }
       var n3 = new fabric.Circle({
                         radius: 4,
                         fill: '#000',
@@ -868,6 +866,12 @@
                         top: 10-4-8+textTop,
                         angle: angleText
                         });
+      if (this.f) {
+        t1.left = 40-4+textLeft;
+        t1.top = 10-4-8+textTop;
+        t2.left = 0-4+textLeft;
+        t2.top = 10-4-8+textTop;
+      }
       var t3 = new fabric.Text("3 (B)", {
                         fontSize: 9,
                         left: 20-4+8+textLeft,
@@ -880,7 +884,7 @@
         scaleX: this.scale,
         scaleY: this.scale,
         subTargetCheck: true,
-        angle: angle
+        angle: angle,
       });
       source.father = this;
       this.drawn = source;
@@ -893,10 +897,6 @@
       this.r = r;
       this.param = {'Is': 3.7751345e-14, 'Vt': 25e-3};
       this.nodes = ['N1', 'N2'];
-    }
-    rotate() {
-      this.r = (this.r + 1) % 4;
-      this.draw();
     }
     makeSVG() {
       var angle = (this.r%4)*90;
@@ -980,10 +980,6 @@
       this.r = r;
       this.param = {'type': 'DC', 'value_dc': 1.0, 'amplitude1_pulse': 0, 'amplitude2_pulse': 1, 'delay_pulse': 0, 'tRise_pulse': 0, 'tFall_pulse': 0, 'tOn_pulse': 0.5, 'period_pulse': 1, 'nCycles_pulse': 10, 'dc_sin': 0, 'amplitude_sin': 1, 'freq_sin': 10, 'delay_sin': 0, 'atenuation_sin': 0, 'angle_sin': 0, 'nCycles_sin': 10};
       this.nodes = ['N1', 'N2'];
-    }
-    rotate() {
-      this.r = (this.r + 1) % 4;
-      this.draw();
     }
     makeSVG() {
       var angle = (this.r%4)*90;
@@ -1138,6 +1134,17 @@
     if (o == null) return;
     father = o.father;
     father.rotate();
+    for (var k in connectionList) {
+      connectionList[k].draw();
+    }
+    canvas.renderAll();
+  }
+
+  function flipElement() {
+    o = canvas.getActiveObject();
+    if (o == null) return;
+    father = o.father;
+    father.flip();
     for (var k in connectionList) {
       connectionList[k].draw();
     }
@@ -1554,6 +1561,7 @@
   $("#addConnectionLink")[0].onclick = addConnectionLink;
   $("#deleteLink")[0].onclick = deleteObj;
   $("#rotateLink")[0].onclick = rotateElement;
+  $("#flipLink")[0].onclick = flipElement;
   $("#editLink")[0].onclick = edit;
   $("#simulOptLink")[0].onclick = prepareSimulOpt;
   $("#example_rc")[0].onclick = loadExampleRC;
@@ -1693,6 +1701,7 @@
         o.top = elementListF[k].top;
         o.scale = elementListF[k].scale;
         o.r = elementListF[k].r;
+        o.f = elementListF[k].f;
         o.scale = elementListF[k].scale;
         o.nodes = elementListF[k].nodes;
         o.param = elementListF[k].param;
@@ -1793,6 +1802,7 @@
         o.top = elementListF[k].top;
         o.scale = elementListF[k].scale;
         o.r = elementListF[k].r;
+        o.f = elementListF[k].f;
         o.scale = elementListF[k].scale;
         o.nodes = elementListF[k].nodes;
         o.param = elementListF[k].param;
@@ -1851,6 +1861,8 @@
       deleteObj();
     } else if (e.keyCode == 114 || e.keyCode == 82) { // r -> rotate
       rotateElement();
+    } else if (e.keyCode == 102 || e.keyCode == 70) { // f -> flip
+      flipElement();
     } else if (e.keyCode == 101 || e.keyCode == 69) { // e -> edit
       edit();
     }
@@ -1974,7 +1986,7 @@
           window.isDown = false;
         } else if ('target' in o && o.target && 'name' in o.target.father && o.target.father.name.includes("Conn")) {
           var pointer = canvas.getPointer(o.e);
-          bifurcateAndEndConnection(o.target.father, pointer.x, pointer.y);
+          bifurcateAndEndConnection(o.target.father);
           window.isDown = false;
         } else if (!('target' in o && o.target && 'father' in o.target)) { // it is not a node, nor another line, so make a line and keep going
           var pointer = canvas.getPointer(o.e);
