@@ -19,9 +19,13 @@ import circuitPy
 
 import numpy as np
 
-import bokeh.plotting
-import bokeh.models
-import bokeh.embed
+import plotly.plotly as py
+import plotly.graph_objs as go
+import plotly.offline as pyo
+
+#import bokeh.plotting
+#import bokeh.models
+#import bokeh.embed
 
 @ensure_csrf_cookie
 def index(request):
@@ -131,10 +135,9 @@ def run(request):
   # Create the main object
   extra_text = ""
   node_desc = ""
-  final_img = '''
-<link rel="stylesheet" href="%s" type="text/css">
-<script type="text/javascript" src="%s"></script>
-''' % (static("circuitSim/bokeh.min.css"), static("circuitSim/bokeh.min.js"))
+  final_img = """
+    <script type="text/javascript">{plotlyjs}</script>
+""".format(plotlyjs = pyo.get_plotlyjs())
   nl = ""
   #data = {'img': final_img, 'node_description': node_desc, 'extra_text': extra_text, 'netlist': nl};
   #return JsonResponse(data);
@@ -244,53 +247,44 @@ def run(request):
       minValFA = 1e-3*maxValFA
 
     count = 0
-    lc = ['blue', 'red', 'green', 'cyan', 'orange', 'magenta', 'pink', 'violet']
     if (not sim['fft']):
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
+      data = []
+      layout = dict(title = '',
+              xaxis = dict(title = 'Time [s]'),
+              yaxis = dict(title = 'Voltage [V]'),
+              )
       for nname in n:
-        l = 'black'
-        l = lc[count % len(lc)]
-        f.line(t, n[nname], line_color = l, line_width = 2, legend = nname)
+        data.append(go.Scatter(x = t, y = n[nname], mode = 'lines', name = nname))
         count += 1
-      f.xaxis.axis_label = "Time [s]"
-      f.yaxis.axis_label = "Voltage [V]"
-      f.legend.location = "top_left"
-      f.sizing_mode = "scale_width"
-      script = ""
-      div = ""
-      script, div = bokeh.embed.components(f)
-      final_img += script
-      final_img += div
+      fig = dict(data = data, layout = layout)
+      plot_html = pyo.plot(fig, output_type = 'div', include_plotlyjs=False)
+      final_img += plot_html
     else:
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above", y_axis_type = "log")
+      data = []
+      layout = dict(title = '',
+              xaxis = dict(title = 'Frequency [Hz]'),
+              yaxis = dict(title = '|FFT| [V]'),
+              )
       count = 0
       for nname in n:
-        l = 'black'
-        l = lc[count % len(lc)]
-        f.line(freq, fnAbs[nname], line_color = l, line_width = 2, legend = nname)
+        data.append(go.Scatter(x = freq, y = fnAbs[nname], mode = 'lines', name = nname))
         count += 1
-      f.xaxis.axis_label = "Frequency [Hz]"
-      f.yaxis.axis_label = "|FFT| (V)"
-      f.legend.location = "top_left"
-      f.sizing_mode = "scale_width"
-      script, div = bokeh.embed.components(f)
-      final_img += script
-      final_img += div
+      fig = dict(data = data, layout = layout)
+      plot_html = pyo.plot(fig, output_type = 'div', include_plotlyjs=False)
+      final_img += plot_html
 
+      data = []
+      layout = dict(title = '',
+              xaxis = dict(title = 'Frequency [Hz]'),
+              yaxis = dict(title = 'Angle(FFT) [rad]'),
+              )
       count = 0
-      f = bokeh.plotting.figure(plot_width=800, plot_height = 400, title="", toolbar_location="above")
       for nname in n:
-        l = 'black'
-        l = lc[count % len(lc)]
-        f.line(freq, fnAng[nname], line_color = l, line_width = 2, legend = nname)
+        data.append(go.Scatter(x = freq, y = fnAng[nname], mode = 'lines', name = nname))
         count += 1
-      f.xaxis.axis_label = "Frequency [Hz]"
-      f.yaxis.axis_label = "Angle(FFT)"
-      f.legend.location = "top_left"
-      f.sizing_mode = "scale_width"
-      script, div = bokeh.embed.components(f)
-      final_img += script
-      final_img += div
+      fig = dict(data = data, layout = layout)
+      plot_html = pyo.plot(fig, output_type = 'div', include_plotlyjs=False)
+      final_img += plot_html
 
     node_desc = "Net list:<br>"+nl.replace("\n", "<br>")
     extra_text = "Simulation successful."
