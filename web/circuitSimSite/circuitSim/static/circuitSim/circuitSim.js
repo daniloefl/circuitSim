@@ -1340,9 +1340,9 @@
         var k = props[i];
         element.param[k] = $('#edit_content #'+k)[0].value;
       }
-      mainJson['elements'][objName]['type'] = 'DC';
-      if ($('#edit_content #type_pulse').prop('checked')) mainJson['elements'][objName]['type'] = 'PULSE';
-      if ($('#edit_content #type_sin').prop('checked')) mainJson['elements'][objName]['type'] = 'SIN';
+      element.param['type'] = 'DC';
+      if ($('#edit_content #type_pulse').prop('checked')) element.param['type'] = 'PULSE';
+      if ($('#edit_content #type_sin').prop('checked')) element.param['type'] = 'SIN';
     } else if (objName.includes("D")) {
       var props = ['Is', 'Vt'];
       for (var i = 0; i < props.length; ++i) {
@@ -1599,27 +1599,70 @@
     var fr = new FileReader();
 
     fr.onload = function(e) { 
+      window.Rcount = 0;
+      window.Vcount = 0;
+      window.Ccount = 0;
+      window.Lcount = 0;
+      window.Dcount = 0;
+      window.Qcount = 0;
+      window.connectionCount = 0;
+      window.extraCount = 0;
+      window.GNDcount = 0;
+
       var result = JSON.parse(e.target.result);
       elementListF = result.elementList;
       connectionListF = result.connectionList;
       simulation = result.simulation;
       for (var k in elementListF) {
+        var number = 1;
         if (elementListF[k].name.includes("GND")){
           var o = new Ground(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(3));
+          if (number > window.GNDcount) {
+            window.GNDcount = number + 1;
+          }
         } else if (elementListF[k].name.includes("R")){
           var o = new Resistor(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(1));
+          if (number > window.Rcount) {
+            window.Rcount = number + 1;
+          }
         } else if (elementListF[k].name.includes("C")){
           var o = new Capacitor(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(1));
+          if (number > window.Ccount) {
+            window.Ccount = number + 1;
+          }
         } else if (elementListF[k].name.includes("L")){
           var o = new Inductor(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(1));
+          if (number > window.Lcount) {
+            window.Lcount = number + 1;
+          }
         } else if (elementListF[k].name.includes("Q")){
           var o = new Transistor(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(1));
+          if (number > window.Qcount) {
+            window.Qcount = number + 1;
+          }
         } else if (elementListF[k].name.includes("D")){
           var o = new Diode(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(1));
+          if (number > window.Dcount) {
+            window.Dcount = number + 1;
+          }
         } else if (elementListF[k].name.includes("V")){
           var o = new DCV(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(1));
+          if (number > window.Vcount) {
+            window.Vcount = number + 1;
+          }
         } else if (elementListF[k].name.includes("E")){
           var o = new Node(elementListF[k].name, 0, 0, 0);
+          number = Number(elementListF[k].name.substr(1));
+          if (number > window.extraCount) {
+            window.extraCount = number + 1;
+          }
         }
         o.left = elementListF[k].left;
         o.top = elementListF[k].top;
@@ -1639,8 +1682,11 @@
         connectionList.push(o);
         connectionList[connectionList.length-1].draw();
         connectionList[k].draw();
+        var number = Number(connectionListF[k].name.substr(4));
+        if (number > window.connectionCount) {
+          window.connectionCount = number + 1;
+        }
       }
-      // TODO check highest integer suffix and adjust window.**count
       prepareSimulOpt();
     }
 
@@ -1654,27 +1700,70 @@
       mainJson = result.mainJson;
       prepareSimulOpt();
       canvas.loadFromJSON(result.canvasJson, function() {
+        window.Rcount = 0;
+        window.Vcount = 0;
+        window.Ccount = 0;
+        window.Lcount = 0;
+        window.Dcount = 0;
+        window.Qcount = 0;
+        window.connectionCount = 0;
+        window.extraCount = 0;
+        window.GNDcount = 0;
+
         var result = JSON.parse(e.target.result);
         elementListF = result.elementList;
         connectionListF = result.connectionList;
         simulation = result.simulation;
         for (var k in elementListF) {
+          var number = 1;
           if (elementListF[k].name.includes("GND")){
             var o = new Ground(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(3));
+            if (number > window.GNDcount) {
+              window.GNDcount = number + 1;
+            }
           } else if (elementListF[k].name.includes("R")){
             var o = new Resistor(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(1));
+            if (number > window.Rcount) {
+              window.Rcount = number + 1;
+            }
           } else if (elementListF[k].name.includes("C")){
             var o = new Capacitor(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(1));
+            if (number > window.Ccount) {
+              window.Ccount = number + 1;
+            }
           } else if (elementListF[k].name.includes("L")){
             var o = new Inductor(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(1));
+            if (number > window.Lcount) {
+              window.Lcount = number + 1;
+            }
           } else if (elementListF[k].name.includes("Q")){
             var o = new Transistor(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(1));
+            if (number > window.Qcount) {
+              window.Qcount = number + 1;
+            }
           } else if (elementListF[k].name.includes("D")){
             var o = new Diode(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(1));
+            if (number > window.Dcount) {
+              window.Dcount = number + 1;
+            }
           } else if (elementListF[k].name.includes("V")){
             var o = new DCV(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(1));
+            if (number > window.Vcount) {
+              window.Vcount = number + 1;
+            }
           } else if (elementListF[k].name.includes("E")){
             var o = new Node(elementListF[k].name, 0, 0, 0);
+            number = Number(elementListF[k].name.substr(1));
+            if (number > window.extraCount) {
+              window.extraCount = number + 1;
+            }
           }
           o.left = elementListF[k].left;
           o.top = elementListF[k].top;
@@ -1694,6 +1783,10 @@
           connectionList.push(o);
           connectionList[connectionList.length-1].draw();
           connectionList[k].draw();
+          var number = Number(connectionListF[k].name.substr(4));
+          if (number > window.connectionCount) {
+            window.connectionCount = number + 1;
+          }
         }
         prepareSimulOpt();
       });
