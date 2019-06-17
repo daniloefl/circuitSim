@@ -1128,7 +1128,7 @@
   function addResistor() {
     window.Rcount += 1;
     var name = "R"+window.Rcount;
-    var resistor = new Resistor(name, canvas.width/2, canvas.height/2, 0);
+    var resistor = new Resistor(name, canvas.width/2, canvas.height/2, 1);
     resistor.draw();
     elementList.push(resistor);
   }
@@ -1136,7 +1136,7 @@
   function addDCVoltageSource() {
     window.Vcount += 1;
     var name = "V"+window.Vcount;
-    var source = new DCV(name, canvas.width/2, canvas.height/2, 0);
+    var source = new DCV(name, canvas.width/2, canvas.height/2, 1);
     source.draw();
     elementList.push(source);
   }
@@ -1144,7 +1144,7 @@
   function addDiode() {
     window.Dcount += 1;
     var name = "D"+window.Dcount;
-    var source = new Diode(name, canvas.width/2, canvas.height/2, 0);
+    var source = new Diode(name, canvas.width/2, canvas.height/2, 1);
     source.draw();
     elementList.push(source);
   }
@@ -1152,7 +1152,8 @@
   function addTransistor() {
     window.Qcount += 1;
     var name = "Q"+window.Qcount;
-    var source = new Transistor(name, canvas.width/2, canvas.height/2, 0);
+    var source = new Transistor(name, canvas.width/2, canvas.height/2, 1);
+    source.f = true;
     source.draw();
     elementList.push(source);
   }
@@ -1160,7 +1161,7 @@
   function addCapacitor() {
     window.Ccount += 1;
     var name = "C"+window.Ccount;
-    var source = new Capacitor(name, canvas.width/2, canvas.height/2, 0);
+    var source = new Capacitor(name, canvas.width/2, canvas.height/2, 1);
     source.draw();
     elementList.push(source);
   }
@@ -1168,7 +1169,7 @@
   function addInductor() {
     window.Lcount += 1;
     var name = "L"+window.Lcount;
-    var source = new Inductor(name, canvas.width/2, canvas.height/2, 0);
+    var source = new Inductor(name, canvas.width/2, canvas.height/2, 1);
     source.draw();
     elementList.push(source);
   }
@@ -1176,7 +1177,7 @@
   function addGnd() {
     window.GNDcount += 1;
     var name = "GND"+window.GNDcount;
-    var source = new Ground(name, canvas.width/2, canvas.height/2, 0);
+    var source = new Ground(name, canvas.width/2, canvas.height/2, 1);
     source.draw();
     elementList.push(source);
   }
