@@ -250,6 +250,9 @@ def run(request):
     if (not sim['fft']):
       data = []
       layout = dict(title = '',
+              #autosize=True,
+              #width=500,
+              height=400,
               xaxis = dict(title = 'Time [s]'),
               yaxis = dict(title = 'Voltage [V]'),
               )
@@ -262,6 +265,9 @@ def run(request):
     else:
       data = []
       layout = dict(title = '',
+              #autosize=True,
+              #width=500,
+              height=400,
               xaxis = dict(title = 'Frequency [Hz]'),
               yaxis = dict(title = '|FFT| [V]'),
               )
@@ -275,6 +281,9 @@ def run(request):
 
       data = []
       layout = dict(title = '',
+              #autosize=True,
+              #width=500,
+              height=400,
               xaxis = dict(title = 'Frequency [Hz]'),
               yaxis = dict(title = 'Angle(FFT) [rad]'),
               )
