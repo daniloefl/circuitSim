@@ -252,7 +252,7 @@ def run(request):
       layout = dict(title = '',
               #autosize=True,
               #width=500,
-              height=400,
+              height=500,
               xaxis = dict(title = 'Time [s]'),
               yaxis = dict(title = 'Voltage [V]'),
               )
@@ -267,7 +267,7 @@ def run(request):
       layout = dict(title = '',
               #autosize=True,
               #width=500,
-              height=400,
+              height=500,
               xaxis = dict(title = 'Frequency [Hz]'),
               yaxis = dict(title = '|FFT| [V]'),
               )
@@ -283,7 +283,7 @@ def run(request):
       layout = dict(title = '',
               #autosize=True,
               #width=500,
-              height=400,
+              height=500,
               xaxis = dict(title = 'Frequency [Hz]'),
               yaxis = dict(title = 'Angle(FFT) [rad]'),
               )

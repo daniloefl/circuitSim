@@ -2113,31 +2113,9 @@
     canvas.renderAll();
   });
 
-  function findLine(name) {
-    for (var i = 0; i < canvas.getObjects().length; ++i) {
-      var l = canvas.getObjects()[i];
-      if (l.father.name == name) {
-        return l.father;
-      }
-    }
-    return false;
-  }
-
   function cancelMenu() {
     $(window).off('contextmenu', cancelMenu);
     return false;
-  }
-  function panUpLeft() {
-    canvas.relativePan({ x: -50, y: -50 });
-  }
-  function panUpRight() {
-    canvas.relativePan({ x: 50, y: -50 });
-  }
-  function panDownLeft() {
-    canvas.relativePan({ x: -50, y: 50 });
-  }
-  function panDownRight() {
-    canvas.relativePan({ x: 50, y: 50 });
   }
   function panUp() {
     canvas.relativePan({ x: 0, y: -50 });
