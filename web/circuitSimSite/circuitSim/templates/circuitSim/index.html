@@ -9,13 +9,13 @@
 
     <link rel="shortcut icon" href="{% static 'circuitSim/favicon.png' %}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'circuitSim/bootstrap-switch.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap2/bootstrap-switch.min.css">
   
     <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 
-    <script src="{% static 'circuitSim/bootstrap-switch.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
     <script src="{% static 'circuitSim/fabric.min.js' %}"></script>
    
     <link rel="stylesheet" href="{% static 'circuitSim/style.css' %}">
@@ -96,42 +96,20 @@
       <div class="d-none d-md-block col-md-12">
         <div style="overflow: auto" id="toolbar" style="display: none;">
           <div style="white-space: nowrap;">
-            <!-- Pan buttons -->
-            <div class="center">
-              <div class="col-1">
-                <div class="btn-group">
-                  <button type="button" id="panUpLeft" class="btn btn-xs btn-default col-md-3 small">&#x2196;</button>
-                  <button type="button" id="panUp" class="btn btn-xs btn-default col-md-3 small">&uarr;</button>
-                  <button type="button" id="panUpRight" class="btn btn-xs btn-default col-md-3 small">&#x2197;</button>
-                </div>
-              </div>
-              <div class="col-1">
-                <div class=" btn-group">
-                  <button type="button" id="panLeft" class="btn btn-xs btn-default col-md-3 small">&larr;</button>
-                  <button type="button" id="panReset" class="btn btn-xs btn-default col-md-3 small">0</button>
-                  <button type="button" id="panRight" class="btn btn-xs btn-default col-md-3 small">&rarr;</button>
-                </div>
-              </div>
-              <div class="col-1">
-                <div class=" btn-group">
-                  <button type="button" id="panDownLeft" class="btn btn-xs btn-default col-md-3 small">&#x2199;</button>
-                  <button type="button" id="panDown" class="btn btn-xs btn-default col-md-3 small">&darr;</button>
-                  <button type="button" id="panDownRight" class="btn btn-xs btn-default col-md-3 small">&#x2198;</button>
-                </div>
-              </div>
-            </div>
-            <div class="center small">
-              Wire<br>
+            <div class="center small col-2">
+              Wire
               <input type="checkbox" id="addConnectionBtn"></input>
               <script>$("#addConnectionBtn").bootstrapSwitch();</script>
             </div>
-            <button id="addDCVoltageSourceBtn" class="btn btn-default center"><canvas id="DCVBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addResistorBtn" class="btn btn-default center"><canvas id="ResistorBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addCapacitorBtn" class="btn btn-default center"><canvas id="CapacitorBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addInductorBtn" class="btn btn-default center"><canvas id="InductorBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addGndBtn" class="btn btn-default center"><canvas id="GndBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addDiodeBtn" class="btn btn-default center"><canvas id="DiodeBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addTransistorBtn" class="btn btn-default center"><canvas id="TransistorBtnCanvas" width="60" height="50"></canvas></button>
+            <div class="btn-group">
+            <button id="addDCVoltageSourceBtn" class="btn btn-secondary center_nospace"><canvas id="DCVBtnCanvas" width="60" height="50"></canvas></button>
+            <button id="addResistorBtn" class="btn btn-secondary center_nospace"><canvas id="ResistorBtnCanvas" width="60" height="50"></canvas></button>
+            <button id="addCapacitorBtn" class="btn btn-secondary center_nospace"><canvas id="CapacitorBtnCanvas" width="60" height="50"></canvas></button>
+            <button id="addInductorBtn" class="btn btn-secondary center_nospace"><canvas id="InductorBtnCanvas" width="60" height="50"></canvas></button>
+            <button id="addGndBtn" class="btn btn-secondary center_nospace"><canvas id="GndBtnCanvas" width="60" height="50"></canvas></button>
+            <button id="addDiodeBtn" class="btn btn-secondary center_nospace"><canvas id="DiodeBtnCanvas" width="60" height="50"></canvas></button>
+            <button id="addTransistorBtn" class="btn btn-secondary center_nospace"><canvas id="TransistorBtnCanvas" width="60" height="50"></canvas></button>
+            </div>
           </div>
         </div>
       </div>

@@ -393,8 +393,33 @@
       this.name = name;
       this.hasBeenAddedInCanvas = false;
       this.nodeList = [];
+      this.drawn = [];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
+      if (!fromScratch) {
+        for (var k = 0; k < this.nodeList.length-1; ++k) {
+          var n1 = findElement(this.nodeList[k]);
+          var obj1 = n1[2];
+          var matrix1 = obj1.calcTransformMatrix();
+          var x1 = matrix1[4];
+          var y1 = matrix1[5];
+
+          var n2 = findElement(this.nodeList[k+1]);
+          var obj2 = n2[2];
+          var matrix2 = obj2.calcTransformMatrix();
+          var x2 = matrix2[4];
+          var y2 = matrix2[5];
+          this.drawn[k].set({x1: x1, x2:x2, y1:y1, y2:y2});
+          //this.drawn[k].lockRotation = true;
+          //this.drawn[k].lockScalingX = true;
+          //this.drawn[k].lockScalingY = true;
+          //this.drawn[k].father = this;
+          //this.drawn[k].itemInNodeList = k;
+          this.drawn[k].setCoords();
+          this.drawn[k].set({'dirty': true});
+        }
+        return;
+      }
       this.drawn = [];
       for (var k = 0; k < this.nodeList.length-1; ++k) {
         var n1 = findElement(this.nodeList[k]);
@@ -423,14 +448,17 @@
         this.drawn.push(l);
       }
     }
-    draw() {
-      if (this.hasBeenAddedInCanvas) {
+    draw(redo = false) {
+      var fromScratch = redo;
+      if (this.drawn.length == 0) fromScratch = true;
+
+      if (this.hasBeenAddedInCanvas && fromScratch) {
         for (var k in this.drawn) {
           canvas.remove(this.drawn[k]);
           k = null;
         }
       }
-      this.makeSVG();
+      this.makeSVG(fromScratch);
       for (var k in this.drawn) {
         this.drawn[k].selectable = false;
         this.drawn[k].lockRotation = true;
@@ -438,7 +466,8 @@
         this.drawn[k].lockMovementY = true;
         this.drawn[k].lockScalingX = true;
         this.drawn[k].lockScalingY = true;
-        canvas.add(this.drawn[k]);
+        if (fromScratch)
+          canvas.add(this.drawn[k]);
       }
       this.hasBeenAddedInCanvas = true;
     }
@@ -476,15 +505,19 @@
       this.f = !this.f;
       this.draw();
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       throw new Error("This method must be implemented in an inherited class to define this.drawn");
     }
-    draw() {
-      if (this.hasBeenAddedInCanvas) {
+    draw(redo = true) { // positions are off if we just try to update existing objects, due to changes in group ... keep redu = true
+      var fromScratch = redo;
+      if (this.drawn == null) fromScratch = true;
+      if (this.hasBeenAddedInCanvas && fromScratch) {
         canvas.remove(this.drawn);
         this.drawn = null;
       }
-      this.makeSVG();
+      this.makeSVG(fromScratch);
+      this.drawn.r = this.r;
+      this.drawn.f = this.f;
       if (this.lock) {
         this.drawn.selectable = false;
         this.drawn.lockMovementX = false;
@@ -498,9 +531,12 @@
       }
       this.drawn.lockScalingX = true;
       this.drawn.lockScalingY = true;
-      canvas.add(this.drawn);
+      if (fromScratch)
+        canvas.add(this.drawn);
       this.hasBeenAddedInCanvas = true;
-      canvas.renderAll();
+      this.drawn.forEachObject(function(obj) { obj.setCoords(); });
+      this.drawn.setCoords();
+      this.drawn.set({'dirty': true});
     }
     remove() {
       if (this.hasBeenAddedInCanvas) {
@@ -518,7 +554,12 @@
       super(name, left, top, scale);
       this.nodes = ['N1'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        return;
+      }
       var n1 = new fabric.Circle({
                           radius: 4,
                           fill: '#000',
@@ -548,7 +589,7 @@
       this.param = {'value': 1.0};
       this.nodes = ['N1', 'N2'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
       var textTop = 0;
@@ -556,6 +597,19 @@
       if (this.r % 4 == 1) textTop = 10;
       if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
       if (this.r % 4 == 3) textLeft = 10;
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        this.drawn.angle = angle;
+        this.drawn.item(5).set({originX: 'left', originY: 'top', left:10+textLeft,top: 20+textTop,angle: angleText});
+        this.drawn.item(3).set({originX: 'left', originY: 'top', left: 0-4+textLeft,
+                        top: 5-4+8+textTop,
+                        angle: angleText});
+        this.drawn.item(4).set({originX: 'left', originY: 'top', left: 32.5-4+textLeft,
+                        top: 5-4+8+textTop,
+                        angle: angleText});
+        return;
+      }
       var poly = new fabric.Path('M0,5L5,5L7.5,0L10,10L12.5,0L15,10L17.5,0L20,10L22.5,0L25,10L27.5,5L32.5,5',
                         {
                         stroke: 'black',
@@ -615,7 +669,7 @@
       this.param = {};
       this.nodes = ['N1'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
       var textTop = 0;
@@ -623,6 +677,15 @@
       if (this.r % 4 == 1) textTop = 15;
       if (this.r % 4 == 2) textTop = -10;
       if (this.r % 4 == 3) textLeft = 10;
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        this.drawn.angle = angle;
+        this.drawn.item(5).set({originX: 'left', originY: 'top', left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText});
+        return;
+      }
       var p1 = new fabric.Line([17, 0, 17, 20], {
                         stroke: 'black',
                         fill: ''
@@ -673,7 +736,7 @@
       this.param = {'value': 1.0};
       this.nodes = ['N1', 'N2'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
       var textTop = 0;
@@ -681,6 +744,21 @@
       if (this.r % 4 == 1) textTop = 15;
       if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
       if (this.r % 4 == 3) textLeft = 10;
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        this.drawn.angle = angle;
+        this.drawn.item(5).set({originX: 'left', originY: 'top', left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText});
+        this.drawn.item(6).set({originX: 'left', originY: 'top', left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText});
+        this.drawn.item(7).set({originX: 'left', originY: 'top', left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText});
+        return;
+      }
       var a1 = new fabric.Path('M 10 10 Q 20,20 15,0 M 15,0 Q 10,10 15,15 M 15,15 Q 25,20 20,0 M 20,0 Q 15,10 20,15 M 20,15 Q 30,20 25,0 M 25,0 Q 20,10 25,15 M 25,15 Q 30,10 32,10 M 32,10', { fill: '', stroke: 'black'});
       var l1 = new fabric.Line([4, 10, 10, 10],
                         {
@@ -744,7 +822,7 @@
       this.param = {'value': 1.0};
       this.nodes = ['N1', 'N2'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
       var textTop = 0;
@@ -752,6 +830,27 @@
       if (this.r % 4 == 1) textTop = 15;
       if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
       if (this.r % 4 == 3) textLeft = 10;
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        this.drawn.angle = angle;
+        this.drawn.item(6).set({originX: 'left', originY: 'top', 
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(7).set({originX: 'left', originY: 'top', 
+                        left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(8).set({originX: 'left', originY: 'top', 
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                        });
+        return;
+      }
       var p1 = new fabric.Line([17, 0, 17, 20], {
                         stroke: 'black',
                         fill: ''
@@ -822,7 +921,7 @@
       this.param = {'alpha': 0.99, 'alphaRev': 0.5, 'type': 'npn', 'IsBE': 3.7751345e-14, 'VtBE': 25e-3, 'IsBC': 3.7751345e-14, 'VtBC': 25e-3};
       this.nodes = ['N1', 'N2', 'N3'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
       var textTop = 0;
@@ -830,6 +929,64 @@
       if (this.r % 4 == 1) { textTop = 7; }
       if (this.r % 4 == 2) { textTop = 10; textLeft = 20; }
       if (this.r % 4 == 3) { textLeft = 10; textTop = -10; }
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        this.drawn.angle = angle;
+        this.drawn.item(10).set({originX: 'left', originY: 'top', 
+                        left: 0-4+textLeft,
+                        top: 10-4-8+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(11).set({originX: 'left', originY: 'top', 
+                        left: 40-4+textLeft,
+                        top: 10-4-8+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(12).set({originX: 'left', originY: 'top', 
+                        left: 20-4+8+textLeft,
+                        top: 30-4+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(13).set({originX: 'left', originY: 'top', 
+                        left: 0+textLeft,
+                        top: 30+textTop,
+                        angle: angleText
+                        });
+        if (this.f) {
+          tr3 = this.drawn.item(3);
+          tr3.originX = 'left';
+          tr3.originY = 'top';
+          tr3.left = 30-2;
+          tr3.top = 7+2;
+          tr3.angle = 45;
+        }
+        if (this.f) {
+          n1 = this.drawn.item(7);
+          n2 = this.drawn.item(8);
+          n1.originX = 'left';
+          n1.originY = 'top';
+          n2.originX = 'left';
+          n2.originY = 'top';
+          n1.left = 40-4;
+          n1.top = 10-4;
+          n2.left = 0-4;
+          n2.top = 10-4;
+        }
+        if (this.f) {
+          t1 = this.drawn.item(10);
+          t2 = this.drawn.item(11);
+          t1.originX = 'left';
+          t1.originY = 'top';
+          t2.originX = 'left';
+          t2.originY = 'top';
+          t1.left = 40-4+textLeft;
+          t1.top = 10-4-8+textTop;
+          t2.left = 0-4+textLeft;
+          t2.top = 10-4-8+textTop;
+        }
+        return;
+      }
       var tr1 = new fabric.Line([30, 10, 20, 20],
                         {
                         stroke: 'black',
@@ -952,7 +1109,7 @@
       this.param = {'Is': 3.7751345e-14, 'Vt': 25e-3};
       this.nodes = ['N1', 'N2'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
       var textTop = 0;
@@ -960,6 +1117,27 @@
       if (this.r % 4 == 1) textTop = 15;
       if (this.r % 4 == 2) textTop = -10;
       if (this.r % 4 == 3) textLeft = 10;
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        this.drawn.angle = angle;
+        this.drawn.item(6).set({originX: 'left', originY: 'top', 
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(7).set({originX: 'left', originY: 'top', 
+                        left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                         });
+        this.drawn.item(8).set({originX: 'left', originY: 'top', 
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                         });
+        return;
+      }
       var tr1 = new fabric.Triangle({
                         stroke: 'black',
                         fill: '',
@@ -1035,7 +1213,7 @@
       this.param = {'type': 'DC', 'value_dc': 1.0, 'amplitude1_pulse': 0, 'amplitude2_pulse': 1, 'delay_pulse': 0, 'tRise_pulse': 0, 'tFall_pulse': 0, 'tOn_pulse': 0.5, 'period_pulse': 1, 'nCycles_pulse': 10, 'dc_sin': 0, 'amplitude_sin': 1, 'freq_sin': 10, 'delay_sin': 0, 'atenuation_sin': 0, 'angle_sin': 0, 'nCycles_sin': 10};
       this.nodes = ['N1', 'N2'];
     }
-    makeSVG() {
+    makeSVG(fromScratch = false) {
       var angle = (this.r%4)*90;
       var angleText = -(this.r%4)*90;
       var textTop = 0;
@@ -1043,6 +1221,27 @@
       if (this.r % 4 == 1) textTop = 15;
       if (this.r % 4 == 2) { textTop = 10; textLeft = 5; }
       if (this.r % 4 == 3) textLeft = 10;
+      if (!fromScratch) {
+        this.drawn.left = this.left;
+        this.drawn.top = this.top;
+        this.drawn.angle = angle;
+        this.drawn.item(7).set({originX: 'left', originY: 'top', 
+                        left: 0-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(8).set({originX: 'left', originY: 'top', 
+                        left: 40-4+textLeft,
+                        top: 10-4+8+textTop,
+                        angle: angleText
+                        });
+        this.drawn.item(9).set({originX: 'left', originY: 'top', 
+                        left: 10+textLeft,
+                        top: 20+textTop,
+                        angle: angleText
+                        });
+        return;
+      }
       var c = new fabric.Circle({
                         radius: 10,
                         fill: '',
@@ -1552,43 +1751,43 @@
   var btnList = [];
 
   btnList.push(new DCV("V", 0, 5, 0, 1));
-  btnList[0].makeSVG();
+  btnList[0].makeSVG(true);
   var btn = btnList[0].drawn;
   btn.selectable = false;
   DCVBtnCanvas.add(btn);
 
   btnList.push(new Resistor("R", 0, 5, 0, 1));
-  btnList[1].makeSVG();
+  btnList[1].makeSVG(true);
   var btn = btnList[1].drawn;
   btn.selectable = false;
   ResistorBtnCanvas.add(btn);
 
   btnList.push(new Capacitor("C", 0, 5, 0, 1));
-  btnList[2].makeSVG();
+  btnList[2].makeSVG(true);
   var btn = btnList[2].drawn;
   btn.selectable = false;
   CapacitorBtnCanvas.add(btn);
 
   btnList.push(new Inductor("L", 0, 5, 0, 1));
-  btnList[3].makeSVG();
+  btnList[3].makeSVG(true);
   var btn = btnList[3].drawn;
   btn.selectable = false;
   InductorBtnCanvas.add(btn);
 
   btnList.push(new Ground("Gnd", 0, 5, 0, 1));
-  btnList[4].makeSVG();
+  btnList[4].makeSVG(true);
   var btn = btnList[4].drawn;
   btn.selectable = false;
   GndBtnCanvas.add(btn);
 
   btnList.push(new Diode("D", 0, 5, 0, 1));
-  btnList[5].makeSVG();
+  btnList[5].makeSVG(true);
   var btn = btnList[5].drawn;
   btn.selectable = false;
   DiodeBtnCanvas.add(btn);
 
   btnList.push(new Transistor("Q", 0, 5, 0, 1));
-  btnList[6].makeSVG();
+  btnList[6].makeSVG(true);
   var btn = btnList[6].drawn;
   btn.selectable = false;
   TransistorBtnCanvas.add(btn);
@@ -1630,16 +1829,6 @@
   $("#example_amp")[0].onclick = loadExampleAmp;
   $("#example_rectifier")[0].onclick = loadExampleRectifier;
   $("#example_bridge_rectifier")[0].onclick = loadExampleBridgeRectifier;
-
-  $("#panUpLeft")[0].onclick = panUpLeft;
-  $("#panUpRight")[0].onclick = panUpRight;
-  $("#panDownLeft")[0].onclick = panDownLeft;
-  $("#panDownRight")[0].onclick = panDownRight;
-  $("#panUp")[0].onclick = panUp;
-  $("#panDown")[0].onclick = panDown;
-  $("#panLeft")[0].onclick = panLeft;
-  $("#panRight")[0].onclick = panRight;
-  $("#panReset")[0].onclick = panReset;
 
   $("#panUpLink")[0].onclick = panUp;
   $("#panDownLink")[0].onclick = panDown;
