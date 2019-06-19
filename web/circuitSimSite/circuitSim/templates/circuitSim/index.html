@@ -93,26 +93,38 @@
     </nav>
     <div class="container">
     <div class="row table-row bg-light flex-fill d-flex justify-content-start">
+
+      <!-- Toolbar -->
       <div class="d-none d-md-block col-md-12">
-        <div style="overflow: auto" id="toolbar" style="display: none;">
-          <div style="white-space: nowrap;">
-            <div class="center small col-2">
-              Wire
-              <input type="checkbox" id="addConnectionBtn"></input>
-              <script>$("#addConnectionBtn").bootstrapSwitch();</script>
+
+        <div class="card">
+          <div class="card-body bg-success">
+
+            <div style="overflow: auto" id="toolbar" style="display: none;">
+              <div style="white-space: nowrap;">
+                <div class="center small col-2">
+                  Wire
+                  <input type="checkbox" id="addConnectionBtn"></input>
+                  <script>$("#addConnectionBtn").bootstrapSwitch();</script>
+                </div>
+                <div class="btn-group">
+                <button id="addDCVoltageSourceBtn" class="btn  center_nospace"><canvas id="DCVBtnCanvas" width="60" height="50"></canvas></button>
+                <button id="addResistorBtn" class="btn  center_nospace"><canvas id="ResistorBtnCanvas" width="60" height="50"></canvas></button>
+                <button id="addCapacitorBtn" class="btn  center_nospace"><canvas id="CapacitorBtnCanvas" width="60" height="50"></canvas></button>
+                <button id="addInductorBtn" class="btn  center_nospace"><canvas id="InductorBtnCanvas" width="60" height="50"></canvas></button>
+                <button id="addGndBtn" class="btn  center_nospace"><canvas id="GndBtnCanvas" width="60" height="50"></canvas></button>
+                <button id="addDiodeBtn" class="btn  center_nospace"><canvas id="DiodeBtnCanvas" width="60" height="50"></canvas></button>
+                <button id="addTransistorBtn" class="btn  center_nospace"><canvas id="TransistorBtnCanvas" width="60" height="50"></canvas></button>
+                </div>
+              </div>
             </div>
-            <div class="btn-group">
-            <button id="addDCVoltageSourceBtn" class="btn btn-secondary center_nospace"><canvas id="DCVBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addResistorBtn" class="btn btn-secondary center_nospace"><canvas id="ResistorBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addCapacitorBtn" class="btn btn-secondary center_nospace"><canvas id="CapacitorBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addInductorBtn" class="btn btn-secondary center_nospace"><canvas id="InductorBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addGndBtn" class="btn btn-secondary center_nospace"><canvas id="GndBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addDiodeBtn" class="btn btn-secondary center_nospace"><canvas id="DiodeBtnCanvas" width="60" height="50"></canvas></button>
-            <button id="addTransistorBtn" class="btn btn-secondary center_nospace"><canvas id="TransistorBtnCanvas" width="60" height="50"></canvas></button>
-            </div>
+
           </div>
         </div>
+
       </div>
+
+      <!-- Canvas -->
       <div class="col-md-12 col-ms-12 portlet-container portlet-dropzone">
         <div class="card card-default" style="padding-left: 0px; padding-right: 0px; min-height: 100%; height: 100%;">
           <div class="card-header small">
